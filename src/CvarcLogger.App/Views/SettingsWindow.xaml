@@ -1,0 +1,137 @@
+<Window x:Class="CvarcLogger.App.Views.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:services="clr-namespace:CvarcLogger.App.Services"
+        mc:Ignorable="d"
+        Title="Settings" Height="720" Width="460" WindowStartupLocation="CenterOwner"
+        Loaded="Window_Loaded">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="14">
+            <TextBlock Text="Callsign Lookup" FontWeight="Bold" Margin="0,0,0,6"/>
+            <TextBlock Text="Preferred service (the other two are tried automatically, in a fixed order, if the preferred one has no match or is missing a field):"
+                       TextWrapping="Wrap" Margin="0,0,0,4" Foreground="Gray" FontSize="11"/>
+            <ComboBox Margin="0,0,0,14" HorizontalAlignment="Left" Width="200"
+                      SelectedItem="{Binding PreferredLookupService}">
+                <ComboBox.ItemsSource>
+                    <x:Array Type="services:LookupServicePreference">
+                        <services:LookupServicePreference>Callook</services:LookupServicePreference>
+                        <services:LookupServicePreference>Qrz</services:LookupServicePreference>
+                        <services:LookupServicePreference>QrzCq</services:LookupServicePreference>
+                    </x:Array>
+                </ComboBox.ItemsSource>
+            </ComboBox>
+
+            <Separator Margin="0,0,0,14"/>
+
+            <TextBlock Text="QRZ.com XML Data API Credentials" FontWeight="Bold" Margin="0,0,0,6"/>
+            <TextBlock Margin="0,0,0,8" Foreground="Gray" FontSize="11" TextWrapping="Wrap"
+                       Text="Requires a paid QRZ XML Data subscription. Stored encrypted (Windows DPAPI) on this machine only, never in the QSO log."/>
+
+            <TextBlock Text="Username" FontSize="11" Foreground="Gray"/>
+            <TextBox Text="{Binding QrzUsername, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+
+            <TextBlock Text="Password" FontSize="11" Foreground="Gray"/>
+            <PasswordBox x:Name="PasswordBox" Margin="0,0,0,8"/>
+
+            <TextBlock Margin="0,0,0,8" FontStyle="Italic">
+                <Run Text="Status: "/>
+                <Run Text="{Binding IsQrzConfigured, Mode=OneWay}"/>
+            </TextBlock>
+
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
+                <Button Content="Save Credentials" Click="SaveCredentials_Click" Padding="10,4" Margin="0,0,8,0"/>
+                <Button Content="Clear" Command="{Binding ClearQrzCredentialsCommand}" Padding="10,4"/>
+            </StackPanel>
+
+            <Separator Margin="0,0,0,14"/>
+
+            <TextBlock Text="QRZCQ.com XML API Credentials" FontWeight="Bold" Margin="0,0,0,6"/>
+            <TextBlock Margin="0,0,0,8" Foreground="Gray" FontSize="11" TextWrapping="Wrap"
+                       Text="Requires a Premium QRZCQ account. Stored encrypted (Windows DPAPI) on this machine only, never in the QSO log. QRZCQ doesn't provide County, so that field still comes from whichever other configured service has it."/>
+
+            <TextBlock Text="Username" FontSize="11" Foreground="Gray"/>
+            <TextBox Text="{Binding QrzCqUsername, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+
+            <TextBlock Text="Password" FontSize="11" Foreground="Gray"/>
+            <PasswordBox x:Name="QrzCqPasswordBox" Margin="0,0,0,8"/>
+
+            <TextBlock Margin="0,0,0,8" FontStyle="Italic">
+                <Run Text="Status: "/>
+                <Run Text="{Binding IsQrzCqConfigured, Mode=OneWay}"/>
+            </TextBlock>
+
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
+                <Button Content="Save Credentials" Click="SaveQrzCqCredentials_Click" Padding="10,4" Margin="0,0,8,0"/>
+                <Button Content="Clear" Command="{Binding ClearQrzCqCredentialsCommand}" Padding="10,4"/>
+            </StackPanel>
+
+            <Separator Margin="0,0,0,14"/>
+
+            <TextBlock Text="Radio Control (CAT)" FontWeight="Bold" Margin="0,0,0,6"/>
+            <TextBlock Margin="0,0,0,8" Foreground="Gray" FontSize="11" TextWrapping="Wrap"
+                       Text="Uses Hamlib's rigctld as a TCP backend. Hamlib must be installed separately (hamlib.org, or bundled with software like WSJT-X) — this only configures how CvarcLogger talks to it. Pick your radio from the dropdown below for each slot; if it isn't listed, look up its Model ID with 'rigctl --list' and enter that directly."/>
+
+            <CheckBox Content="Enable CAT (Radio Control)" IsChecked="{Binding CatEnabled}" Margin="0,0,0,10"/>
+
+            <TextBlock Text="Active radio" FontSize="11" Foreground="Gray"/>
+            <ComboBox ItemsSource="{Binding RadioNames}" SelectedIndex="{Binding ActiveRadioIndex}"
+                      HorizontalAlignment="Left" Width="200" Margin="0,0,0,4"/>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                <TextBlock Text="COM ports are re-scanned each time this window opens." FontSize="10" Foreground="Gray" VerticalAlignment="Center"/>
+                <Button Content="Refresh Ports" Command="{Binding RefreshAvailableComPortsCommand}" Padding="8,2" Margin="8,0,0,0"/>
+            </StackPanel>
+
+            <ItemsControl ItemsSource="{Binding RadioProfileEditors}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border BorderBrush="#DDD" BorderThickness="1" Padding="8" Margin="0,0,0,8">
+                            <StackPanel>
+                                <TextBlock Text="{Binding SlotLabel}" FontWeight="Bold" Margin="0,0,0,4"/>
+
+                                <TextBlock Text="Radio (Hamlib)" FontSize="10" Foreground="Gray"/>
+                                <ComboBox ItemsSource="{Binding AvailableRigs}"
+                                          SelectedItem="{Binding SelectedRig}"
+                                          DisplayMemberPath="DisplayName"
+                                          IsEditable="True" IsTextSearchEnabled="True"
+                                          Margin="0,0,0,6"/>
+
+                                <WrapPanel>
+                                    <StackPanel Margin="0,0,10,0" Width="110">
+                                        <TextBlock Text="Hamlib Model ID" FontSize="10" Foreground="Gray"/>
+                                        <TextBox Text="{Binding HamlibModelId, UpdateSourceTrigger=PropertyChanged}"/>
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,10,0" Width="90">
+                                        <TextBlock Text="COM Port" FontSize="10" Foreground="Gray"/>
+                                        <ComboBox ItemsSource="{Binding AvailableComPorts}"
+                                                  SelectedItem="{Binding ComPort}"
+                                                  IsEditable="True" IsTextSearchEnabled="True"/>
+                                    </StackPanel>
+                                    <StackPanel Width="90">
+                                        <TextBlock Text="Baud Rate" FontSize="10" Foreground="Gray"/>
+                                        <TextBox Text="{Binding BaudRate, UpdateSourceTrigger=PropertyChanged}"/>
+                                    </StackPanel>
+                                </WrapPanel>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <TextBlock Text="rigctld path (assumed on PATH unless given a full path)" FontSize="11" Foreground="Gray"/>
+            <TextBox Text="{Binding RigctldExecutablePath, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+
+            <TextBlock Text="rigctld TCP port" FontSize="11" Foreground="Gray"/>
+            <TextBox Text="{Binding RigctldTcpPort, UpdateSourceTrigger=PropertyChanged}"
+                     HorizontalAlignment="Left" Width="100" Margin="0,0,0,8"/>
+
+            <CheckBox Content="Launch rigctld automatically" IsChecked="{Binding LaunchRigctldAutomatically}" Margin="0,0,0,12"/>
+
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                <Button Content="Save Radio Settings" Command="{Binding SaveRadioSettingsCommand}" Padding="10,4" Margin="0,0,8,0"/>
+                <Button Content="Test Connection" Command="{Binding TestCatConnectionCommand}" Padding="10,4"/>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</Window>

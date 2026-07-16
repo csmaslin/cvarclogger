@@ -1,0 +1,54 @@
+<Window x:Class="CvarcLogger.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:views="clr-namespace:CvarcLogger.App.Views"
+        mc:Ignorable="d"
+        Title="CVARC Logger" Height="700" Width="1150"
+        Loaded="Window_Loaded">
+    <DockPanel>
+        <Border DockPanel.Dock="Top" Background="DarkBlue" Padding="0,8">
+            <TextBlock Text="CVARC LOGGER" FontSize="12" FontWeight="Bold" Foreground="White"
+                       HorizontalAlignment="Center" TextAlignment="Center"/>
+        </Border>
+
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_File">
+                <MenuItem Header="_New Log..." Click="NewLogMenuItem_Click"/>
+                <MenuItem Header="_Open Log..." Click="OpenLogMenuItem_Click"/>
+                <Separator/>
+                <MenuItem Header="_Import ADIF..." Command="{Binding ImportExport.ImportCommand}"/>
+                <MenuItem Header="_Export ADIF..." Command="{Binding ImportExport.ExportCommand}"/>
+                <Separator/>
+                <MenuItem Header="E_xit" Click="ExitMenuItem_Click"/>
+            </MenuItem>
+            <MenuItem Header="_Stations">
+                <MenuItem Header="_Manage Station Profiles..." Click="StationProfilesMenuItem_Click"/>
+            </MenuItem>
+            <MenuItem Header="_View">
+                <MenuItem Header="_Awards Progress..." Click="AwardsMenuItem_Click"/>
+            </MenuItem>
+            <MenuItem Header="_Tools">
+                <MenuItem Header="_Settings..." Click="SettingsMenuItem_Click"/>
+            </MenuItem>
+        </Menu>
+
+        <StatusBar DockPanel.Dock="Bottom">
+            <StatusBarItem>
+                <TextBlock>
+                    <Run Text="{Binding QsoLog.Qsos.Count, Mode=OneWay}"/>
+                    <Run Text=" QSOs logged"/>
+                </TextBlock>
+            </StatusBarItem>
+            <Separator/>
+            <StatusBarItem>
+                <TextBlock x:Name="LogNameText"/>
+            </StatusBarItem>
+        </StatusBar>
+
+        <views:QsoEntryView DockPanel.Dock="Top" DataContext="{Binding QsoEntry}"/>
+
+        <views:QsoLogGridView DataContext="{Binding QsoLog}"/>
+    </DockPanel>
+</Window>

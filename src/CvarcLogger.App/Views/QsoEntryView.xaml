@@ -1,0 +1,129 @@
+<UserControl x:Class="CvarcLogger.App.Views.QsoEntryView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:converters="clr-namespace:CvarcLogger.App.Converters"
+             mc:Ignorable="d" d:DesignWidth="900">
+    <UserControl.Resources>
+        <converters:DataModeVisibilityConverter x:Key="DataModeVisibilityConverter"/>
+    </UserControl.Resources>
+    <Border BorderBrush="#CCC" BorderThickness="0,0,0,1" Padding="8">
+        <StackPanel>
+            <WrapPanel>
+                <StackPanel Margin="0,0,10,4" Width="140">
+                    <TextBlock Text="Station" FontSize="11" Foreground="Gray"/>
+                    <ComboBox ItemsSource="{Binding StationProfiles}"
+                              SelectedItem="{Binding SelectedStationProfile}"
+                              DisplayMemberPath="Callsign"/>
+                </StackPanel>
+                <StackPanel Margin="0,0,10,4" Width="140">
+                    <TextBlock Text="Callsign" FontSize="11" Foreground="Gray"/>
+                    <TextBox Text="{Binding Callsign, UpdateSourceTrigger=PropertyChanged}"
+                             CharacterCasing="Upper" FontWeight="Bold"/>
+                </StackPanel>
+                <StackPanel Margin="0,0,10,4" Width="90">
+                    <TextBlock Text="Band" FontSize="11" Foreground="Gray"/>
+                    <ComboBox ItemsSource="{Binding Bands}" SelectedItem="{Binding Band}" IsEditable="True"/>
+                </StackPanel>
+                <StackPanel Margin="0,0,10,4" Width="90">
+                    <TextBlock Text="Mode" FontSize="11" Foreground="Gray"/>
+                    <ComboBox ItemsSource="{Binding Modes}" SelectedItem="{Binding Mode}" IsEditable="True"/>
+                </StackPanel>
+                <StackPanel Margin="0,0,10,4" Width="90"
+                            Visibility="{Binding Mode, Converter={StaticResource DataModeVisibilityConverter}}">
+                    <TextBlock Text="Sub-Mode" FontSize="11" Foreground="Gray"/>
+                    <ComboBox ItemsSource="{Binding SubModes}" SelectedItem="{Binding SubMode}" IsEditable="True"/>
+                </StackPanel>
+                <StackPanel Margin="0,0,10,4" Width="100">
+                    <TextBlock Text="Freq (MHz)" FontSize="11" Foreground="Gray"/>
+                    <TextBox Text="{Binding FrequencyMhz, UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+                <StackPanel Margin="0,0,10,4" Width="70">
+                    <TextBlock Text="RST Sent" FontSize="11" Foreground="Gray"/>
+                    <TextBox Text="{Binding RstSent, UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+                <StackPanel Margin="0,0,10,4" Width="70">
+                    <TextBlock Text="RST Rcvd" FontSize="11" Foreground="Gray"/>
+                    <TextBox Text="{Binding RstRcvd, UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+            </WrapPanel>
+
+            <WrapPanel Margin="0,4,0,0">
+                <StackPanel Margin="0,0,10,4" Width="160">
+                    <TextBlock Text="Name" FontSize="11" Foreground="Gray"/>
+                    <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+                <StackPanel Margin="0,0,10,4" Width="90">
+                    <TextBlock Text="Grid" FontSize="11" Foreground="Gray"/>
+                    <TextBox Text="{Binding GridSquare, UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+                <StackPanel Margin="0,0,10,4" Width="120">
+                    <TextBlock Text="City" FontSize="11" Foreground="Gray"/>
+                    <TextBox Text="{Binding City, UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+                <StackPanel Margin="0,0,10,4" Width="60">
+                    <TextBlock Text="State" FontSize="11" Foreground="Gray"/>
+                    <TextBox Text="{Binding State, UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+                <StackPanel Margin="0,0,10,4" Width="100">
+                    <TextBlock Text="County" FontSize="11" Foreground="Gray"/>
+                    <TextBox Text="{Binding County, UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+                <StackPanel Margin="0,0,10,4" Width="140">
+                    <TextBlock Text="Country" FontSize="11" Foreground="Gray"/>
+                    <TextBox Text="{Binding Country, UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+                <StackPanel Margin="0,0,10,4" Width="220">
+                    <TextBlock Text="Comment" FontSize="11" Foreground="Gray"/>
+                    <TextBox Text="{Binding Comment, UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+                <StackPanel Margin="0,18,10,4" VerticalAlignment="Top">
+                    <Button Content="Lookup" Command="{Binding LookupCommand}" Padding="10,4"/>
+                </StackPanel>
+                <StackPanel Margin="0,18,0,4" VerticalAlignment="Top">
+                    <Button Content="Log QSO" Command="{Binding LogQsoCommand}" Padding="16,4"
+                            Background="#2E7D32" Foreground="White" FontWeight="Bold"/>
+                </StackPanel>
+            </WrapPanel>
+
+            <WrapPanel Margin="0,4,0,0">
+                <StackPanel Margin="0,0,10,4" Width="90">
+                    <TextBlock Text="ARRL Section" FontSize="11" Foreground="Gray"/>
+                    <TextBox Text="{Binding ArrlSection, UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+                <StackPanel Margin="0,0,10,4" Width="70">
+                    <TextBlock Text="CQ Zone" FontSize="11" Foreground="Gray"/>
+                    <TextBox Text="{Binding CqZone, UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+                <StackPanel Margin="0,0,10,4" Width="70">
+                    <TextBlock Text="ITU Zone" FontSize="11" Foreground="Gray"/>
+                    <TextBox Text="{Binding ItuZone, UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+            </WrapPanel>
+
+            <WrapPanel Margin="0,4,0,0">
+                <StackPanel Margin="0,0,10,0" VerticalAlignment="Center">
+                    <Button Command="{Binding ToggleCatConnectionCommand}" Padding="10,4">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Content" Value="Connect CAT"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsCatConnected}" Value="True">
+                                        <Setter Property="Content" Value="Disconnect CAT"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </StackPanel>
+                <StackPanel Margin="0,0,10,0" VerticalAlignment="Center">
+                    <CheckBox Content="Pause auto-fill" IsChecked="{Binding IsCatAutoFillPaused}"/>
+                </StackPanel>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="{Binding CatStatusMessage}" FontSize="11" Foreground="Gray"/>
+                </StackPanel>
+            </WrapPanel>
+        </StackPanel>
+    </Border>
+</UserControl>
