@@ -1,0 +1,95 @@
+<UserControl x:Class="CvarcLogger.App.Views.QsoLogGridView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:converters="clr-namespace:CvarcLogger.App.Converters"
+             mc:Ignorable="d">
+    <UserControl.Resources>
+        <converters:UtcToLocalTimeConverter x:Key="UtcToLocalTimeConverter"/>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <DockPanel Grid.Row="0" Margin="8,6,8,4">
+            <TextBlock Text="Search:" VerticalAlignment="Center" Margin="0,0,6,0"/>
+            <TextBox Width="240" HorizontalAlignment="Left"
+                     Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"/>
+            <Button Content="Delete" Command="{Binding DeleteSelectedCommand}"
+                    DockPanel.Dock="Right" Padding="10,2"/>
+            <Button Content="Edit" Click="EditButton_Click"
+                    DockPanel.Dock="Right" Padding="10,2" Margin="0,0,6,0"/>
+            <Button Content="Columns..." Click="ColumnsButton_Click"
+                    DockPanel.Dock="Right" Padding="10,2" Margin="0,0,6,0"/>
+            <Button Content="Refresh" Command="{Binding RefreshCommand}"
+                    DockPanel.Dock="Right" Padding="10,2" Margin="0,0,6,0"/>
+        </DockPanel>
+
+        <DataGrid x:Name="LogDataGrid" Grid.Row="1" ItemsSource="{Binding QsosView}" SelectedItem="{Binding SelectedQso}"
+                  AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal"
+                  CanUserAddRows="False" SelectionMode="Single" SelectionUnit="FullRow"
+                  MouseDoubleClick="DataGrid_MouseDoubleClick">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Date/Time (UTC)" Binding="{Binding QsoDateTimeOnUtc, StringFormat='yyyy-MM-dd HH:mm'}" Width="140"/>
+                <DataGridTextColumn x:Name="LocalTimeColumn" Header="Local Time" Width="140">
+                    <DataGridTextColumn.Binding>
+                        <Binding Path="QsoDateTimeOnUtc" Converter="{StaticResource UtcToLocalTimeConverter}" StringFormat="yyyy-MM-dd HH:mm"/>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="Callsign" Binding="{Binding Callsign}" Width="90"/>
+                <DataGridTextColumn x:Name="BandColumn" Header="Band" Binding="{Binding Band}" Width="60"/>
+                <DataGridTextColumn x:Name="ModeColumn" Header="Mode" Binding="{Binding Mode}" Width="70"/>
+                <DataGridTextColumn x:Name="FreqColumn" Header="Freq" Binding="{Binding FrequencyMhz}" Width="70"/>
+                <DataGridTextColumn x:Name="RstColumn" Header="RST S/R" Width="70">
+                    <DataGridTextColumn.Binding>
+                        <MultiBinding StringFormat="{}{0}/{1}">
+                            <Binding Path="RstSent"/>
+                            <Binding Path="RstRcvd"/>
+                        </MultiBinding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
+                <DataGridTextColumn x:Name="NameColumn" Header="Name" Binding="{Binding Name}" Width="110"/>
+                <DataGridTextColumn x:Name="GridColumn" Header="Grid" Binding="{Binding GridSquare}" Width="70"/>
+                <DataGridTextColumn x:Name="CityColumn" Header="City" Binding="{Binding City}" Width="100"/>
+                <DataGridTextColumn x:Name="StateColumn" Header="State" Binding="{Binding State}" Width="50"/>
+                <DataGridTextColumn x:Name="CountyColumn" Header="County" Binding="{Binding County}" Width="100"/>
+                <DataGridTextColumn x:Name="CountryColumn" Header="Country" Binding="{Binding Country}" Width="120"/>
+                <DataGridTextColumn x:Name="ArrlSectionColumn" Header="ARRL Section" Binding="{Binding ArrlSection}" Width="90"/>
+                <DataGridTextColumn x:Name="CqZoneColumn" Header="CQ Zone" Binding="{Binding CqZone}" Width="60"/>
+                <DataGridTextColumn x:Name="ItuZoneColumn" Header="ITU Zone" Binding="{Binding ItuZone}" Width="60"/>
+                <DataGridTextColumn x:Name="ContinentColumn" Header="Continent" Binding="{Binding Continent}" Width="80"/>
+                <DataGridTextColumn x:Name="SubModeColumn" Header="Sub-Mode" Binding="{Binding SubMode}" Width="80"/>
+                <DataGridTextColumn x:Name="FreqRxColumn" Header="Freq Rx" Binding="{Binding FrequencyRxMhz}" Width="70"/>
+                <DataGridTextColumn x:Name="TxPowerColumn" Header="TX Power" Binding="{Binding TxPowerWatts}" Width="70"/>
+                <DataGridTextColumn x:Name="QslColumn" Header="QSL S/R" Width="80">
+                    <DataGridTextColumn.Binding>
+                        <MultiBinding StringFormat="{}{0}/{1}">
+                            <Binding Path="QslSent"/>
+                            <Binding Path="QslRcvd"/>
+                        </MultiBinding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
+                <DataGridTextColumn x:Name="LotwColumn" Header="LoTW S/R" Width="80">
+                    <DataGridTextColumn.Binding>
+                        <MultiBinding StringFormat="{}{0}/{1}">
+                            <Binding Path="LotwQslSent"/>
+                            <Binding Path="LotwQslRcvd"/>
+                        </MultiBinding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
+                <DataGridTextColumn x:Name="QslViaColumn" Header="QSL Via" Binding="{Binding QslViaCallsign}" Width="90"/>
+                <DataGridTextColumn x:Name="TimeOffColumn" Header="Time Off (UTC)" Binding="{Binding QsoDateTimeOffUtc, StringFormat='yyyy-MM-dd HH:mm'}" Width="140"/>
+                <DataGridTextColumn x:Name="StationColumn" Header="Station Callsign" Binding="{Binding StationCallsign}" Width="100"/>
+                <DataGridTextColumn x:Name="OperatorColumn" Header="Operator" Binding="{Binding OperatorCallsign}" Width="90"/>
+                <DataGridTextColumn x:Name="MyGridColumn" Header="My Grid" Binding="{Binding MyGridSquare}" Width="80"/>
+                <DataGridTextColumn x:Name="MyStateColumn" Header="My State" Binding="{Binding MyState}" Width="70"/>
+                <DataGridTextColumn x:Name="MyCountyColumn" Header="My County" Binding="{Binding MyCounty}" Width="100"/>
+                <DataGridTextColumn x:Name="NotesColumn" Header="Notes" Binding="{Binding Notes}" Width="160"/>
+                <DataGridTextColumn x:Name="CommentColumn" Header="Comment" Binding="{Binding Comment}" Width="*"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</UserControl>
