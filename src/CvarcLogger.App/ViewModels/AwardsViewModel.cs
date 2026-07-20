@@ -12,9 +12,14 @@ public partial class AwardsViewModel : ObservableObject
     [ObservableProperty] private WasProgress? wasProgress;
     [ObservableProperty] private bool isLoading;
 
-    public AwardsViewModel(IAwardsService awardsService)
+    public MountainGoatViewModel MountainGoat { get; }
+    public ParksOnTheAirViewModel ParksOnTheAir { get; }
+
+    public AwardsViewModel(IAwardsService awardsService, MountainGoatViewModel mountainGoat, ParksOnTheAirViewModel parksOnTheAir)
     {
         _awardsService = awardsService;
+        MountainGoat = mountainGoat;
+        ParksOnTheAir = parksOnTheAir;
     }
 
     [RelayCommand]
@@ -25,6 +30,8 @@ public partial class AwardsViewModel : ObservableObject
         {
             DxccProgress = await _awardsService.ComputeDxccProgressAsync();
             WasProgress = await _awardsService.ComputeWasProgressAsync();
+            await MountainGoat.LoadAsync();
+            await ParksOnTheAir.LoadAsync();
         }
         finally
         {

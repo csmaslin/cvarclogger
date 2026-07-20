@@ -1,0 +1,248 @@
+CvarcLogger Changelog
+======================
+One entry per published version. Add a new entry here every time AppVersion.Current is bumped for a
+build meant to reach the user (see AppVersion.cs) -- before running publish.ps1.
+
+Versions before 1.17 predate this changelog and are not documented here.
+
+1.35
+----
+- WSJT-X/GridTracker2-relayed QSOs now run the same online callsign lookup the manual entry form uses
+  before they're added to the log, backfilling Name, Grid Square, Country, State, County, City, ARRL
+  Section, and CQ/ITU Zone. Only fills fields WSJT-X left blank -- never overwrites data WSJT-X already
+  supplied (e.g. the grid square from the actual over-the-air exchange) with a possibly-stale lookup
+  value. Best-effort: a lookup miss never blocks logging the QSO.
+- Log grid row numbers now count chronologically -- the oldest QSO is always 1, the most recently logged
+  QSO always has the highest number -- regardless of how the grid is currently sorted or filtered. (The
+  row numbers previously just reflected the row's on-screen position, so they went backwards from the
+  grid's default newest-first display and changed unpredictably when sorting or searching.)
+- CAT: TX Power (W) now auto-fills live from the connected radio, alongside the existing
+  Frequency/Band/Mode auto-fill. Settings > Radio Control gained a "Max Power (W)" field per radio slot
+  -- CAT reports power as a 0.0-1.0 fraction of a rig's own max capability, not real watts, so this is
+  what turns that fraction into an estimated wattage. Defaults to 100W per radio; adjust it if the
+  displayed TX Power doesn't match your radio's own power readout (see the User Manual for how to
+  calibrate it against a real reading).
+- The entry form's CAT icon now swaps to a second image while CAT is connected, matching the existing
+  "Connect CAT"/"Disconnect CAT" button state.
+- publish.ps1: the published executable is no longer renamed with the version number -- it stays plain
+  CvarcLogger.exe. The version number still appears everywhere else it already did (window title,
+  CHANGELOG.txt, the manual, and the zip filename).
+
+1.34
+----
+- WSJT-X log receiving now expects WSJT-X's data relayed through GridTracker2 rather than direct from
+  WSJT-X: WSJT-X broadcasts to GridTracker2 (its own default port, 2237) as usual, and GridTracker2's
+  "Forward UDP messages" setting (General tab) relays the same message on to CVARC Logger on port 2238.
+  This sidesteps a real-world conflict discovered this release -- GridTracker2 commonly already occupies
+  WSJT-X's own broadcast port directly, so CVARC Logger listening there too meant only one of the two
+  programs would ever actually receive a packet (Windows delivers a shared UDP port's traffic to just one
+  bound listener, not both), with no error or warning on either side to explain why nothing was being
+  logged. Confirmed working end-to-end with real WSJT-X traffic.
+- GridTracker2's outbound broadcast port (for CVARC Logger's own logged/edited QSOs) changed to 2240 by
+  default, matching GridTracker2's "Receive ADIF UDP (Broadcasts for Logging)" setting (General tab)
+  rather than its generic default listener, which is already spoken for by the WSJT-X relay above.
+- Settings: the GridTracker2 checkbox is now labeled "Enable outbound log Broadcast to GridTracker2" for
+  clarity, distinguishing it from the separate inbound "Enable WSJT-X log receiving" checkbox.
+
+1.33
+----
+- Awards Progress > Mountain Goat (SOTA) tab: an unactivated summit's points now show in parentheses
+  (e.g. "(4)") to indicate what it would be worth once the 4-contact rule is actually met, and a new
+  "Summit Name" column shows each summit's official name (auto-resolved, including for summits added
+  before this column existed).
+- Awards Progress: new "Parks on the Air (POTA)" tab tracks progress toward POTA's activator award
+  tiers (Bronze 10, Silver 20, Gold 30, Platinum 40, Diamond 50, Ruby 100, Emerald 125 unique parks
+  activated), plus the separate Kilo award (1,000 cumulative QSOs at one park). A park counts as
+  activated once 10 different callsigns are logged from it (via the entry form's "My POTA" field) on
+  the same UTC date -- repeat contacts with the same station don't count toward the 10. Park names are
+  resolved automatically, live from POTA's own API where available, falling back to a bundled offline
+  park list otherwise.
+- Awards Progress: DXCC, WAS, Mountain Goat, and Parks on the Air tabs' grid columns now auto-size to
+  fit their content/header instead of using fixed pixel widths.
+- Awards Progress: added "Refresh Summit List" (Mountain Goat tab) and "Refresh Park Info" (Parks on
+  the Air tab) buttons for on-demand updates instead of waiting on SOTA's automatic 30-day cache
+  refresh. POTA has no bulk park export, so its refresh only re-checks parks already being tracked.
+- QSO Entry form: added OP, QTH, and TX Power fields (hidden by default, shown via the same Choose
+  Columns checkboxes as the form's other optional fields). OP/QTH default from the selected station
+  profile but can be overridden per QSO.
+
+1.32
+----
+- First launch (or any log with no station profile yet) now opens the Station Profiles window
+  automatically, before the main window appears, and requires a callsign and a valid UTC offset to be
+  saved before it can be closed -- the app can no longer be used without at least one station profile
+  on record. The first profile saved is auto-marked as the default.
+- Choose Columns window: banner recolored to medium blue with bold white text for better contrast
+  against the main program's darker blue banner. Station Callsign is now always shown, alongside
+  Callsign, and no longer appears as a removable entry in the column list; the remaining columns are
+  now sorted alphabetically A-Z instead of grid display order. The QSO entry form's own optional
+  fields (Freq, RST, Name, Grid, City, State, County, Country, ARRL Section, CQ/ITU Zone, SOTA/POTA,
+  Comment) now hide/show in step with these same checkboxes, so unchecking a column also removes its
+  input box from the entry form -- Callsign, Station, Date/Time, Local Time, Band, Mode, and Sub-Mode
+  are always shown regardless, since those are needed to log a QSO at all.
+- QSO log grid: alternating row shading (white/light gray) for easier scanning, and column headers
+  recolored to light blue.
+- QSO Entry form: added a small icon of a sitting orange-and-white tabby cat to the left of the
+  Connect CAT button.
+- Replaced the program's banner logo and window/taskbar icon with the club's AA6CV logo.
+- Awards Progress window: new "Mountain Goat (SOTA)" tab tracks progress toward SOTA's 1000-point
+  activator award. Add a summit code and its point value is looked up automatically from the official
+  SOTA summit list (cached locally, refreshed monthly). Any summit logged via the QSO entry form's "My
+  SOTA" field is picked up automatically too -- per SOTA's own rules, a summit only counts as activated
+  (points included in the running total) once at least 4 contacts have been logged from it on the same
+  UTC date; the date/time of the first contact is always shown regardless, so partial progress toward
+  that minimum is still visible.
+- Added a UDP listener (port 2237) that receives QSOs directly from WSJT-X's own "logged a QSO"
+  broadcast and adds them to the log automatically, toggleable via a new "Enable WSJT-X log receiving"
+  checkbox in Settings (Tools > Settings). Deliberately not forwarded to GridTracker2, to avoid
+  duplicate entries there for anyone whose WSJT-X is already set up to reach GridTracker directly.
+- State and ARRL Section now always save in capital letters, both on the QSO entry form and the Edit
+  QSO window -- typing lowercase is auto-uppercased as you type, and pasted values are uppercased too.
+
+1.31
+----
+- QSO Entry form: "Date/Time (UTC)" and "Local Time" now tick forward live (once per second) while the
+  form sits idle, instead of only updating when the form loads or right after logging a QSO -- makes it
+  obvious at a glance that the clock isn't stuck. Typing a manual/backdated time still works exactly as
+  before and stops the live tick for that entry; seconds are optional when typing by hand (stopping
+  after the minute digits is accepted, no need to type all the way through seconds).
+
+1.30
+----
+- QSO Entry form: restored the Comment field, which had gone missing from the input row (it was still
+  present on the Edit QSO window and in the database, but never made it back onto the entry form's
+  field list).
+- Station Profiles window: the default station profile is now shown in bold in the profile list, so
+  it's identifiable at a glance without opening each one.
+- Fixed a startup crash that could occur if the active log's saved location (from a previous "New
+  Log"/"Open Log" switch) pointed at a folder that no longer existed -- e.g. an old version's
+  publish folder cleaned up during an upgrade, or removable media that's no longer attached. The app
+  now falls back to the default log location and clears the stale setting automatically instead of
+  failing to start.
+
+1.29
+----
+- QSO Entry form: labels/fields/buttons now scale up proportionally as the main window is enlarged
+  (via a Viewbox), while the QSO log grid below keeps a fixed font so enlarging still just reveals
+  more rows, as before.
+- Edit QSO, Settings, and Station Profiles windows: same window-size-driven scaling applied to their
+  content (list/grid areas that show more items, like the Station Profiles list, stay fixed-size).
+- Settings window redesigned: font size increased to 14pt throughout, and the layout split into two
+  columns (lookup/credentials/GridTracker2 on the left, Radio Control on the right) so it fits at a
+  reasonable window size instead of requiring a very tall one.
+- User Manual: Radio Control (CAT) section now explains that the Radio (Hamlib) dropdown lists every
+  radio model that works with CvarcLogger, and that rigctld.exe does not need to be run manually when
+  "Launch rigctld automatically" is checked (the default).
+
+1.28
+----
+- QSO Entry form: added Date/Time (UTC) and Local Time fields for manual/retroactive logging, both
+  with input masks and kept in sync with each other (typing either one recomputes the other from the
+  selected station's UTC offset/DST). Local Time now seeds from the default station profile on load.
+  Fields reordered (Station, Callsign, Date/Time UTC, Local Time, Band, Freq, Mode, Sub-Mode, RST
+  Sent/Rcvd, Name, Grid, City, State, County, Country, ARRL Section, CQ/ITU Zone, My SOTA, SOTA, My
+  POTA, POTA) and font size bumped up across the form.
+- Edit QSO window: "Date/Time Off (UTC)" replaced with "Local Date/Time", auto-computed/synced with
+  Date/Time On (UTC) the same way as the entry form.
+- Added SOTA/POTA fields (My SOTA, SOTA, My POTA, POTA) throughout: QSO Entry form, Edit QSO window,
+  optional log grid columns, and ADIF import/export (MY_SOTA_REF/SOTA_REF/MY_SIG_INFO/SIG_INFO).
+- QSO log grid: column widths now persist across restarts, same as column visibility/order already did.
+- ADIF import/export overhauled for real ADIF 3.1.4 compliance:
+  - Fixed field-length encoding (was counting .NET characters, spec requires UTF-8 bytes) -- matters
+    for any accented/international name. Confirmed and fixed real corruption in an actual QRZ Logbook
+    export, including a defensive recovery for a field whose own declared length doesn't land on the
+    next real tag.
+  - QSL_SENT and QSL_RCVD now use their correct, distinct ADIF enumerations (Queued is Sent-only,
+    Verified is Rcvd-only -- previously shared one mapping that could write an invalid token).
+  - Band "1.2M" corrected to "1.25M" (ADIF's actual token for 222-225 MHz), including CAT auto-fill.
+  - Removed the synthetic "DATA" Mode bucket -- Mode/Sub-Mode now directly use ADIF's real vocabulary
+    (FT8, FT4, RTTY, PSK+PSK31, DIGITALVOICE+DMR/DSTAR). Existing QSOs still using the old scheme are
+    migrated automatically on next launch.
+
+1.27
+----
+- No app behavior changes. Version bump to produce a clean, fully verified publish.ps1 run (the 1.26
+  build was assembled from an interrupted publish session after Word's PDF export hung on a leftover
+  zombie COM process from earlier debugging).
+- publish.ps1's manual-PDF export now runs in a background job with a 90-second timeout, so a stuck
+  Word COM export can no longer hang the whole publish -- it clears any stray WINWORD process and
+  continues without the PDF instead.
+- User Manual updated to reference this version.
+
+1.26
+----
+- Main window banner now reads "Conejo Valley Amateur Radio Club Logger" instead of "CVARC LOGGER".
+- publish.ps1: output folder renamed from publish\win-x64 to publish\CvarcLogger, so the published zip
+  now contains a top-level "CvarcLogger" folder instead of "win-x64".
+- publish.ps1 now exports the User Manual (CvarcLogger User Manual.docx) to PDF via Word and includes
+  it in the published zip alongside CHANGELOG.txt. Requires Microsoft Word on the machine running
+  publish.ps1; publishing still succeeds without it if Word isn't installed, just without the PDF.
+
+1.25
+----
+- QSO log grid: Ctrl-right-click toggles a row into/out of a multi-selection, Shift-right-click
+  selects a range. The Delete button now deletes every selected QSO at once.
+- QSO log grid: Ctrl+C copies selected rows as tab-separated text; Ctrl+V reads tab-separated rows
+  back from the clipboard and logs them as new QSOs.
+
+1.24
+----
+- ADIF import now reads QRZ Logbook's own confirmation fields (APP_QRZLOG_STATUS/QSLDATE) instead of
+  relying on the standard QSL_RCVD tag, which QRZ exports leave blank/"N" even for confirmed contacts.
+  A QRZ export that showed 0 confirmed QSOs on import now correctly shows all of them.
+- Main window: banner logo and "CVARC LOGGER" title enlarged, and a "Program by W6CSM" credit added
+  to the bottom status bar (right-aligned).
+
+1.23
+----
+- Fixed a crash when editing a Station Profile and saving a second time in the same session (stale
+  database tracking from an earlier save).
+- Fixed ADIF import aborting partway through on files with DXCC entity codes our local table doesn't
+  recognize (e.g. QRZ Logbook exports) -- DXCC is now re-resolved from the callsign on import instead
+  of trusting the source file's number.
+- Removed the duplicate Comment/Notes field pair -- there is now one field, "Comment", mapped to
+  ADIF's COMMENT tag on both import and export (aligning with QRZ and most other loggers, which use
+  COMMENT rather than NOTES for this).
+- Added an input mask to every date/time field in the Edit QSO window so they can only be typed in
+  the app's yyyy-MM-dd[ HH:mm] format.
+- New databases are now created next to CvarcLogger.exe instead of in %LOCALAPPDATA%, so a portable
+  install carries its data with it. Existing installs keep using their current database untouched.
+- Main window: banner logo and title enlarged, and a "Program by W6CSM" credit added to the status
+  bar.
+----
+- Reduced published exe size (~1-2%) by trimming non-English resource DLLs pulled in by dependencies
+  (EF Core, Microsoft.Extensions.*). InvariantGlobalization was also tried but reverted -- it crashes
+  WPF's data-binding engine on startup, so it will not be attempted again.
+
+1.20
+----
+- QSO log grid now shows a line number on the left of each row.
+- QSO Entry form: pressing Return/Enter now logs the QSO, same as clicking "Log QSO".
+- QSO log grid columns can now be dragged into a new order, and that order is remembered across
+  restarts (same as column show/hide already was).
+
+1.19
+----
+- Added an app icon: the CVARC club logo, background made transparent and cropped tight so it fills
+  the icon frame. Set as the exe icon and the title-bar icon on every window.
+- Embedded the same logo into the main window's blue banner, next to the "CVARC LOGGER" title.
+
+1.18
+----
+- QSO log OP field now prefers the station profile's Operator Callsign (when set) over its free-text
+  OP name, so the more specific identifier wins when the operator differs from the station callsign.
+
+1.17
+----
+- Added "1.2M" band entry (222-225 MHz).
+- SSB Sub-Mode (USB/LSB): manual entry plus CAT auto-fill from rigctld's raw mode.
+- ARRL Section auto-derived from State/County on lookup.
+- Station Profiles: UTC Offset + Observes Daylight Saving Time fields, used to compute each QSO's
+  Local Time for display (denormalized onto the QSO at log time, like other station identity fields).
+- QSO Edit window: every QSO field is now editable and saved (Time Off, Freq Rx, Continent, TX Power,
+  QSL Via, QSL/LoTW dates, Notes, Station Callsign, Operator, My Grid/State/County, UTC Offset/DST).
+  Window is now resizable with a scroll area.
+- QSO Entry form layout: Lookup/Log QSO moved below ARRL Section/CQ Zone/ITU Zone; Connect CAT/Pause
+  auto-fill moved to the left of that row.
+- Added QTH and OP fields (Station Profile entry, QSO log/edit, optional log columns, ADIF round-trip).
+- Added a Close button to the Station Profiles window.

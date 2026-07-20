@@ -94,8 +94,11 @@ public class AwardsServiceTests : IDisposable
         });
     }
 
-    private AwardsService CreateService() =>
-        new(new QsoRepository(_db, new TestClock()), new DxccEntityRepository(_db));
+    private AwardsService CreateService()
+    {
+        var dxccRepository = new DxccEntityRepository(_db);
+        return new(new QsoRepository(_db, new TestClock()), dxccRepository, new CallsignEntityResolver(dxccRepository));
+    }
 
     private class TestClock : IClock
     {

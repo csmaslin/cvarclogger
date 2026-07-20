@@ -4,10 +4,16 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         mc:Ignorable="d"
-        Title="Choose Columns" Height="560" Width="280" WindowStartupLocation="CenterOwner"
+        Title="Choose Columns" Icon="/Assets/AppIcon.ico" Height="560" Width="280" WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize">
-    <DockPanel Margin="14">
-        <TextBlock DockPanel.Dock="Top" Text="Callsign and Date/Time (UTC) are always shown."
+    <DockPanel>
+        <Border DockPanel.Dock="Top" Background="MediumBlue" Padding="10,8">
+            <TextBlock Text="Choose Columns" FontSize="16" FontWeight="Bold" Foreground="White"
+                       HorizontalAlignment="Center"/>
+        </Border>
+
+        <DockPanel Margin="14">
+        <TextBlock DockPanel.Dock="Top" Text="Callsign and Station Callsign are always shown."
                    FontSize="11" Foreground="Gray" TextWrapping="Wrap" Margin="0,0,0,10"/>
         <Button DockPanel.Dock="Bottom" Content="Close" Click="Close_Click"
                 Padding="14,4" HorizontalAlignment="Right" Margin="0,10,0,0"/>
@@ -20,5 +26,6 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </ScrollViewer>
+        </DockPanel>
     </DockPanel>
 </Window>

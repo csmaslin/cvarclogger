@@ -36,6 +36,12 @@ public class SettingsService
         set { _data.LastUsedStationProfileId = value; Save(); }
     }
 
+    public string ProgramOwnership
+    {
+        get => _data.ProgramOwnership;
+        set { _data.ProgramOwnership = value; Save(); }
+    }
+
     public bool CatEnabled
     {
         get => _data.CatEnabled;
@@ -46,6 +52,36 @@ public class SettingsService
     {
         get => _data.LaunchRigctldAutomatically;
         set { _data.LaunchRigctldAutomatically = value; Save(); }
+    }
+
+    /// <summary>When enabled, each logged/edited QSO is broadcast as a single ADIF record over UDP so
+    /// companion apps like GridTracker2 can plot it on their map/grid-tracking in real time.</summary>
+    public bool GridTrackerEnabled
+    {
+        get => _data.GridTrackerEnabled;
+        set { _data.GridTrackerEnabled = value; Save(); }
+    }
+
+    public string GridTrackerHost
+    {
+        get => _data.GridTrackerHost;
+        set { _data.GridTrackerHost = value; Save(); }
+    }
+
+    public int GridTrackerPort
+    {
+        get => _data.GridTrackerPort;
+        set { _data.GridTrackerPort = value; Save(); }
+    }
+
+    /// <summary>When enabled, listens on port 2238 for WSJT-X's logged-QSO data as relayed by
+    /// GridTracker2's own "Forward UDP messages" feature (see WsjtxUdpListenerService for the full
+    /// topology and port-conflict history) and adds each one to the log automatically. Deliberately not
+    /// forwarded back to GridTracker2 -- see WsjtxUdpListenerService.</summary>
+    public bool WsjtxEnabled
+    {
+        get => _data.WsjtxEnabled;
+        set { _data.WsjtxEnabled = value; Save(); }
     }
 
     /// <summary>The stored path if it still points at a real file (respects an explicit user
@@ -90,6 +126,29 @@ public class SettingsService
 
     public void SaveHiddenLogColumns() => Save();
 
+    /// <summary>Saved display order for QSO log grid columns, keyed by column key with values being the
+    /// desired 0-based DisplayIndex. A column missing from this map (never reordered, or added in a
+    /// later app version) keeps its XAML-declared relative order and is placed after every column that
+    /// does have a saved position.</summary>
+    public IReadOnlyDictionary<string, int> LogColumnOrder => _data.LogColumnOrder;
+
+    public void SaveLogColumnOrder(IReadOnlyDictionary<string, int> order)
+    {
+        _data.LogColumnOrder = new Dictionary<string, int>(order, StringComparer.OrdinalIgnoreCase);
+        Save();
+    }
+
+    /// <summary>Saved pixel width for QSO log grid columns, keyed by column key. A column missing from
+    /// this map (never resized, or added in a later app version) keeps its XAML-declared default
+    /// width.</summary>
+    public IReadOnlyDictionary<string, double> LogColumnWidths => _data.LogColumnWidths;
+
+    public void SaveLogColumnWidths(IReadOnlyDictionary<string, double> widths)
+    {
+        _data.LogColumnWidths = new Dictionary<string, double>(widths, StringComparer.OrdinalIgnoreCase);
+        Save();
+    }
+
     /// <summary>Seeds a column's HiddenLogColumns membership from <paramref name="defaultVisible"/> the
     /// first time this key is ever seen for this settings file, then never touches it again — so a
     /// column added in a later app version starts hidden (or visible) as the code intends, without
@@ -102,9 +161,9 @@ public class SettingsService
         Save();
     }
 
-    /// <summary>Full path to the active QSO database, or null to use the default
-    /// (%LOCALAPPDATA%\CvarcLogger\cvarclogger.db). Switching this takes effect on next launch — the
-    /// DbContext's connection string is fixed for the process's lifetime.</summary>
+    /// <summary>Full path to the active QSO database, or null to use the default (see
+    /// DefaultDatabasePath). Switching this takes effect on next launch — the DbContext's connection
+    /// string is fixed for the process's lifetime.</summary>
     public string? CurrentDatabasePath
     {
         get => _data.CurrentDatabasePath;
@@ -117,18 +176,47 @@ public class SettingsService
     public static string ResolveActiveDatabasePath()
     {
         string settingsPath = Path.Combine(App.DataDirectory, "settings.json");
-        string defaultDbPath = Path.Combine(App.DataDirectory, "cvarclogger.db");
 
-        if (!File.Exists(settingsPath)) return defaultDbPath;
-        try
+        if (File.Exists(settingsPath))
         {
-            var data = JsonSerializer.Deserialize<AppSettingsData>(File.ReadAllText(settingsPath));
-            return !string.IsNullOrWhiteSpace(data?.CurrentDatabasePath) ? data.CurrentDatabasePath : defaultDbPath;
+            try
+            {
+                var data = JsonSerializer.Deserialize<AppSettingsData>(File.ReadAllText(settingsPath));
+                if (data is not null && !string.IsNullOrWhiteSpace(data.CurrentDatabasePath))
+                {
+                    string? dir = Path.GetDirectoryName(data.CurrentDatabasePath);
+                    if (!string.IsNullOrEmpty(dir) && Directory.Exists(dir)) return data.CurrentDatabasePath;
+
+                    // The folder that used to hold this log is gone -- most often an old app version's
+                    // install/publish folder that was since replaced or deleted, or removable media
+                    // that's no longer attached. Trusting this path would make SQLite fail to even
+                    // create the file (the parent directory doesn't exist), crashing the app before any
+                    // window can show. Clear it so future launches fall back to the default path instead
+                    // of repeating this failure forever.
+                    data.CurrentDatabasePath = null;
+                    try { File.WriteAllText(settingsPath, JsonSerializer.Serialize(data)); } catch { /* best-effort */ }
+                }
+            }
+            catch
+            {
+                // Fall through to the default below, same as a missing settings file.
+            }
         }
-        catch
-        {
-            return defaultDbPath;
-        }
+
+        return DefaultDatabasePath();
+    }
+
+    /// <summary>Where a brand-new database is created when nothing else has been chosen: next to the
+    /// exe, so a copied/portable install carries its data with it instead of scattering it into
+    /// %LOCALAPPDATA%. An install from before this changed keeps using its existing
+    /// %LOCALAPPDATA%\CVARC Logger\cvarclogger.db rather than silently starting a second, empty database
+    /// next to the exe.</summary>
+    private static string DefaultDatabasePath()
+    {
+        string legacyPath = Path.Combine(App.DataDirectory, "cvarclogger.db");
+        if (File.Exists(legacyPath)) return legacyPath;
+
+        return Path.Combine(AppContext.BaseDirectory, "cvarclogger.db");
     }
 
     private AppSettingsData Load()
@@ -173,12 +261,20 @@ public class SettingsService
     {
         public LookupServicePreference PreferredLookupService { get; set; } = LookupServicePreference.Callook;
         public int? LastUsedStationProfileId { get; set; }
+        public string ProgramOwnership { get; set; } = "Charles.S.Maslin";
         public string? CurrentDatabasePath { get; set; }
         public HashSet<string> HiddenLogColumns { get; set; } = new(StringComparer.OrdinalIgnoreCase);
         public HashSet<string> SeenLogColumnKeys { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, int> LogColumnOrder { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, double> LogColumnWidths { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
         public bool CatEnabled { get; set; }
         public bool LaunchRigctldAutomatically { get; set; } = true;
+
+        public bool GridTrackerEnabled { get; set; }
+        public string GridTrackerHost { get; set; } = "127.0.0.1";
+        public int GridTrackerPort { get; set; } = 2240;
+        public bool WsjtxEnabled { get; set; }
         public string RigctldExecutablePath { get; set; } = ResolveDefaultRigctldPath();
         public int RigctldTcpPort { get; set; } = 4532;
         public int ActiveRadioIndex { get; set; }

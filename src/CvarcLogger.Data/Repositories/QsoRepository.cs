@@ -27,14 +27,32 @@ public class QsoRepository : IQsoRepository
         qso.ModifiedAtUtc = _clock.UtcNow;
         _db.Qsos.Add(qso);
         await _db.SaveChangesAsync(ct).ConfigureAwait(false);
+
+        // Detach so this instance doesn't linger tracked for the rest of the app session -- a later
+        // UpdateAsync on a fresh (AsNoTracking) copy of this same QSO would otherwise conflict with it.
+        _db.Entry(qso).State = EntityState.Detached;
         return qso;
     }
 
     public async Task UpdateAsync(Qso qso, CancellationToken ct = default)
     {
         qso.ModifiedAtUtc = _clock.UtcNow;
+
+        // The QSO passed in is almost always a fresh instance from an AsNoTracking() query, but this
+        // repository's DbContext is a single long-lived instance for the whole app session -- an
+        // earlier UpdateAsync call (e.g. the awards DXCC backfill) may still have a *different* instance
+        // for this same Id attached. EF throws if we attach a second instance with the same key, so
+        // detach any stale entry first.
+        var staleEntry = _db.ChangeTracker.Entries<Qso>()
+            .FirstOrDefault(e => e.Entity.Id == qso.Id && !ReferenceEquals(e.Entity, qso));
+        if (staleEntry is not null) staleEntry.State = EntityState.Detached;
+
         _db.Qsos.Update(qso);
         await _db.SaveChangesAsync(ct).ConfigureAwait(false);
+
+        // Detach afterward too, so this instance doesn't linger and cause the same conflict for the
+        // next caller that fetches a fresh copy of this QSO.
+        _db.Entry(qso).State = EntityState.Detached;
     }
 
     public async Task DeleteAsync(int id, CancellationToken ct = default)

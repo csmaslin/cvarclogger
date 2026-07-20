@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage
+    x:Class="CvarcCellLog.Pages.QsoLogPage"
+    x:Name="Root"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:models="clr-namespace:CvarcLogger.Core.Models;assembly=CvarcLogger.Core"
+    xmlns:vm="clr-namespace:CvarcCellLog.ViewModels"
+    x:DataType="vm:QsoLogViewModel"
+    Title="QSO Log">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="New QSO" Clicked="OnNewQsoClicked" />
+    </ContentPage.ToolbarItems>
+
+    <Grid RowDefinitions="Auto,*" Padding="12">
+
+        <SearchBar Grid.Row="0"
+                   Placeholder="Search callsign, name, grid, city"
+                   Text="{Binding SearchText}" />
+
+        <CollectionView Grid.Row="1" ItemsSource="{Binding Qsos}">
+
+            <CollectionView.EmptyView>
+                <Label Text="No QSOs yet." HorizontalOptions="Center" VerticalOptions="Center" />
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:Qso">
+                    <SwipeView>
+                        <SwipeView.RightItems>
+                            <SwipeItems>
+                                <SwipeItem Text="Delete"
+                                           BackgroundColor="#C0392B"
+                                           Command="{Binding BindingContext.DeleteCommand, Source={x:Reference Root}}"
+                                           CommandParameter="{Binding .}" />
+                            </SwipeItems>
+                        </SwipeView.RightItems>
+
+                        <Grid Padding="12,10" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+                            <Label Grid.Row="0" Grid.Column="0" Text="{Binding Callsign}" FontAttributes="Bold" FontSize="16" />
+                            <Label Grid.Row="0" Grid.Column="1" Text="{Binding LocalDateTimeOn, StringFormat='{0:g}'}" FontSize="12" />
+                            <Label Grid.Row="1" Grid.Column="0" Text="{Binding Name}" FontSize="13" TextColor="Gray" />
+                            <Label Grid.Row="1" Grid.Column="1">
+                                <Label.FormattedText>
+                                    <FormattedString>
+                                        <Span Text="{Binding Band}" />
+                                        <Span Text=" / " />
+                                        <Span Text="{Binding Mode}" />
+                                    </FormattedString>
+                                </Label.FormattedText>
+                            </Label>
+                        </Grid>
+                    </SwipeView>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+        </CollectionView>
+    </Grid>
+
+</ContentPage>

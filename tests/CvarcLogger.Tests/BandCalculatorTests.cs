@@ -17,6 +17,8 @@ public class BandCalculatorTests
     [InlineData(29.7, "10m")]
     [InlineData(50.0, "6m")]
     [InlineData(144.0, "2m")]
+    [InlineData(222.0, "1.25M")]
+    [InlineData(225.0, "1.25M")]
     [InlineData(420.0, "70cm")]
     public void FromFrequencyMhz_ReturnsExpectedBand(double freq, string expectedBand)
     {

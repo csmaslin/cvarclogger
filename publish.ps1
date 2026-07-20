@@ -1,4 +1,4 @@
-# Builds a self-contained, single-file CvarcLogger.exe that can be copied to any 64-bit Windows 11
+# Builds a self-contained, single-file CvarcLogger.exe that can be copied to any 64-bit Windows 10/11
 # machine and run directly -- no .NET runtime install required on the target machine.
 # Note: Hamlib (rigctld.exe) is still a separate install on each machine that needs CAT control.
 
@@ -6,7 +6,15 @@ $ErrorActionPreference = "Stop"
 
 $root = $PSScriptRoot
 $project = Join-Path $root "src\CvarcLogger.App\CvarcLogger.App.csproj"
-$outDir = Join-Path $root "publish\win-x64"
+$outDir = Join-Path $root "publish\CvarcLogger"
+$appVersionFile = Join-Path $root "src\CvarcLogger.App\AppVersion.cs"
+$changelogFile = Join-Path $root "src\CvarcLogger.App\CHANGELOG.txt"
+$manualFile = Join-Path $root "CvarcLogger User Manual.docx"
+$overviewFile = Join-Path $root "Program Overview and Data Flow.md"
+
+$versionMatch = Select-String -Path $appVersionFile -Pattern 'Current\s*=\s*"([\d.]+)"'
+if (-not $versionMatch) { throw "Could not read AppVersion.Current from $appVersionFile" }
+$version = $versionMatch.Matches[0].Groups[1].Value
 
 if (Test-Path $outDir) { Remove-Item $outDir -Recurse -Force }
 
@@ -21,8 +29,56 @@ dotnet publish $project `
 
 if ($LASTEXITCODE -ne 0) { throw "dotnet publish failed with exit code $LASTEXITCODE" }
 
-$exe = Join-Path $outDir "CvarcLogger.App.exe"
+$exe = Join-Path $outDir "CvarcLogger.exe"
+
+if (Test-Path $changelogFile) {
+    Copy-Item -Path $changelogFile -Destination $outDir -Force
+} else {
+    Write-Warning "CHANGELOG.txt not found at $changelogFile -- publishing without it."
+}
+
+if (Test-Path $overviewFile) {
+    Copy-Item -Path $overviewFile -Destination $outDir -Force
+} else {
+    Write-Warning "Program Overview and Data Flow.md not found at $overviewFile -- publishing without it."
+}
+
+# Export the User Manual (docx) to PDF and include it alongside the exe, so a copied install carries
+# its own documentation. Uses LibreOffice headless conversion rather than driving Word via COM --
+# Word automation proved unreliable here (hangs on a stuck print-spooler job or a zombie WINWORD
+# process, see project_word_com_automation_environment memory), while soffice --headless converts
+# directly with no dependency on the print pipeline or a running GUI app. Best-effort -- a machine
+# without LibreOffice installed still gets a usable publish, just without the manual. Guarded with a
+# timeout regardless, since any external process call in an unattended script should have one.
+$sofficeExe = "C:\Program Files\LibreOffice\program\soffice.exe"
+if ((Test-Path $manualFile) -and (Test-Path $sofficeExe)) {
+    $manualPdf = Join-Path $outDir "CvarcLogger User Manual.pdf"
+
+    $exportProcess = Start-Process -FilePath $sofficeExe `
+        -ArgumentList @("--headless", "--convert-to", "pdf", "--outdir", "`"$outDir`"", "`"$manualFile`"") `
+        -PassThru -WindowStyle Hidden
+
+    $finished = $exportProcess.WaitForExit(60000)
+    if ($finished -and (Test-Path $manualPdf)) {
+        Write-Host "Included manual PDF: $manualPdf"
+    } else {
+        Write-Warning "Could not export the User Manual to PDF within 60s -- publishing without it."
+        if (-not $exportProcess.HasExited) { Stop-Process -Id $exportProcess.Id -Force -ErrorAction SilentlyContinue }
+    }
+} elseif (Test-Path $manualFile) {
+    Write-Warning "LibreOffice not found at $sofficeExe -- publishing without the manual PDF."
+} else {
+    Write-Warning "User manual not found at $manualFile -- publishing without it."
+}
+
 $sizeMb = [math]::Round((Get-Item $exe).Length / 1MB, 1)
 Write-Host ""
 Write-Host "Published: $exe ($sizeMb MB)"
-Write-Host "Copy that one file to another 64-bit Windows 11 machine and run it directly."
+
+# Every published build gets zipped for export -- see CHANGELOG.txt inside the zip for what changed.
+$zipPath = Join-Path $root "publish\CvarcLogger.V$version.zip"
+if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
+Compress-Archive -Path $outDir -DestinationPath $zipPath -Force
+$zipSizeMb = [math]::Round((Get-Item $zipPath).Length / 1MB, 1)
+Write-Host "Zipped: $zipPath ($zipSizeMb MB)"
+Write-Host "Copy that one file to another 64-bit Windows 10/11 machine and run it directly."

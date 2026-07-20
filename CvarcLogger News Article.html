@@ -1,0 +1,391 @@
+<title>Meet CVARC Logger: A New Logging Program for Everyday QSOs, SOTA, and POTA Alike</title>
+
+<style>
+  :root {
+    --panel: #ede9e0;
+    --panel-raised: #f5f2ea;
+    --ink: #22262a;
+    --ink-soft: #565b56;
+    --amber: #b8701f;
+    --amber-strong: #96591a;
+    --signal: #3f7a5c;
+    --line: rgba(34, 38, 42, 0.14);
+    --line-strong: rgba(34, 38, 42, 0.28);
+
+    --font-serif: Georgia, 'Iowan Old Style', 'Palatino Linotype', 'Times New Roman', serif;
+    --font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', 'Consolas', 'Liberation Mono', monospace;
+  }
+
+  :root[data-theme="dark"] {
+    --panel: #1a2023;
+    --panel-raised: #20272a;
+    --ink: #e8e5dd;
+    --ink-soft: #a9ada5;
+    --amber: #e0a24f;
+    --amber-strong: #eeb668;
+    --signal: #6fbb95;
+    --line: rgba(232, 229, 221, 0.16);
+    --line-strong: rgba(232, 229, 221, 0.3);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --panel: #1a2023;
+      --panel-raised: #20272a;
+      --ink: #e8e5dd;
+      --ink-soft: #a9ada5;
+      --amber: #e0a24f;
+      --amber-strong: #eeb668;
+      --signal: #6fbb95;
+      --line: rgba(232, 229, 221, 0.16);
+      --line-strong: rgba(232, 229, 221, 0.3);
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--panel);
+    color: var(--ink);
+    font-family: var(--font-serif);
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 56px 24px 80px;
+  }
+
+  /* ---------- Masthead ---------- */
+
+  .eyebrow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--amber-strong);
+    border-top: 2px solid var(--ink);
+    border-bottom: 1px solid var(--line-strong);
+    padding: 8px 0;
+    margin-bottom: 28px;
+  }
+
+  .eyebrow span:last-child { color: var(--ink-soft); letter-spacing: 0.08em; }
+
+  h1.headline {
+    font-size: clamp(32px, 5vw, 46px);
+    line-height: 1.08;
+    font-weight: 700;
+    margin: 0 0 14px;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+
+  .dek {
+    font-size: 19px;
+    line-height: 1.45;
+    color: var(--ink-soft);
+    margin: 0 0 20px;
+    text-wrap: balance;
+    max-width: 62ch;
+  }
+
+  .byline-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 18px;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 18px;
+    margin-bottom: 32px;
+  }
+
+  .byline-row strong { color: var(--ink); font-weight: 600; }
+
+  /* ---------- Article body ---------- */
+
+  article {
+    font-size: 17.5px;
+    line-height: 1.65;
+    max-width: 65ch;
+  }
+
+  .lede {
+    font-size: 20px;
+    line-height: 1.55;
+    margin: 0 0 26px;
+  }
+
+  .lede::first-letter {
+    font-size: 3.4em;
+    line-height: 0.85;
+    float: left;
+    padding: 4px 8px 0 0;
+    font-weight: 700;
+    color: var(--amber);
+  }
+
+  article p { margin: 0 0 20px; }
+
+  article h2 {
+    font-size: 24px;
+    margin: 40px 0 14px;
+    letter-spacing: -0.005em;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 8px;
+  }
+
+  article strong { font-weight: 700; }
+
+  .callout {
+    margin: 28px 0;
+    padding: 18px 22px;
+    background: var(--panel-raised);
+    border-left: 3px solid var(--amber);
+    font-size: 16.5px;
+    line-height: 1.6;
+    color: var(--ink);
+  }
+
+  .callout .tag {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--signal);
+    margin-bottom: 8px;
+  }
+
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.88em;
+    background: var(--panel-raised);
+    padding: 0.1em 0.4em;
+    border-radius: 2px;
+  }
+
+  /* ---------- Spec plate sidebar ---------- */
+
+  .plate {
+    float: right;
+    width: 240px;
+    margin: 6px 0 24px 28px;
+    border: 1px solid var(--line-strong);
+    background: var(--panel-raised);
+  }
+
+  .plate-header {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--panel);
+    background: var(--ink);
+    padding: 7px 12px;
+  }
+
+  .plate dl {
+    margin: 0;
+    padding: 12px 14px 14px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 9px 10px;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+  }
+
+  .plate dt { color: var(--ink-soft); white-space: nowrap; }
+  .plate dd {
+    margin: 0;
+    text-align: right;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .plate dd.hi { color: var(--signal); font-weight: 600; }
+
+  @media (max-width: 560px) {
+    .plate { float: none; width: 100%; margin: 0 0 24px; }
+  }
+
+  /* ---------- Feature list ---------- */
+
+  .features {
+    list-style: none;
+    margin: 0 0 20px;
+    padding: 0;
+    display: grid;
+    gap: 14px;
+  }
+
+  .features li {
+    display: grid;
+    grid-template-columns: 92px 1fr;
+    gap: 14px;
+    align-items: baseline;
+  }
+
+  .features .k {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--signal);
+  }
+
+  .features .v { font-size: 16.5px; line-height: 1.5; }
+
+  /* ---------- Beta tester roster ---------- */
+
+  .roster {
+    list-style: none;
+    margin: 16px 0 0;
+    padding: 0;
+    display: grid;
+    gap: 8px;
+  }
+
+  .roster li {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    border-bottom: 1px dotted var(--line-strong);
+    padding-bottom: 6px;
+  }
+
+  .roster .call { color: var(--signal); font-weight: 600; }
+
+  /* ---------- Footer / colophon ---------- */
+
+  .signal-wave {
+    display: block;
+    width: 100%;
+    height: 28px;
+    margin: 52px 0 18px;
+    opacity: 0.55;
+  }
+  .signal-wave path { fill: none; stroke: var(--ink-soft); stroke-width: 1.4; }
+
+  footer {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    letter-spacing: 0.03em;
+    line-height: 1.7;
+    border-top: 1px solid var(--line);
+    padding-top: 16px;
+  }
+
+  footer .grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 8px;
+  }
+</style>
+
+<div class="page">
+
+  <div class="eyebrow">
+    <span>CVARC Club Bulletin</span>
+    <span>Software &amp; Station Notes</span>
+  </div>
+
+  <h1 class="headline">Meet CVARC Logger: A New Logging Program for Everyday QSOs, SOTA, and POTA Alike</h1>
+  <p class="dek">CvarcLogger, the club's own homegrown contact-logging program, is built to handle an ordinary, everyday QSO just as capably as a SOTA summit activation or a POTA park activation — and version 1.34, out this week, sharpens exactly that versatility, alongside a real-world fix to how it talks to WSJT-X and GridTracker2.</p>
+
+  <div class="byline-row">
+    <span>By the CVARC Technical Desk</span>
+    <span>Conejo Valley, CA</span>
+    <span>19 July 2026</span>
+  </div>
+
+  <article>
+    <div class="plate">
+      <div class="plate-header">At a Glance</div>
+      <dl>
+        <dt>Program</dt><dd>CvarcLogger</dd>
+        <dt>Version</dt><dd class="hi">1.34</dd>
+        <dt>Author</dt><dd>W6CSM</dd>
+        <dt>Club Callsign</dt><dd>AA6CV</dd>
+        <dt>Platform</dt><dd>Windows 10/11</dd>
+        <dt>Runtime</dt><dd>.NET 9 / WPF</dd>
+        <dt>QSOs Logged</dt><dd class="hi">5,677 (W6CSM)</dd>
+        <dt>Awards Tracked</dt><dd>DXCC, WAS, SOTA, POTA</dd>
+        <dt>Rig Control</dt><dd>Hamlib</dd>
+        <dt>In Progress</dt><dd>CvarcCellLog</dd>
+      </dl>
+    </div>
+
+    <p class="lede">CvarcLogger is a new logging program, built from the ground up in-house rather than bought off the shelf — but "new" doesn't mean narrow. The same program that logs a routine ragchew on 20 meters also tracks a SOTA summit activation or a POTA park activation automatically, with no separate spreadsheet or website tab required. More than 5,600 contacts now sit in the shared log, entered field-by-field, band-by-band, by members running CvarcLogger day to day. Version 1.34, out this week, adds nothing flashy on the surface, but fixes a real-world snag in how CvarcLogger, WSJT-X, and GridTracker2 share the airwaves together.</p>
+
+    <p>Those 5,600-plus contacts all come from one place: the personal station log of CVARC Technical Director Charles S. Maslin, W6CSM, who wrote CvarcLogger and has been running his own day-to-day logging through it since early development. Station profiles, DXCC lookups, and the rest of CvarcLogger's feature set are designed around individual operation, and can be switched at any time to reflect operation under the club's shared callsign, <strong>AA6CV</strong>, even as the log's current contents still reflect one member's individual history. Log a contact and the software does the busywork a paper logbook never could: it resolves the DXCC entity, CQ zone, and ITU zone straight from the callsign and grid square, keeps UTC and local time in sync for late or backdated entries, and — when a radio is connected over Hamlib — pulls frequency, band, and mode straight off the rig as you tune.</p>
+
+    <h2>What CvarcLogger Does</h2>
+    <p>At its core, CvarcLogger is built for fast, in-the-chair logging: type a callsign, click Lookup (or just log the contact — the lookup runs automatically either way), and the operator's name, grid square, city, state, county, and country fill in from Callook.info, QRZ.com, or QRZCQ.com, whichever the station has configured. ARRL Section is derived automatically from state and county rather than looked up separately, and CQ/ITU zone resolve from the grid square itself, which matters for split-zone countries like the United States. Every field on the entry form — RST, name, grid, location, ARRL Section, zones, SOTA/POTA references, operator, QTH, transmit power, and a free-text comment — can be shown or hidden to match how an operator actually works, and the choice is remembered between sessions.</p>
+
+    <ul class="features">
+      <li><span class="k">Zones</span><span class="v">DXCC, CQ, and ITU zones auto-resolve from callsign and grid square — no lookup tables to consult by hand.</span></li>
+      <li><span class="k">Rig link</span><span class="v">Live CAT control over Hamlib keeps frequency, band, and mode following the radio automatically.</span></li>
+      <li><span class="k">Digital modes</span><span class="v">WSJT-X can hand logged QSOs straight to CvarcLogger over UDP, no manual ADIF import required.</span></li>
+      <li><span class="k">Live map</span><span class="v">Optional GridTracker2 broadcast puts every new contact on the map the moment it's logged.</span></li>
+      <li><span class="k">Records</span><span class="v">Full ADIF import/export keeps the log portable and compatible with everything else in the shack.</span></li>
+    </ul>
+
+    <h2>Now Tracking Four Awards, Not Two</h2>
+    <p>Awards Progress — one window, opened from the View menu — has quietly become the most feature-dense corner of the program. DXCC and Worked All States were there from early on, each entity or state checked off automatically as contacts land in the log, worked and confirmed counted separately. A recent update added two more tabs built around the same idea: no separate spreadsheet, no manual tally, just whatever is already in the log.</p>
+
+    <p>The new <strong>Mountain Goat (SOTA)</strong> tab tracks progress toward SOTA's 1,000-point activator award. Add a summit code and its point value and official name are looked up automatically; log a contact with the summit entered in the entry form's My SOTA field and the tracker picks it up on its own. SOTA's real rule — that an activation only counts once at least four contacts are logged from the summit on the same UTC date — is enforced automatically, with an unqualified summit's points shown in parentheses, like <code>(4)</code>, so an operator can see at a glance what a summit would be worth once the fourth contact comes in.</p>
+
+    <p>The new <strong>Parks on the Air (POTA)</strong> tab works the same way for park activations, tracking progress toward POTA's tiered activator awards — Bronze at 10 parks, climbing through Silver, Gold, Platinum, Diamond, Ruby, and Emerald at 125 — plus the separate Kilo award for 1,000 cumulative contacts logged at a single park. A park counts as activated once ten different stations have been worked from it on the same UTC date. Park names resolve live from POTA's own public API where a connection is available, falling back to a bundled offline park directory of more than 93,000 locations worldwide when it isn't.</p>
+
+    <div class="callout">
+      <span class="tag">Calling all activators</span>
+      CvarcLogger's SOTA and POTA tracking is brand new, and the club is looking for a few more members who actually get out and activate — summits, parks, or both — to put it through its paces before a wider release. If that's you, the Technical Desk wants to hear from you.
+    </div>
+
+    <h2>When Two Programs Want the Same Port</h2>
+    <p>Version 1.34's fix started with a familiar troubleshooting moment: WSJT-X was logging contacts, CvarcLogger's WSJT-X receiver was enabled, and nothing was showing up. No error, no warning — just silence. The cause turned out to be a real-world collision rather than a bug in the usual sense: GridTracker2 was already listening on the same network port WSJT-X broadcasts to, and Windows will only ever deliver a given UDP packet to one of two programs sharing a port, never both. CvarcLogger's receiver was bound, healthy, and simply never handed a single packet.</p>
+
+    <p>The fix leans on a feature GridTracker2 already had: its own "Forward UDP messages" relay. WSJT-X still broadcasts to GridTracker2 exactly as before; GridTracker2 logs the contact for its own map, then forwards the same message on to CvarcLogger on a separate port. CvarcLogger's own outbound broadcast to GridTracker2 (for QSOs typed in directly) got a dedicated port too, matching GridTracker2's "Receive ADIF UDP (Broadcasts for Logging)" setting. Both directions are now confirmed working with real WSJT-X traffic, not just a hand-built test packet.</p>
+
+    <h2>Meet the Beta Team</h2>
+    <p>CvarcLogger 1.34 continues to ship first to a small in-house testing group rather than the full club roster, the same stress-testing approach that's caught real bugs before every release so far. The current roster:</p>
+
+    <ul class="roster">
+      <li><span>Norm</span><span class="call">AB6ET</span></li>
+      <li><span>Greg</span><span class="call">K7SDW</span></li>
+      <li><span>Keith Elliot</span><span class="call">W6KME</span></li>
+      <li><span>Rob</span><span class="call">W6RH</span></li>
+    </ul>
+
+    <p>Members who regularly chase summits or parks, and would be willing to log a few activations through CvarcLogger and report back what does and doesn't work, should reach out to the Technical Desk to join the group.</p>
+
+    <h2>Next Up: The Log Goes Mobile</h2>
+    <p>Work is already underway on <strong>CvarcCellLog</strong>, an Android counterpart built with .NET MAUI that shares CvarcLogger's data and logging engine unchanged. Early builds already boot, migrate the database, and log a contact from a phone-sized card list — the groundwork for logging a QSO from the field, a summit activation, or a park bench, with the same log that's waiting back at the home station. CAT control and full ADIF tools are planned for later milestones; the first release is aimed squarely at the basics: log it, search it, edit it.</p>
+
+    <p>CvarcLogger 1.34 arrives as a single-file download for 64-bit Windows — no installer, no dependencies beyond what's already bundled in — and the changelog, as always, ships in the box.</p>
+  </article>
+
+  <svg class="signal-wave" viewBox="0 0 700 28" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0,14 L60,14 L72,4 L84,24 L96,14 L160,14 L172,8 L184,20 L196,14 L260,14 L272,2 L284,26 L296,14 L360,14 L372,6 L384,22 L396,14 L460,14 L472,4 L484,24 L496,14 L560,14 L572,8 L584,20 L596,14 L700,14" />
+  </svg>
+
+  <footer>
+    <div class="grid">
+      <span>CvarcLogger v1.34 &middot; AA6CV &middot; Conejo Valley Amateur Radio Club</span>
+      <span>Program by Charles S. Maslin, W6CSM &mdash; CVARC Technical Director</span>
+    </div>
+  </footer>
+
+</div>

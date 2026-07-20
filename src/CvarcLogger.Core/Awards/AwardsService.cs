@@ -18,11 +18,13 @@ public class AwardsService : IAwardsService
 
     private readonly IQsoRepository _qsoRepository;
     private readonly IDxccEntityRepository _dxccRepository;
+    private readonly ICallsignEntityResolver _entityResolver;
 
-    public AwardsService(IQsoRepository qsoRepository, IDxccEntityRepository dxccRepository)
+    public AwardsService(IQsoRepository qsoRepository, IDxccEntityRepository dxccRepository, ICallsignEntityResolver entityResolver)
     {
         _qsoRepository = qsoRepository;
         _dxccRepository = dxccRepository;
+        _entityResolver = entityResolver;
     }
 
     public async Task<DxccProgress> ComputeDxccProgressAsync(AwardsFilter? filter = null, CancellationToken ct = default)
@@ -75,6 +77,8 @@ public class AwardsService : IAwardsService
     private async Task<List<Qso>> GetFilteredQsosAsync(AwardsFilter? filter, CancellationToken ct)
     {
         var qsos = await _qsoRepository.GetAllAsync(ct).ConfigureAwait(false);
+        await BackfillMissingDxccEntitiesAsync(qsos, ct).ConfigureAwait(false);
+
         if (filter is null) return qsos;
 
         IEnumerable<Qso> result = qsos;
@@ -83,6 +87,27 @@ public class AwardsService : IAwardsService
         if (!string.IsNullOrWhiteSpace(filter.Mode))
             result = result.Where(q => string.Equals(q.Mode, filter.Mode, StringComparison.OrdinalIgnoreCase));
         return result.ToList();
+    }
+
+    /// <summary>QSOs logged before entity resolution existed, or imported from ADIF without a DXCC tag,
+    /// are left with a null DxccEntityCode and silently drop out of both the DXCC and WAS award tallies.
+    /// Resolve and persist those on the fly whenever awards are computed, skipping any QSO the user has
+    /// manually corrected (DxccEntityOverride) so this never clobbers a deliberate fix.</summary>
+    private async Task BackfillMissingDxccEntitiesAsync(List<Qso> qsos, CancellationToken ct)
+    {
+        foreach (var qso in qsos)
+        {
+            if (qso.DxccEntityCode.HasValue || qso.DxccEntityOverride) continue;
+
+            var resolved = await _entityResolver.ResolveAsync(qso.Callsign, ct).ConfigureAwait(false);
+            if (resolved is null) continue;
+
+            qso.DxccEntityCode = resolved.EntityCode;
+            qso.Continent ??= resolved.Continent;
+            qso.CqZone ??= resolved.CqZone;
+            qso.ItuZone ??= resolved.ItuZone;
+            await _qsoRepository.UpdateAsync(qso, ct).ConfigureAwait(false);
+        }
     }
 
     private static bool IsConfirmed(Qso q) =>

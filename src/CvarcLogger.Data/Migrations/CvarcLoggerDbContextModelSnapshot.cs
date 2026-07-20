@@ -48,6 +48,36 @@ namespace CvarcLogger.Data.Migrations
                     b.ToTable("DxccEntities");
                 });
 
+            modelBuilder.Entity("CvarcLogger.Core.Models.PotaActivation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("Activated")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("ActivationDateUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ParkName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ParkReference")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("TotalQsoCount")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PotaActivations");
+                });
+
             modelBuilder.Entity("CvarcLogger.Core.Models.PrefixMapping", b =>
                 {
                     b.Property<int>("Id")
@@ -166,13 +196,22 @@ namespace CvarcLogger.Data.Migrations
                     b.Property<string>("MyGridSquare")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("MySigInfo")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("MySotaRef")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("MyState")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Notes")
+                    b.Property<bool>("ObservesDaylightSavingTime")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Op")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("OperatorCallsign")
@@ -203,10 +242,19 @@ namespace CvarcLogger.Data.Migrations
                     b.Property<DateTime>("QsoDateTimeOnUtc")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Qth")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("RstRcvd")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("RstSent")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SigInfo")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SotaRef")
                         .HasColumnType("TEXT");
 
                     b.Property<int?>("SrxSerial")
@@ -232,6 +280,9 @@ namespace CvarcLogger.Data.Migrations
                     b.Property<decimal?>("TxPowerWatts")
                         .HasColumnType("TEXT");
 
+                    b.Property<decimal?>("UtcOffsetHours")
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Callsign");
@@ -243,6 +294,36 @@ namespace CvarcLogger.Data.Migrations
                     b.HasIndex("StationProfileId");
 
                     b.ToTable("Qsos");
+                });
+
+            modelBuilder.Entity("CvarcLogger.Core.Models.SotaActivation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("Activated")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("ActivationDateUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Points")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("SummitCode")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SummitName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SotaActivations");
                 });
 
             modelBuilder.Entity("CvarcLogger.Core.Models.StationProfile", b =>
@@ -271,7 +352,19 @@ namespace CvarcLogger.Data.Migrations
                     b.Property<string>("Notes")
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("ObservesDaylightSavingTime")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Op")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("OperatorCallsign")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Qth")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("UtcOffsetHours")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");

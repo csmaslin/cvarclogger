@@ -1,3 +1,5 @@
+using System.Text;
+
 namespace CvarcLogger.Core.Adif;
 
 public static class AdifWriter
@@ -27,8 +29,15 @@ public static class AdifWriter
         }
     }
 
+    /// <summary>ADIF's &lt;FIELD:LENGTH&gt; length is defined in bytes, not .NET characters -- matters for
+    /// any non-ASCII UTF-8 content (e.g. an accented name), where a character can take 2-4 bytes. Using
+    /// value.Length (a UTF-16 code unit count) would under-count for such values and desync every field
+    /// that follows for any ADIF reader that treats the length as bytes -- the de facto convention across
+    /// the ADIF ecosystem (WSJT-X, QRZ, N1MM, DXKeeper, etc.), even though ADIF 3.1.4's own String data
+    /// type is nominally ASCII-only.</summary>
     private static void WriteTag(TextWriter writer, string name, string value)
     {
-        writer.Write($"<{name.ToUpperInvariant()}:{value.Length}>{value}");
+        int byteLength = Encoding.UTF8.GetByteCount(value);
+        writer.Write($"<{name.ToUpperInvariant()}:{byteLength}>{value}");
     }
 }

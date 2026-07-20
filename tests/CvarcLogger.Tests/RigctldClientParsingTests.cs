@@ -8,7 +8,7 @@ public class RigctldClientParsingTests
     [Fact]
     public async Task Poll_HappyPath_ParsesFrequencyModeAndBand()
     {
-        var transport = new FakeRigctldTransport(new[] { "14250000.000000", "USB", "2400" });
+        var transport = new FakeRigctldTransport(new[] { "14250000.000000", "USB", "2400", "0.500000" });
         var client = new RigctldClient(transport);
         await client.ConnectAsync("127.0.0.1", 4532);
 
@@ -18,7 +18,24 @@ public class RigctldClientParsingTests
         Assert.Equal(14.25m, result.FrequencyMhz);
         Assert.Equal("USB", result.RawMode);
         Assert.Equal("SSB", result.MappedMode);
+        Assert.Equal("USB", result.SubMode);
         Assert.Equal("20m", result.Band);
+        Assert.Equal(0.5m, result.PowerFraction);
+    }
+
+    [Fact]
+    public async Task Poll_RfpowerUnsupportedByRig_StillSucceedsWithoutPowerFraction()
+    {
+        // A rig that doesn't expose RFPOWER over CAT (common) must not fail the whole poll --
+        // frequency/mode already succeeded, which is what every rig supports.
+        var transport = new FakeRigctldTransport(new[] { "14250000.000000", "USB", "2400", "RPRT -11" });
+        var client = new RigctldClient(transport);
+        await client.ConnectAsync("127.0.0.1", 4532);
+
+        var result = await client.PollAsync();
+
+        Assert.True(result.Success);
+        Assert.Null(result.PowerFraction);
     }
 
     [Fact]

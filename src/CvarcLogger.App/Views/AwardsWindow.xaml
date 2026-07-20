@@ -3,18 +3,28 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:conv="clr-namespace:CvarcLogger.App.Converters"
         mc:Ignorable="d"
-        Title="Awards Progress" Height="600" Width="700" Loaded="Window_Loaded">
+        Title="Awards Progress" Icon="/Assets/AppIcon.ico" Height="600" Width="700" Loaded="Window_Loaded">
+    <Window.Resources>
+        <conv:PointsDisplayConverter x:Key="PointsDisplayConverter"/>
+    </Window.Resources>
     <Grid Margin="10">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0" Margin="0,0,0,8" FontSize="12" Foreground="Gray" TextWrapping="Wrap"
+        <Border Grid.Row="0" Background="MediumBlue" Padding="0,8" Margin="-10,-10,-10,0">
+            <TextBlock Text="AWARDS PROGRESS" FontSize="14" FontWeight="Bold" Foreground="White"
+                       HorizontalAlignment="Center" TextAlignment="Center"/>
+        </Border>
+
+        <TextBlock Grid.Row="1" Margin="0,8,0,8" FontSize="12" Foreground="Gray" TextWrapping="Wrap"
                    Text="DXCC entity resolution uses a bundled, community-assembled approximation of the ARRL DXCC prefix list, not the official ARRL data. Correct any misattributed entity from the QSO log directly; totals here update automatically."/>
 
-        <TabControl Grid.Row="1">
+        <TabControl Grid.Row="2">
             <TabItem Header="DXCC">
                 <DockPanel Margin="6">
                     <TextBlock DockPanel.Dock="Top" Margin="0,0,0,6" FontWeight="Bold">
@@ -25,9 +35,9 @@
                     </TextBlock>
                     <DataGrid ItemsSource="{Binding DxccProgress.Entities}" AutoGenerateColumns="False" IsReadOnly="True">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="Entity" Binding="{Binding EntityName}" Width="*"/>
-                            <DataGridCheckBoxColumn Header="Worked" Binding="{Binding Worked}" Width="70"/>
-                            <DataGridCheckBoxColumn Header="Confirmed" Binding="{Binding Confirmed}" Width="80"/>
+                            <DataGridTextColumn Header="Entity" Binding="{Binding EntityName}" Width="Auto"/>
+                            <DataGridCheckBoxColumn Header="Worked" Binding="{Binding Worked}" Width="Auto"/>
+                            <DataGridCheckBoxColumn Header="Confirmed" Binding="{Binding Confirmed}" Width="Auto"/>
                         </DataGrid.Columns>
                     </DataGrid>
                 </DockPanel>
@@ -43,9 +53,97 @@
                     </TextBlock>
                     <DataGrid ItemsSource="{Binding WasProgress.States}" AutoGenerateColumns="False" IsReadOnly="True">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="State" Binding="{Binding State}" Width="80"/>
-                            <DataGridCheckBoxColumn Header="Worked" Binding="{Binding Worked}" Width="70"/>
-                            <DataGridCheckBoxColumn Header="Confirmed" Binding="{Binding Confirmed}" Width="80"/>
+                            <DataGridTextColumn Header="State" Binding="{Binding State}" Width="Auto"/>
+                            <DataGridCheckBoxColumn Header="Worked" Binding="{Binding Worked}" Width="Auto"/>
+                            <DataGridCheckBoxColumn Header="Confirmed" Binding="{Binding Confirmed}" Width="Auto"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </TabItem>
+            <TabItem Header="Mountain Goat (SOTA)">
+                <DockPanel Margin="6">
+                    <TextBlock DockPanel.Dock="Top" Margin="0,0,0,6" FontWeight="Bold">
+                        <Run Text="Activated: "/>
+                        <Run Text="{Binding MountainGoat.TotalPoints, Mode=OneWay}"/>
+                        <Run Text=" / 1000 points toward Mountain Goat"/>
+                    </TextBlock>
+
+                    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                        <TextBlock Text="Summit Code:" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <Button DockPanel.Dock="Right" Content="Refresh Summit List" Padding="12,4" Margin="6,0,0,0"
+                                Command="{Binding MountainGoat.RefreshListCommand}"
+                                ToolTip="Force-downloads the official SOTA summit list now, instead of waiting for its normal 30-day refresh."/>
+                        <Button DockPanel.Dock="Right" Content="Add" Padding="12,4" Margin="6,0,0,0"
+                                Command="{Binding MountainGoat.AddSummitCommand}"/>
+                        <TextBox Width="160" HorizontalAlignment="Left" CharacterCasing="Upper"
+                                 Text="{Binding MountainGoat.NewSummitCode, UpdateSourceTrigger=PropertyChanged}"/>
+                    </DockPanel>
+
+                    <Button DockPanel.Dock="Bottom" Content="Delete Selected" Padding="10,2" Margin="0,8,0,0"
+                            HorizontalAlignment="Left"
+                            Command="{Binding MountainGoat.DeleteCommand}"
+                            CommandParameter="{Binding ElementName=MountainGoatGrid, Path=SelectedItem}"/>
+
+                    <DataGrid x:Name="MountainGoatGrid" ItemsSource="{Binding MountainGoat.Activations}"
+                              AutoGenerateColumns="False" CanUserAddRows="False"
+                              CellEditEnding="MountainGoatGrid_CellEditEnding">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Summit Code" Binding="{Binding SummitCode}" Width="Auto" IsReadOnly="True"/>
+                            <DataGridTextColumn Header="Points" Width="Auto" IsReadOnly="True">
+                                <DataGridTextColumn.Binding>
+                                    <!-- Shows the point value in parentheses, e.g. "(4)", until Activated is
+                                         checked, so an in-progress summit shows what it would be worth once the
+                                         4-contact activation rule is actually met. -->
+                                    <MultiBinding Converter="{StaticResource PointsDisplayConverter}">
+                                        <Binding Path="Points"/>
+                                        <Binding Path="Activated"/>
+                                    </MultiBinding>
+                                </DataGridTextColumn.Binding>
+                            </DataGridTextColumn>
+                            <DataGridCheckBoxColumn Header="Activated" Binding="{Binding Activated}" Width="Auto"/>
+                            <DataGridTextColumn Header="Activation Date/Time" Binding="{Binding ActivationDateUtc, StringFormat='yyyy-MM-dd HH:mm'}" Width="Auto"/>
+                            <DataGridTextColumn Header="Summit Name" Binding="{Binding SummitName}" Width="Auto" IsReadOnly="True"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </TabItem>
+            <TabItem Header="Parks on the Air (POTA)">
+                <DockPanel Margin="6">
+                    <TextBlock DockPanel.Dock="Top" Margin="0,0,0,6" FontWeight="Bold">
+                        <Run Text="Activated: "/>
+                        <Run Text="{Binding ParksOnTheAir.TotalParksActivated, Mode=OneWay}"/>
+                        <Run Text=" parks   Award: "/>
+                        <Run Text="{Binding ParksOnTheAir.CurrentAwardTier, Mode=OneWay}"/>
+                        <Run Text="   Kilo Parks (1,000+ QSOs): "/>
+                        <Run Text="{Binding ParksOnTheAir.KiloParkCount, Mode=OneWay}"/>
+                    </TextBlock>
+
+                    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                        <TextBlock Text="Park Reference:" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <Button DockPanel.Dock="Right" Content="Refresh Park Info" Padding="12,4" Margin="6,0,0,0"
+                                Command="{Binding ParksOnTheAir.RefreshCommand}"
+                                ToolTip="Re-checks live park names for everything in this list from POTA's API. POTA has no single bulk export, so this only re-checks parks you're already tracking, not the full worldwide list."/>
+                        <Button DockPanel.Dock="Right" Content="Add" Padding="12,4" Margin="6,0,0,0"
+                                Command="{Binding ParksOnTheAir.AddParkCommand}"/>
+                        <TextBox Width="160" HorizontalAlignment="Left" CharacterCasing="Upper"
+                                 Text="{Binding ParksOnTheAir.NewParkReference, UpdateSourceTrigger=PropertyChanged}"/>
+                    </DockPanel>
+
+                    <Button DockPanel.Dock="Bottom" Content="Delete Selected" Padding="10,2" Margin="0,8,0,0"
+                            HorizontalAlignment="Left"
+                            Command="{Binding ParksOnTheAir.DeleteCommand}"
+                            CommandParameter="{Binding ElementName=PotaGrid, Path=SelectedItem}"/>
+
+                    <DataGrid x:Name="PotaGrid" ItemsSource="{Binding ParksOnTheAir.Activations}"
+                              AutoGenerateColumns="False" CanUserAddRows="False"
+                              CellEditEnding="PotaGrid_CellEditEnding">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Park Reference" Binding="{Binding ParkReference}" Width="Auto" IsReadOnly="True"/>
+                            <DataGridTextColumn Header="Park Name" Binding="{Binding ParkName}" Width="Auto" IsReadOnly="True"/>
+                            <DataGridCheckBoxColumn Header="Activated" Binding="{Binding Activated}" Width="Auto"/>
+                            <DataGridTextColumn Header="Activation Date/Time" Binding="{Binding ActivationDateUtc, StringFormat='yyyy-MM-dd HH:mm'}" Width="Auto"/>
+                            <DataGridTextColumn Header="Total QSOs" Binding="{Binding TotalQsoCount}" Width="Auto" IsReadOnly="True"/>
+                            <DataGridCheckBoxColumn Header="Kilo" Binding="{Binding IsKiloEligible, Mode=OneWay}" Width="Auto" IsReadOnly="True"/>
                         </DataGrid.Columns>
                     </DataGrid>
                 </DockPanel>

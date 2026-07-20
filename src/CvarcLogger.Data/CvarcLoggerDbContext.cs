@@ -9,6 +9,8 @@ public class CvarcLoggerDbContext : DbContext
     public DbSet<StationProfile> StationProfiles => Set<StationProfile>();
     public DbSet<DxccEntity> DxccEntities => Set<DxccEntity>();
     public DbSet<PrefixMapping> PrefixMappings => Set<PrefixMapping>();
+    public DbSet<SotaActivation> SotaActivations => Set<SotaActivation>();
+    public DbSet<PotaActivation> PotaActivations => Set<PotaActivation>();
 
     public CvarcLoggerDbContext(DbContextOptions<CvarcLoggerDbContext> options) : base(options)
     {
@@ -65,6 +67,20 @@ public class CvarcLoggerDbContext : DbContext
             entity.HasKey(p => p.Id);
             entity.Property(p => p.Prefix).IsRequired().HasMaxLength(10);
             entity.HasIndex(p => p.Prefix).IsUnique();
+        });
+
+        modelBuilder.Entity<SotaActivation>(entity =>
+        {
+            entity.HasKey(s => s.Id);
+            entity.Property(s => s.SummitCode).IsRequired().HasMaxLength(20);
+            entity.Property(s => s.SummitName).HasMaxLength(100);
+        });
+
+        modelBuilder.Entity<PotaActivation>(entity =>
+        {
+            entity.HasKey(p => p.Id);
+            entity.Property(p => p.ParkReference).IsRequired().HasMaxLength(20);
+            entity.Property(p => p.ParkName).HasMaxLength(150);
         });
     }
 }

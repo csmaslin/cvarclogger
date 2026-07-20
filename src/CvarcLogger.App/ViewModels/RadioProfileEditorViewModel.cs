@@ -30,6 +30,7 @@ public partial class RadioProfileEditorViewModel : ObservableObject
     [ObservableProperty] private string hamlibModelId;
     [ObservableProperty] private string comPort;
     [ObservableProperty] private string baudRate;
+    [ObservableProperty] private string maxPowerWatts;
     [ObservableProperty] private HamlibRigInfo? selectedRig;
 
     private bool _syncing;
@@ -47,6 +48,7 @@ public partial class RadioProfileEditorViewModel : ObservableObject
         hamlibModelId = profile.HamlibModelId.ToString();
         comPort = profile.ComPort;
         baudRate = profile.BaudRate.ToString();
+        maxPowerWatts = profile.MaxPowerWatts.ToString();
         selectedRig = FindRig(hamlibModelId);
     }
 
@@ -78,5 +80,6 @@ public partial class RadioProfileEditorViewModel : ObservableObject
         profile.HamlibModelId = int.TryParse(HamlibModelId, out var id) ? id : 0;
         profile.ComPort = string.IsNullOrWhiteSpace(ComPort) ? profile.ComPort : ComPort;
         profile.BaudRate = int.TryParse(BaudRate, out var baud) ? baud : profile.BaudRate;
+        profile.MaxPowerWatts = int.TryParse(MaxPowerWatts, out var maxWatts) ? maxWatts : profile.MaxPowerWatts;
     }
 }

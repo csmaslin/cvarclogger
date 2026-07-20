@@ -22,7 +22,33 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <AssemblyName>CvarcLogger</AssemblyName>
+    <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
+    <!-- InvariantGlobalization was tried here to shrink the self-contained publish, but WPF's binding
+         engine hard-requires non-invariant culture data (XmlLanguage.GetSpecificCulture throws
+         "Cannot find non-neutral culture related to 'en-us'" on startup). Do not re-enable it. -->
+    <!-- Drops non-English localized resource DLLs pulled in by EF Core/Extensions.* dependencies; the
+         app has no localization of its own. -->
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\AppIcon.ico" />
+    <Resource Include="Assets\BannerLogo.png" />
+    <Resource Include="Assets\CatIcon.png" />
+    <Resource Include="Assets\CatIconConnected.png" />
+  </ItemGroup>
+
+  <!-- Bundled POTA park reference/name list (~93,500 parks worldwide), too large to embed as a compiled
+       resource like the DXCC seed data, so copied alongside the exe and read directly from disk instead,
+       same rationale as the SOTA summit list's disk cache but sourced as a one-time local snapshot rather
+       than a live download, since there's no single stable public URL for it wired up here. -->
+  <ItemGroup>
+    <Content Include="Assets\PotaParks.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
 
   <!-- Bundled rigctld.exe (Hamlib) so CAT control works out of the box on a copied install,
        without requiring a separate Hamlib install. See vendor/hamlib/README-CVARCLOGGER-BUNDLE.txt. -->

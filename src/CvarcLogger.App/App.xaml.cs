@@ -36,6 +36,11 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
+        // The app has no StartupUri, so it defaults to ShutdownMode.OnLastWindowClose. If the
+        // first-run station profile window (below) is shown and closed before MainWindow exists,
+        // WPF would see zero open windows and start tearing the app down mid-startup.
+        ShutdownMode = ShutdownMode.OnExplicitShutdown;
+
         Directory.CreateDirectory(DataDirectory);
         Directory.CreateDirectory(Path.Combine(DataDirectory, "backups"));
 
@@ -59,6 +64,8 @@ public partial class App : Application
                 services.AddScoped<IQsoRepository, QsoRepository>();
                 services.AddScoped<IStationProfileRepository, StationProfileRepository>();
                 services.AddScoped<IDxccEntityRepository, DxccEntityRepository>();
+                services.AddScoped<ISotaActivationRepository, SotaActivationRepository>();
+                services.AddScoped<IPotaActivationRepository, PotaActivationRepository>();
 
                 services.AddScoped<IAwardsService, AwardsService>();
                 services.AddSingleton<ICallsignEntityResolver, CallsignEntityResolver>();
@@ -68,6 +75,8 @@ public partial class App : Application
                 services.AddHttpClient<QrzLookupService>();
                 services.AddHttpClient<QrzCqLookupService>();
                 services.AddScoped<LookupCoordinator>();
+                services.AddHttpClient<SotaSummitLookupService>();
+                services.AddHttpClient<PotaParkLookupService>();
 
                 services.AddSingleton<IRigControlService, RigctldClient>();
                 services.AddSingleton<RigctldProcessManager>();
@@ -76,12 +85,16 @@ public partial class App : Application
 
                 services.AddSingleton<DialogService>();
                 services.AddSingleton<FilePickerService>();
+                services.AddSingleton<GridTrackerBroadcastService>();
+                services.AddScoped<WsjtxUdpListenerService>();
 
                 services.AddScoped<MainViewModel>();
                 services.AddScoped<QsoEntryViewModel>();
                 services.AddScoped<QsoLogViewModel>();
                 services.AddScoped<ImportExportViewModel>();
                 services.AddTransient<AwardsViewModel>();
+                services.AddTransient<MountainGoatViewModel>();
+                services.AddTransient<ParksOnTheAirViewModel>();
                 services.AddTransient<SettingsViewModel>();
                 services.AddTransient<StationProfileViewModel>();
                 services.AddTransient<QsoEditViewModel>();
@@ -104,8 +117,24 @@ public partial class App : Application
         }
 
         _scope = _host.Services.CreateScope();
+
+        var profileRepository = _scope.ServiceProvider.GetRequiredService<IStationProfileRepository>();
+        var profiles = await profileRepository.GetAllAsync();
+        if (profiles.Count == 0)
+        {
+            // No station profile exists yet (fresh install, or a freshly created log) -- require one
+            // before the main window appears. CenterOwner (the window's XAML default) needs an owner,
+            // which doesn't exist yet this early in startup.
+            var profileWindow = _scope.ServiceProvider.GetRequiredService<Views.StationProfileEditorWindow>();
+            profileWindow.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            profileWindow.ShowDialog();
+        }
+
         var mainWindow = _scope.ServiceProvider.GetRequiredService<MainWindow>();
+        Application.Current.MainWindow = mainWindow; // WPF would otherwise assign this to the (closed) profile window, the first window shown
         mainWindow.Show();
+
+        ShutdownMode = ShutdownMode.OnLastWindowClose;
     }
 
     protected override async void OnExit(ExitEventArgs e)
