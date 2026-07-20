@@ -22,6 +22,11 @@ public class RigControlCoordinator : IAsyncDisposable
 
     public RigConnectionState State => _rig.State;
 
+    /// <summary>Max RF output (watts) of the currently-selected radio profile -- used to turn a poll's
+    /// RFPOWER fraction into an estimated TX Power. Read from Settings directly (not just "at connect
+    /// time") so editing it while already connected takes effect on the next poll.</summary>
+    public int? ActiveRadioMaxPowerWatts => _settings.RadioProfiles.ElementAtOrDefault(_settings.ActiveRadioIndex)?.MaxPowerWatts;
+
     public async Task<(bool Success, string? Error)> ConnectAsync(CancellationToken ct = default)
     {
         if (!_settings.CatEnabled)

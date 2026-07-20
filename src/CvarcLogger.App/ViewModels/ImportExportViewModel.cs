@@ -4,12 +4,14 @@ using CommunityToolkit.Mvvm.Input;
 using CvarcLogger.App.Services;
 using CvarcLogger.Core.Abstractions;
 using CvarcLogger.Core.Adif;
+using CvarcLogger.Core.Awards;
 
 namespace CvarcLogger.App.ViewModels;
 
 public partial class ImportExportViewModel : ObservableObject
 {
     private readonly IQsoRepository _qsoRepository;
+    private readonly ICallsignEntityResolver _entityResolver;
     private readonly FilePickerService _filePicker;
     private readonly DialogService _dialogService;
 
@@ -18,9 +20,14 @@ public partial class ImportExportViewModel : ObservableObject
     [ObservableProperty] private bool isBusy;
     [ObservableProperty] private string? lastResultMessage;
 
-    public ImportExportViewModel(IQsoRepository qsoRepository, FilePickerService filePicker, DialogService dialogService)
+    public ImportExportViewModel(
+        IQsoRepository qsoRepository,
+        ICallsignEntityResolver entityResolver,
+        FilePickerService filePicker,
+        DialogService dialogService)
     {
         _qsoRepository = qsoRepository;
+        _entityResolver = entityResolver;
         _filePicker = filePicker;
         _dialogService = dialogService;
     }
@@ -34,13 +41,26 @@ public partial class ImportExportViewModel : ObservableObject
         IsBusy = true;
         try
         {
-            using var reader = new StreamReader(path);
-            var records = AdifReader.ReadAll(reader);
+            // Reads raw bytes rather than going through StreamReader (which would decode the whole file
+            // as UTF-8 up front) -- see AdifReader.ReadAll(byte[]) for why: some real-world exporters
+            // (confirmed: QRZ Logbook) write non-UTF-8 bytes for accented names, and only byte-native
+            // reading can recover them instead of corrupting them into U+FFFD.
+            var records = AdifReader.ReadAllFromFile(path);
             int imported = 0;
             foreach (var record in records)
             {
                 var qso = AdifFieldMapper.ToQso(record);
                 if (string.IsNullOrWhiteSpace(qso.Callsign)) continue;
+
+                // The imported DXCC code is whatever the source software assigned. Our own DxccEntities
+                // table is a hand-curated subset, so trusting that raw code verbatim as an FK reference
+                // would throw the moment one record's code isn't in our table -- aborting the entire
+                // import partway through. Re-resolve it from the callsign instead, the same way a
+                // live-logged QSO gets one, so it always references a row that actually exists and stays
+                // consistent with how the rest of the app (Awards, etc.) computes DXCC entities.
+                var resolvedEntity = await _entityResolver.ResolveAsync(qso.Callsign);
+                qso.DxccEntityCode = resolvedEntity?.EntityCode;
+
                 await _qsoRepository.AddAsync(qso);
                 imported++;
             }

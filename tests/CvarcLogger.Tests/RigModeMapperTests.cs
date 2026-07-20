@@ -15,10 +15,10 @@ public class RigModeMapperTests
     [InlineData("AM", "AM")]
     [InlineData("RTTY", "RTTY")]
     [InlineData("RTTYR", "RTTY")]
-    [InlineData("PKTUSB", "DATA")]
-    [InlineData("PKTLSB", "DATA")]
-    [InlineData("PKTFM", "DATA")]
-    [InlineData("PKTAM", "DATA")]
+    [InlineData("PKTUSB", "FT8")]
+    [InlineData("PKTLSB", "FT8")]
+    [InlineData("PKTFM", "FT8")]
+    [InlineData("PKTAM", "FT8")]
     public void ToCvarcLoggerMode_MapsKnownRigctldModes(string rigctldMode, string expected)
     {
         Assert.Equal(expected, RigModeMapper.ToCvarcLoggerMode(rigctldMode));
@@ -34,5 +34,25 @@ public class RigModeMapperTests
     public void ToCvarcLoggerMode_EmptyString_FallsBackToSsb()
     {
         Assert.Equal("SSB", RigModeMapper.ToCvarcLoggerMode(""));
+    }
+
+    [Theory]
+    [InlineData("USB", "USB")]
+    [InlineData("usb", "USB")]
+    [InlineData("LSB", "LSB")]
+    [InlineData("lsb", "LSB")]
+    public void ToCvarcLoggerSubMode_MapsSsbRawModes(string rigctldMode, string expected)
+    {
+        Assert.Equal(expected, RigModeMapper.ToCvarcLoggerSubMode(rigctldMode));
+    }
+
+    [Theory]
+    [InlineData("CW")]
+    [InlineData("PKTUSB")]
+    [InlineData("FM")]
+    [InlineData("")]
+    public void ToCvarcLoggerSubMode_NonSsbRawModes_ReturnsNull(string rigctldMode)
+    {
+        Assert.Null(RigModeMapper.ToCvarcLoggerSubMode(rigctldMode));
     }
 }

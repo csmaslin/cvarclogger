@@ -32,6 +32,7 @@ public class FilePickerService
         {
             Filter = "CVARC Logger database (*.db)|*.db|All files (*.*)|*.*",
             FileName = suggestedFileName,
+            InitialDirectory = AppContext.BaseDirectory,
             Title = "Create New Log"
         };
         return dialog.ShowDialog() == true ? dialog.FileName : null;

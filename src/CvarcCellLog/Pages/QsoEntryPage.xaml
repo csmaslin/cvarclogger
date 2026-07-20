@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage
+    x:Class="CvarcCellLog.Pages.QsoEntryPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:CvarcCellLog.ViewModels"
+    x:DataType="vm:QsoEntryViewModel"
+    Title="Log a QSO">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="10">
+
+            <Label Text="{Binding ErrorMessage}"
+                   TextColor="#C0392B"
+                   IsVisible="{Binding HasErrorMessage}" />
+
+            <Label Text="Contact" FontAttributes="Bold" FontSize="16" Margin="0,4,0,0" />
+
+            <Label Text="Callsign" />
+            <Entry Text="{Binding Callsign}" AutoCapitalization="Characters" />
+
+            <Label Text="Date/Time (UTC)" />
+            <Entry Text="{Binding QsoDateTimeUtcText}" Placeholder="yyyy-MM-dd HH:mm:ss" />
+
+            <Label Text="Local Time" />
+            <Entry Text="{Binding QsoDateTimeLocalText}" Placeholder="yyyy-MM-dd HH:mm:ss" />
+
+            <Label Text="Band" />
+            <Picker ItemsSource="{Binding Bands}" SelectedItem="{Binding Band}" />
+
+            <Label Text="Mode" />
+            <Picker ItemsSource="{Binding Modes}" SelectedItem="{Binding Mode}" />
+
+            <Label Text="Sub-Mode" IsVisible="{Binding HasSubModes}" />
+            <Picker ItemsSource="{Binding SubModes}" SelectedItem="{Binding SubMode}" IsVisible="{Binding HasSubModes}" />
+
+            <Label Text="Frequency (MHz)" />
+            <Entry Text="{Binding FrequencyMhz}" Keyboard="Numeric" />
+
+            <Label Text="RST Sent" />
+            <Entry Text="{Binding RstSent}" />
+
+            <Label Text="RST Rcvd" />
+            <Entry Text="{Binding RstRcvd}" />
+
+            <Label Text="Name" />
+            <Entry Text="{Binding Name}" />
+
+            <Label Text="Grid Square" />
+            <Entry Text="{Binding GridSquare}" AutoCapitalization="Characters" />
+
+            <Label Text="City" />
+            <Entry Text="{Binding City}" />
+
+            <Label Text="State" />
+            <Entry Text="{Binding State}" AutoCapitalization="Characters" />
+
+            <Label Text="County" />
+            <Entry Text="{Binding County}" />
+
+            <Label Text="Country" />
+            <Entry Text="{Binding Country}" />
+
+            <Label Text="ARRL Section" />
+            <Entry Text="{Binding ArrlSection}" AutoCapitalization="Characters" />
+
+            <Label Text="CQ Zone" />
+            <Entry Text="{Binding CqZone}" Keyboard="Numeric" />
+
+            <Label Text="ITU Zone" />
+            <Entry Text="{Binding ItuZone}" Keyboard="Numeric" />
+
+            <Label Text="Comment" />
+            <Entry Text="{Binding Comment}" />
+
+            <BoxView HeightRequest="1" BackgroundColor="LightGray" Margin="0,8" />
+
+            <Label Text="Your Station" FontAttributes="Bold" FontSize="16" />
+
+            <Label Text="Station Callsign" />
+            <Entry Text="{Binding StationCallsign}" AutoCapitalization="Characters" />
+
+            <Label Text="Operator Callsign" />
+            <Entry Text="{Binding OperatorCallsign}" AutoCapitalization="Characters" />
+
+            <Label Text="My Grid Square" />
+            <Entry Text="{Binding MyGridSquare}" AutoCapitalization="Characters" />
+
+            <Label Text="My State" />
+            <Entry Text="{Binding MyState}" AutoCapitalization="Characters" />
+
+            <Label Text="My County" />
+            <Entry Text="{Binding MyCounty}" />
+
+            <Label Text="QTH" />
+            <Entry Text="{Binding Qth}" />
+
+            <Label Text="OP" />
+            <Entry Text="{Binding Op}" />
+
+            <Label Text="UTC Offset (hours)" />
+            <Entry Text="{Binding UtcOffsetHoursText}" Keyboard="Numeric" />
+
+            <HorizontalStackLayout Spacing="8">
+                <CheckBox IsChecked="{Binding ObservesDaylightSavingTime}" />
+                <Label Text="Observes Daylight Saving Time" VerticalOptions="Center" />
+            </HorizontalStackLayout>
+
+            <Button Text="Log QSO" Command="{Binding LogQsoCommand}" Margin="0,12,0,0" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

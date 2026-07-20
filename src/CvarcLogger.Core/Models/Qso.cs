@@ -51,7 +51,14 @@ public class Qso
 
     public string? QslViaCallsign { get; set; }
     public string? Comment { get; set; }
-    public string? Notes { get; set; }
+
+    // SOTA (Summits on the Air) and POTA (Parks on the Air) activation references. ADIF field names
+    // (MY_SOTA_REF/SOTA_REF, MY_SIG_INFO/SIG_INFO) kept as the property names' basis so the ADIF mapping
+    // is a direct match -- see AdifFieldMapper.
+    public string? MySotaRef { get; set; }
+    public string? SotaRef { get; set; }
+    public string? MySigInfo { get; set; }
+    public string? SigInfo { get; set; }
 
     // Station identity — denormalized from the StationProfile in effect at save time,
     // so later edits to a profile never retroactively rewrite historical QSOs.
@@ -62,6 +69,20 @@ public class Qso
     public string? MyGridSquare { get; set; }
     public string? MyState { get; set; }
     public string? MyCounty { get; set; }
+    public string? Qth { get; set; }
+    public string? Op { get; set; }
+
+    // Local-time basis, denormalized from the StationProfile in effect at save time -- same rationale
+    // as the station identity block above: editing a profile's time zone later must not retroactively
+    // change how already-logged QSOs display.
+    public decimal? UtcOffsetHours { get; set; }
+    public bool ObservesDaylightSavingTime { get; set; }
+
+    /// <summary>QsoDateTimeOnUtc shifted by UtcOffsetHours (plus 1h if ObservesDaylightSavingTime was
+    /// set at log time). Falls back to a 0 offset for QSOs logged before this field existed. Computed,
+    /// not mapped to a database column.</summary>
+    public DateTime LocalDateTimeOn =>
+        QsoDateTimeOnUtc.AddHours((double)(UtcOffsetHours ?? 0m) + (ObservesDaylightSavingTime ? 1 : 0));
 
     // Reserved for future contest logging support — not exposed in the V1 UI.
     public string? ContestId { get; set; }

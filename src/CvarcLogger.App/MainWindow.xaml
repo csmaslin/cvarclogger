@@ -5,12 +5,15 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:views="clr-namespace:CvarcLogger.App.Views"
         mc:Ignorable="d"
-        Title="CVARC Logger" Height="700" Width="1150"
+        Title="CVARC Logger" Icon="/Assets/AppIcon.ico" Height="700" Width="1150"
         Loaded="Window_Loaded">
     <DockPanel>
-        <Border DockPanel.Dock="Top" Background="DarkBlue" Padding="0,8">
-            <TextBlock Text="CVARC LOGGER" FontSize="12" FontWeight="Bold" Foreground="White"
-                       HorizontalAlignment="Center" TextAlignment="Center"/>
+        <Border DockPanel.Dock="Top" Background="DarkBlue" Padding="10,6">
+            <DockPanel>
+                <Image Source="/Assets/BannerLogo.png" Height="54" DockPanel.Dock="Left" Margin="0,0,10,0"/>
+                <TextBlock Text="Conejo Valley Amateur Radio Club Logger" FontSize="20" FontWeight="Bold" Foreground="White"
+                           HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center"/>
+            </DockPanel>
         </Border>
 
         <Menu DockPanel.Dock="Top">
@@ -35,6 +38,11 @@
         </Menu>
 
         <StatusBar DockPanel.Dock="Bottom">
+            <StatusBar.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <DockPanel LastChildFill="False"/>
+                </ItemsPanelTemplate>
+            </StatusBar.ItemsPanel>
             <StatusBarItem>
                 <TextBlock>
                     <Run Text="{Binding QsoLog.Qsos.Count, Mode=OneWay}"/>
@@ -45,10 +53,23 @@
             <StatusBarItem>
                 <TextBlock x:Name="LogNameText"/>
             </StatusBarItem>
+            <StatusBarItem DockPanel.Dock="Right">
+                <TextBlock Text="Program by W6CSM"/>
+            </StatusBarItem>
+            <Separator DockPanel.Dock="Right"/>
         </StatusBar>
 
-        <views:QsoEntryView DockPanel.Dock="Top" DataContext="{Binding QsoEntry}"/>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="3*" MinHeight="150"/>
+                <RowDefinition Height="7*"/>
+            </Grid.RowDefinitions>
 
-        <views:QsoLogGridView DataContext="{Binding QsoLog}"/>
+            <Viewbox Grid.Row="0" Stretch="Uniform">
+                <views:QsoEntryView DataContext="{Binding QsoEntry}"/>
+            </Viewbox>
+
+            <views:QsoLogGridView Grid.Row="1" DataContext="{Binding QsoLog}"/>
+        </Grid>
     </DockPanel>
 </Window>

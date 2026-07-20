@@ -28,6 +28,7 @@ public class StationProfileRepository : IStationProfileRepository
         }
         _db.StationProfiles.Add(profile);
         await _db.SaveChangesAsync(ct).ConfigureAwait(false);
+        DetachAllTracked();
         return profile;
     }
 
@@ -37,8 +38,18 @@ public class StationProfileRepository : IStationProfileRepository
         {
             await ClearOtherDefaultsAsync(ct, profile.Id).ConfigureAwait(false);
         }
+
+        // The profile passed in is almost always a fresh instance from an AsNoTracking() query, but
+        // this repository's DbContext is a single long-lived instance for the whole app session -- an
+        // earlier Add/UpdateAsync call for this same Id may still have a *different* instance attached.
+        // EF throws if we attach a second instance with the same key, so detach any stale entry first.
+        var staleEntry = _db.ChangeTracker.Entries<StationProfile>()
+            .FirstOrDefault(e => e.Entity.Id == profile.Id && !ReferenceEquals(e.Entity, profile));
+        if (staleEntry is not null) staleEntry.State = EntityState.Detached;
+
         _db.StationProfiles.Update(profile);
         await _db.SaveChangesAsync(ct).ConfigureAwait(false);
+        DetachAllTracked();
     }
 
     public async Task DeleteAsync(int id, CancellationToken ct = default)
@@ -57,6 +68,18 @@ public class StationProfileRepository : IStationProfileRepository
         foreach (var other in others)
         {
             other.IsDefault = false;
+        }
+    }
+
+    /// <summary>Detaches every currently-tracked StationProfile so it can't conflict with a fresh
+    /// (AsNoTracking) instance of the same row on a later call in this same long-lived DbContext -- this
+    /// repository never needs to keep anything tracked between calls, it always reloads via
+    /// AsNoTracking anyway.</summary>
+    private void DetachAllTracked()
+    {
+        foreach (var entry in _db.ChangeTracker.Entries<StationProfile>().ToList())
+        {
+            entry.State = EntityState.Detached;
         }
     }
 }

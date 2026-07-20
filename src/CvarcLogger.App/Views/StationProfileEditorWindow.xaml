@@ -4,8 +4,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         mc:Ignorable="d"
-        Title="Station Profiles" Height="420" Width="620" WindowStartupLocation="CenterOwner"
-        Loaded="Window_Loaded">
+        Title="Station Profiles" Icon="/Assets/AppIcon.ico" Height="560" Width="620" MinHeight="420" MinWidth="560" WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResize" Loaded="Window_Loaded" Closing="Window_Closing">
     <Grid Margin="10">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="220"/>
@@ -16,10 +16,22 @@
             <Button DockPanel.Dock="Bottom" Content="New Profile" Command="{Binding NewProfileCommand}"
                     Margin="0,8,0,0" Padding="6,4"/>
             <ListBox ItemsSource="{Binding Profiles}" SelectedItem="{Binding SelectedProfile}"
-                     DisplayMemberPath="Callsign"/>
+                     DisplayMemberPath="Callsign">
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="ListBoxItem">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsDefault}" Value="True">
+                                <Setter Property="FontWeight" Value="Bold"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </ListBox.ItemContainerStyle>
+            </ListBox>
         </DockPanel>
 
-        <StackPanel Grid.Column="1">
+        <!-- Fixed Width so layout is predictable. Viewbox measures its child at infinite available size. -->
+        <Viewbox Grid.Column="1" Stretch="Uniform">
+        <StackPanel Width="360">
             <TextBlock Text="Callsign" FontSize="11" Foreground="Gray"/>
             <TextBox Text="{Binding EditCallsign, UpdateSourceTrigger=PropertyChanged}" CharacterCasing="Upper" Margin="0,0,0,8"/>
 
@@ -35,12 +47,25 @@
             <TextBlock Text="My County" FontSize="11" Foreground="Gray"/>
             <TextBox Text="{Binding EditMyCounty, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
 
+            <TextBlock Text="QTH" FontSize="11" Foreground="Gray"/>
+            <TextBox Text="{Binding EditQth, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+
+            <TextBlock Text="OP (Operator Name)" FontSize="11" Foreground="Gray"/>
+            <TextBox Text="{Binding EditOp, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+
+            <TextBlock Text="UTC Offset (hours, e.g. -5 or +5.5)" FontSize="11" Foreground="Gray"/>
+            <TextBox Text="{Binding EditUtcOffsetHours, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+
+            <CheckBox Content="Observes Daylight Saving Time" IsChecked="{Binding EditObservesDaylightSavingTime}" Margin="0,0,0,8"/>
+
             <CheckBox Content="Default station profile" IsChecked="{Binding EditIsDefault}" Margin="0,0,0,14"/>
 
             <StackPanel Orientation="Horizontal">
                 <Button Content="Save" Command="{Binding SaveCommand}" Padding="12,4" Margin="0,0,8,0"/>
-                <Button Content="Delete" Command="{Binding DeleteCommand}" Padding="12,4"/>
+                <Button Content="Delete" Command="{Binding DeleteCommand}" Padding="12,4" Margin="0,0,8,0"/>
+                <Button Content="Close" Click="Close_Click" Padding="12,4"/>
             </StackPanel>
         </StackPanel>
+        </Viewbox>
     </Grid>
 </Window>

@@ -185,7 +185,7 @@ public partial class MainWindow : Window
 
     private static void RestartApplication()
     {
-        string exePath = Environment.ProcessPath ?? Path.Combine(AppContext.BaseDirectory, "CvarcLogger.App.exe");
+        string exePath = Environment.ProcessPath ?? Path.Combine(AppContext.BaseDirectory, "CvarcLogger.exe");
         var psi = new ProcessStartInfo { UseShellExecute = true };
 
         if (Path.GetFileNameWithoutExtension(exePath).Equals("dotnet", StringComparison.OrdinalIgnoreCase))
@@ -193,7 +193,7 @@ public partial class MainWindow : Window
             // Running via `dotnet run` — relaunch through dotnet against our own assembly rather than
             // starting a bare "dotnet" with no arguments.
             psi.FileName = "dotnet";
-            psi.ArgumentList.Add(Path.Combine(AppContext.BaseDirectory, "CvarcLogger.App.dll"));
+            psi.ArgumentList.Add(Path.Combine(AppContext.BaseDirectory, "CvarcLogger.dll"));
         }
         else
         {

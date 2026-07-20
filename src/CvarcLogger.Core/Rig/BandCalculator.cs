@@ -18,6 +18,7 @@ public static class BandCalculator
         (28.0m, 29.7m, "10m"),
         (50.0m, 54.0m, "6m"),
         (144.0m, 148.0m, "2m"),
+        (222.0m, 225.0m, "1.25M"),
         (420.0m, 450.0m, "70cm"),
     };
 

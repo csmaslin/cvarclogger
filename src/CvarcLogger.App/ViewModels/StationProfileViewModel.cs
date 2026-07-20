@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CvarcLogger.App.Services;
@@ -20,6 +21,10 @@ public partial class StationProfileViewModel : ObservableObject
     [ObservableProperty] private string? editMyGridSquare;
     [ObservableProperty] private string? editMyState;
     [ObservableProperty] private string? editMyCounty;
+    [ObservableProperty] private string? editQth;
+    [ObservableProperty] private string? editOp;
+    [ObservableProperty] private string editUtcOffsetHours = "0";
+    [ObservableProperty] private bool editObservesDaylightSavingTime;
     [ObservableProperty] private bool editIsDefault;
 
     public StationProfileViewModel(IStationProfileRepository repository, DialogService dialogService)
@@ -45,6 +50,10 @@ public partial class StationProfileViewModel : ObservableObject
         EditMyGridSquare = null;
         EditMyState = null;
         EditMyCounty = null;
+        EditQth = null;
+        EditOp = null;
+        EditUtcOffsetHours = "0";
+        EditObservesDaylightSavingTime = false;
         EditIsDefault = Profiles.Count == 0;
     }
 
@@ -56,6 +65,10 @@ public partial class StationProfileViewModel : ObservableObject
         EditMyGridSquare = value.MyGridSquare;
         EditMyState = value.MyState;
         EditMyCounty = value.MyCounty;
+        EditQth = value.Qth;
+        EditOp = value.Op;
+        EditUtcOffsetHours = value.UtcOffsetHours.ToString(CultureInfo.InvariantCulture);
+        EditObservesDaylightSavingTime = value.ObservesDaylightSavingTime;
         EditIsDefault = value.IsDefault;
     }
 
@@ -68,6 +81,12 @@ public partial class StationProfileViewModel : ObservableObject
             return;
         }
 
+        if (!decimal.TryParse(EditUtcOffsetHours, NumberStyles.Number, CultureInfo.InvariantCulture, out var utcOffsetHours))
+        {
+            _dialogService.ShowError("Enter a valid UTC offset (e.g. -5 or +5.5) for this station profile.");
+            return;
+        }
+
         if (SelectedProfile is null)
         {
             var profile = new StationProfile
@@ -77,6 +96,10 @@ public partial class StationProfileViewModel : ObservableObject
                 MyGridSquare = EditMyGridSquare,
                 MyState = EditMyState,
                 MyCounty = EditMyCounty,
+                Qth = EditQth,
+                Op = EditOp,
+                UtcOffsetHours = utcOffsetHours,
+                ObservesDaylightSavingTime = EditObservesDaylightSavingTime,
                 IsDefault = EditIsDefault,
             };
             await _repository.AddAsync(profile);
@@ -88,6 +111,10 @@ public partial class StationProfileViewModel : ObservableObject
             SelectedProfile.MyGridSquare = EditMyGridSquare;
             SelectedProfile.MyState = EditMyState;
             SelectedProfile.MyCounty = EditMyCounty;
+            SelectedProfile.Qth = EditQth;
+            SelectedProfile.Op = EditOp;
+            SelectedProfile.UtcOffsetHours = utcOffsetHours;
+            SelectedProfile.ObservesDaylightSavingTime = EditObservesDaylightSavingTime;
             SelectedProfile.IsDefault = EditIsDefault;
             await _repository.UpdateAsync(SelectedProfile);
         }

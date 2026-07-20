@@ -17,6 +17,8 @@ public partial class SettingsViewModel : ObservableObject
     private readonly DialogService _dialogService;
     private readonly RigControlCoordinator _rigCoordinator;
     private readonly HamlibRigCatalog _rigCatalog;
+    private readonly GridTrackerBroadcastService _gridTrackerBroadcast;
+    private readonly WsjtxUdpListenerService _wsjtxListener;
 
     [ObservableProperty] private LookupServicePreference preferredLookupService;
     [ObservableProperty] private string qrzUsername = string.Empty;
@@ -32,6 +34,12 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private string rigctldTcpPort = "4532";
     [ObservableProperty] private int activeRadioIndex;
 
+    [ObservableProperty] private bool gridTrackerEnabled;
+    [ObservableProperty] private string gridTrackerHost = "127.0.0.1";
+    [ObservableProperty] private string gridTrackerPort = "2240";
+
+    [ObservableProperty] private bool wsjtxEnabled;
+
     public ObservableCollection<string> RadioNames { get; } = new();
     public ObservableCollection<RadioProfileEditorViewModel> RadioProfileEditors { get; } = new();
     public ObservableCollection<HamlibRigInfo> AvailableRigs { get; } = new();
@@ -42,13 +50,17 @@ public partial class SettingsViewModel : ObservableObject
         ICredentialStore credentialStore,
         DialogService dialogService,
         RigControlCoordinator rigCoordinator,
-        HamlibRigCatalog rigCatalog)
+        HamlibRigCatalog rigCatalog,
+        GridTrackerBroadcastService gridTrackerBroadcast,
+        WsjtxUdpListenerService wsjtxListener)
     {
         _settings = settings;
         _credentialStore = credentialStore;
         _dialogService = dialogService;
         _rigCoordinator = rigCoordinator;
         _rigCatalog = rigCatalog;
+        _gridTrackerBroadcast = gridTrackerBroadcast;
+        _wsjtxListener = wsjtxListener;
         preferredLookupService = _settings.PreferredLookupService;
 
         catEnabled = _settings.CatEnabled;
@@ -56,6 +68,12 @@ public partial class SettingsViewModel : ObservableObject
         rigctldExecutablePath = _settings.RigctldExecutablePath;
         rigctldTcpPort = _settings.RigctldTcpPort.ToString();
         activeRadioIndex = _settings.ActiveRadioIndex;
+
+        gridTrackerEnabled = _settings.GridTrackerEnabled;
+        gridTrackerHost = _settings.GridTrackerHost;
+        gridTrackerPort = _settings.GridTrackerPort.ToString();
+
+        wsjtxEnabled = _settings.WsjtxEnabled;
         for (int i = 0; i < _settings.RadioProfiles.Count; i++)
         {
             var profile = _settings.RadioProfiles[i];
@@ -188,5 +206,38 @@ public partial class SettingsViewModel : ObservableObject
         {
             _dialogService.ShowError($"CAT connection failed: {error}");
         }
+    }
+
+    partial void OnGridTrackerEnabledChanged(bool value) => _settings.GridTrackerEnabled = value;
+
+    /// <summary>Unlike CAT (which only connects when the user later clicks "Connect"), this checkbox
+    /// takes effect immediately -- there's no separate connect step for a UDP listener.</summary>
+    partial void OnWsjtxEnabledChanged(bool value)
+    {
+        _settings.WsjtxEnabled = value;
+        _wsjtxListener.ApplyEnabledState();
+    }
+
+    [RelayCommand]
+    private void SaveGridTrackerSettings()
+    {
+        ApplyGridTrackerHostAndPort();
+        _dialogService.ShowInfo("GridTracker2 settings saved.");
+    }
+
+    /// <summary>Sends a synthetic test QSO regardless of whether GridTracker broadcasting is enabled,
+    /// so the user can confirm GridTracker2 is receiving packets before turning the feature on.</summary>
+    [RelayCommand]
+    private void SendGridTrackerTestPacket()
+    {
+        ApplyGridTrackerHostAndPort();
+        _gridTrackerBroadcast.SendTestPacket();
+        _dialogService.ShowInfo($"Test QSO sent to {_settings.GridTrackerHost}:{_settings.GridTrackerPort}.");
+    }
+
+    private void ApplyGridTrackerHostAndPort()
+    {
+        _settings.GridTrackerHost = string.IsNullOrWhiteSpace(GridTrackerHost) ? "127.0.0.1" : GridTrackerHost;
+        _settings.GridTrackerPort = int.TryParse(GridTrackerPort, out var port) ? port : _settings.GridTrackerPort;
     }
 }
