@@ -82,3 +82,32 @@ Compress-Archive -Path $outDir -DestinationPath $zipPath -Force
 $zipSizeMb = [math]::Round((Get-Item $zipPath).Length / 1MB, 1)
 Write-Host "Zipped: $zipPath ($zipSizeMb MB)"
 Write-Host "Copy that one file to another 64-bit Windows 10/11 machine and run it directly."
+
+# Also build a proper Windows installer (Apps & Features entry, uninstaller, C:\CvarcLogger install
+# path) from the same publish output via Inno Setup -- see CvarcLogger.iss for what it does and why.
+# Best-effort like the manual-PDF export above: a machine without Inno Setup installed still gets a
+# usable publish (the exe/zip from above), just without this extra installer.
+$isccCandidates = @(
+    "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe",
+    "$env:ProgramFiles\Inno Setup 6\ISCC.exe",
+    "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+)
+$iscc = $isccCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+$issFile = Join-Path $root "CvarcLogger.iss"
+
+if ($iscc -and (Test-Path $issFile)) {
+    & $iscc "/DMyAppVersion=$version" $issFile
+    if ($LASTEXITCODE -ne 0) {
+        Write-Warning "Inno Setup compile failed with exit code $LASTEXITCODE -- publish still succeeded without the installer."
+    } else {
+        $installerPath = Join-Path $root "publish\CvarcLogger-Setup-$version.exe"
+        if (Test-Path $installerPath) {
+            $installerSizeMb = [math]::Round((Get-Item $installerPath).Length / 1MB, 1)
+            Write-Host "Installer: $installerPath ($installerSizeMb MB)"
+        }
+    }
+} elseif (Test-Path $issFile) {
+    Write-Warning "Inno Setup (ISCC.exe) not found -- publishing without the installer. Install it (winget install JRSoftware.InnoSetup) to enable this step."
+} else {
+    Write-Warning "CvarcLogger.iss not found at $issFile -- publishing without the installer."
+}
