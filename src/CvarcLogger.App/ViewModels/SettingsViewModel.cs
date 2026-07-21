@@ -23,10 +23,19 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private LookupServicePreference preferredLookupService;
     [ObservableProperty] private string qrzUsername = string.Empty;
     [ObservableProperty] private string qrzPassword = string.Empty;
-    [ObservableProperty] private bool isQrzConfigured;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(QrzStatusText))]
+    private bool isQrzConfigured;
     [ObservableProperty] private string qrzCqUsername = string.Empty;
     [ObservableProperty] private string qrzCqPassword = string.Empty;
-    [ObservableProperty] private bool isQrzCqConfigured;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(QrzCqStatusText))]
+    private bool isQrzCqConfigured;
+
+    /// <summary>Whether credentials are saved, not whether they've been verified against QRZ's servers
+    /// -- no API call happens on save, so this can still say Configured even if the password is wrong.</summary>
+    public string QrzStatusText => IsQrzConfigured ? "Configured" : "Not Configured";
+    public string QrzCqStatusText => IsQrzCqConfigured ? "Configured" : "Not Configured";
 
     [ObservableProperty] private bool catEnabled;
     [ObservableProperty] private bool launchRigctldAutomatically;
@@ -87,14 +96,27 @@ public partial class SettingsViewModel : ObservableObject
     {
         var creds = await _credentialStore.LoadAsync(QrzLookupService.CredentialKey);
         IsQrzConfigured = creds is not null;
-        if (creds is not null) QrzUsername = creds.Value.Username;
+        if (creds is not null)
+        {
+            QrzUsername = creds.Value.Username;
+            // DPAPI encryption is reversible by design (for this Windows user, on this machine) --
+            // loading the saved password back so "Show password" can actually reveal what's stored,
+            // rather than only ever showing freshly-typed text. Stays masked in the PasswordBox unless
+            // the operator explicitly checks Show password, same as freshly-typed text would.
+            QrzPassword = creds.Value.Password;
+        }
 
         var qrzCqCreds = await _credentialStore.LoadAsync(QrzCqLookupService.CredentialKey);
         IsQrzCqConfigured = qrzCqCreds is not null;
-        if (qrzCqCreds is not null) QrzCqUsername = qrzCqCreds.Value.Username;
+        if (qrzCqCreds is not null)
+        {
+            QrzCqUsername = qrzCqCreds.Value.Username;
+            QrzCqPassword = qrzCqCreds.Value.Password;
+        }
 
         var rigs = await _rigCatalog.GetRigsAsync(_settings.RigctldExecutablePath);
         AvailableRigs.Clear();
+        AvailableRigs.Add(HamlibRigInfo.None);
         foreach (var rig in rigs
                      .OrderBy(r => r.Manufacturer, StringComparer.OrdinalIgnoreCase)
                      .ThenBy(r => r.Model, StringComparer.OrdinalIgnoreCase))

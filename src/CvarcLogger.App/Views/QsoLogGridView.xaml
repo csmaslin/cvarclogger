@@ -26,8 +26,9 @@
         </DockPanel>
 
         <DataGrid x:Name="LogDataGrid" Grid.Row="1" ItemsSource="{Binding QsosView}" SelectedItem="{Binding SelectedQso}"
-                  AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="Horizontal"
+                  AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="All" VerticalGridLinesBrush="#BBBBBB"
                   CanUserAddRows="False" SelectionMode="Extended" SelectionUnit="FullRow"
+                  CanUserResizeColumns="True"
                   HeadersVisibility="All" RowHeaderWidth="36"
                   AlternationCount="2" AlternatingRowBackground="WhiteSmoke"
                   MouseDoubleClick="DataGrid_MouseDoubleClick"
@@ -36,31 +37,53 @@
                   SelectionChanged="LogDataGrid_SelectionChanged"
                   PreviewMouseRightButtonDown="LogDataGrid_PreviewMouseRightButtonDown"
                   PreviewKeyDown="LogDataGrid_PreviewKeyDown">
+            <DataGrid.CellStyle>
+                <Style TargetType="DataGridCell">
+                    <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                </Style>
+            </DataGrid.CellStyle>
+            <!-- Explicit ElementStyle on every column below (rather than relying on an implicit
+                 TextBlock style) is the reliable way to center a DataGridTextColumn's generated
+                 TextBlock. DataGridTextColumn assigns its own element outside the normal implicit
+                 style lookup path, so an implicit style scoped to DataGrid.Resources silently had no
+                 effect. ElementStyle is the column's own designed extension point for this. -->
+            <DataGrid.Resources>
+                <Style x:Key="CenteredCellText" TargetType="TextBlock">
+                    <Setter Property="TextAlignment" Value="Center"/>
+                    <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                </Style>
+            </DataGrid.Resources>
             <DataGrid.ColumnHeaderStyle>
                 <Style TargetType="DataGridColumnHeader">
                     <Setter Property="Background" Value="LightBlue"/>
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                     <Setter Property="VerticalContentAlignment" Value="Center"/>
                     <Setter Property="ContentTemplate">
                         <Setter.Value>
                             <DataTemplate>
-                                <!-- Word-wraps onto a second line instead of truncating a header into a
-                                     partial word or a hyphenated break when a column is narrower than its
-                                     title (e.g. "ARRL Section", "Station Callsign"). -->
-                                <TextBlock Text="{Binding}" TextWrapping="Wrap" TextAlignment="Center"
-                                           Padding="4,2"/>
+                                <!-- Border gives every header a visible right-edge separator line. The
+                                     default header chrome's own separator blends into the LightBlue
+                                     background above and isn't reliably visible. -->
+                                <Border BorderBrush="#6699BB" BorderThickness="0,0,1,0">
+                                    <!-- Word-wraps onto a second line instead of truncating a header into a
+                                         partial word or a hyphenated break when a column is narrower than its
+                                         title (e.g. "ARRL Section", "Station Callsign"). -->
+                                    <TextBlock Text="{Binding}" TextWrapping="Wrap" TextAlignment="Center"
+                                               Padding="4,2"/>
+                                </Border>
                             </DataTemplate>
                         </Setter.Value>
                     </Setter>
                 </Style>
             </DataGrid.ColumnHeaderStyle>
             <DataGrid.Columns>
-                <DataGridTextColumn x:Name="UtcTimeColumn" local:ColumnKey.Key="UtcTime" Header="Date/Time (UTC)" Binding="{Binding QsoDateTimeOnUtc, StringFormat='yyyy-MM-dd HH:mm'}" Width="140" MinWidth="110"/>
-                <DataGridTextColumn x:Name="LocalTimeColumn" local:ColumnKey.Key="LocalTime" Header="Local Time" Binding="{Binding LocalDateTimeOn, StringFormat='yyyy-MM-dd HH:mm'}" Width="140" MinWidth="90"/>
-                <DataGridTextColumn local:ColumnKey.Key="Callsign" Header="Callsign" Binding="{Binding Callsign}" Width="90" MinWidth="75"/>
-                <DataGridTextColumn x:Name="BandColumn" local:ColumnKey.Key="Band" Header="Band" Binding="{Binding Band}" Width="60" MinWidth="45"/>
-                <DataGridTextColumn x:Name="ModeColumn" local:ColumnKey.Key="Mode" Header="Mode" Binding="{Binding Mode}" Width="70" MinWidth="45"/>
-                <DataGridTextColumn x:Name="FreqColumn" local:ColumnKey.Key="Freq" Header="Freq" Binding="{Binding FrequencyMhz}" Width="70" MinWidth="45"/>
-                <DataGridTextColumn x:Name="RstColumn" local:ColumnKey.Key="Rst" Header="RST S/R" Width="70" MinWidth="55">
+                <DataGridTextColumn x:Name="UtcTimeColumn" local:ColumnKey.Key="UtcTime" Header="Date/Time (UTC)" Binding="{Binding QsoDateTimeOnUtc, StringFormat='yyyy-MM-dd HH:mm'}" Width="140" MinWidth="110" ElementStyle="{StaticResource CenteredCellText}"/>
+                <DataGridTextColumn x:Name="LocalTimeColumn" local:ColumnKey.Key="LocalTime" Header="Local Time" Binding="{Binding LocalDateTimeOn, StringFormat='yyyy-MM-dd HH:mm'}" Width="140" MinWidth="90" ElementStyle="{StaticResource CenteredCellText}"/>
+                <DataGridTextColumn local:ColumnKey.Key="Callsign" Header="Callsign" Binding="{Binding Callsign}" Width="90" MinWidth="75" ElementStyle="{StaticResource CenteredCellText}"/>
+                <DataGridTextColumn x:Name="BandColumn" local:ColumnKey.Key="Band" Header="Band" Binding="{Binding Band}" Width="55" MinWidth="40" ElementStyle="{StaticResource CenteredCellText}"/>
+                <DataGridTextColumn x:Name="ModeColumn" local:ColumnKey.Key="Mode" Header="Mode" Binding="{Binding Mode}" Width="70" MinWidth="45" ElementStyle="{StaticResource CenteredCellText}"/>
+                <DataGridTextColumn x:Name="FreqColumn" local:ColumnKey.Key="Freq" Header="Freq" Binding="{Binding FrequencyMhz}" Width="65" MinWidth="45" ElementStyle="{StaticResource CenteredCellText}"/>
+                <DataGridTextColumn x:Name="RstColumn" local:ColumnKey.Key="Rst" Header="RST S/R" Width="65" MinWidth="50" ElementStyle="{StaticResource CenteredCellText}">
                     <DataGridTextColumn.Binding>
                         <MultiBinding StringFormat="{}{0}/{1}">
                             <Binding Path="RstSent"/>
@@ -68,20 +91,20 @@
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
-                <DataGridTextColumn x:Name="NameColumn" local:ColumnKey.Key="Name" Header="Name" Binding="{Binding Name}" Width="110" MinWidth="45"/>
-                <DataGridTextColumn x:Name="GridColumn" local:ColumnKey.Key="Grid" Header="Grid" Binding="{Binding GridSquare}" Width="70" MinWidth="45"/>
-                <DataGridTextColumn x:Name="CityColumn" local:ColumnKey.Key="City" Header="City" Binding="{Binding City}" Width="100" MinWidth="45"/>
-                <DataGridTextColumn x:Name="StateColumn" local:ColumnKey.Key="State" Header="State" Binding="{Binding State}" Width="50" MinWidth="45"/>
-                <DataGridTextColumn x:Name="CountyColumn" local:ColumnKey.Key="County" Header="County" Binding="{Binding County}" Width="100" MinWidth="55"/>
-                <DataGridTextColumn x:Name="CountryColumn" local:ColumnKey.Key="Country" Header="Country" Binding="{Binding Country}" Width="120" MinWidth="60"/>
-                <DataGridTextColumn x:Name="ArrlSectionColumn" local:ColumnKey.Key="ArrlSection" Header="ARRL Section" Binding="{Binding ArrlSection}" Width="90" MinWidth="65"/>
-                <DataGridTextColumn x:Name="CqZoneColumn" local:ColumnKey.Key="CqZone" Header="CQ Zone" Binding="{Binding CqZone}" Width="60" MinWidth="50"/>
-                <DataGridTextColumn x:Name="ItuZoneColumn" local:ColumnKey.Key="ItuZone" Header="ITU Zone" Binding="{Binding ItuZone}" Width="60" MinWidth="50"/>
-                <DataGridTextColumn x:Name="ContinentColumn" local:ColumnKey.Key="Continent" Header="Continent" Binding="{Binding Continent}" Width="80" MinWidth="75"/>
-                <DataGridTextColumn x:Name="SubModeColumn" local:ColumnKey.Key="SubMode" Header="Sub Mode" Binding="{Binding SubMode}" Width="80" MinWidth="55"/>
-                <DataGridTextColumn x:Name="FreqRxColumn" local:ColumnKey.Key="FreqRx" Header="Freq Rx" Binding="{Binding FrequencyRxMhz}" Width="70" MinWidth="50"/>
-                <DataGridTextColumn x:Name="TxPowerColumn" local:ColumnKey.Key="TxPower" Header="TX Power" Binding="{Binding TxPowerWatts}" Width="70" MinWidth="55"/>
-                <DataGridTextColumn x:Name="QslColumn" local:ColumnKey.Key="Qsl" Header="QSL S/R" Width="80" MinWidth="55">
+                <DataGridTextColumn x:Name="NameColumn" local:ColumnKey.Key="Name" Header="Name" Binding="{Binding Name}" Width="110" MinWidth="45" ElementStyle="{StaticResource CenteredCellText}"/>
+                <DataGridTextColumn x:Name="GridColumn" local:ColumnKey.Key="Grid" Header="Grid" Binding="{Binding GridSquare}" Width="65" MinWidth="45" ElementStyle="{StaticResource CenteredCellText}"/>
+                <DataGridTextColumn x:Name="CityColumn" local:ColumnKey.Key="City" Header="City" Binding="{Binding City}" Width="100" MinWidth="45" ElementStyle="{StaticResource CenteredCellText}"/>
+                <DataGridTextColumn x:Name="StateColumn" local:ColumnKey.Key="State" Header="State" Binding="{Binding State}" Width="45" MinWidth="40" ElementStyle="{StaticResource CenteredCellText}"/>
+                <DataGridTextColumn x:Name="CountyColumn" local:ColumnKey.Key="County" Header="County" Binding="{Binding County}" Width="100" MinWidth="55" ElementStyle="{StaticResource CenteredCellText}"/>
+                <DataGridTextColumn x:Name="CountryColumn" local:ColumnKey.Key="Country" Header="Country" Binding="{Binding Country}" Width="120" MinWidth="60" ElementStyle="{StaticResource CenteredCellText}"/>
+                <DataGridTextColumn x:Name="ArrlSectionColumn" local:ColumnKey.Key="ArrlSection" Header="ARRL Section" Binding="{Binding ArrlSection}" Width="65" MinWidth="55" ElementStyle="{StaticResource CenteredCellText}"/>
+                <DataGridTextColumn x:Name="CqZoneColumn" local:ColumnKey.Key="CqZone" Header="CQ Zone" Binding="{Binding CqZone}" Width="50" MinWidth="45" ElementStyle="{StaticResource CenteredCellText}"/>
+                <DataGridTextColumn x:Name="ItuZoneColumn" local:ColumnKey.Key="ItuZone" Header="ITU Zone" Binding="{Binding ItuZone}" Width="50" MinWidth="45" ElementStyle="{StaticResource CenteredCellText}"/>
+                <DataGridTextColumn x:Name="ContinentColumn" local:ColumnKey.Key="Continent" Header="Continent" Binding="{Binding Continent}" Width="80" MinWidth="75" ElementStyle="{StaticResource CenteredCellText}"/>
+                <DataGridTextColumn x:Name="SubModeColumn" local:ColumnKey.Key="SubMode" Header="Sub Mode" Binding="{Binding SubMode}" Width="80" MinWidth="55" ElementStyle="{StaticResource CenteredCellText}"/>
+                <DataGridTextColumn x:Name="FreqRxColumn" local:ColumnKey.Key="FreqRx" Header="Freq Rx" Binding="{Binding FrequencyRxMhz}" Width="70" MinWidth="50" ElementStyle="{StaticResource CenteredCellText}"/>
+                <DataGridTextColumn x:Name="TxPowerColumn" local:ColumnKey.Key="TxPower" Header="TX Power" Binding="{Binding TxPowerWatts}" Width="70" MinWidth="55" ElementStyle="{StaticResource CenteredCellText}"/>
+                <DataGridTextColumn x:Name="QslColumn" local:ColumnKey.Key="Qsl" Header="QSL S/R" Width="80" MinWidth="55" ElementStyle="{StaticResource CenteredCellText}">
                     <DataGridTextColumn.Binding>
                         <MultiBinding StringFormat="{}{0}/{1}">
                             <Binding Path="QslSent"/>
@@ -89,7 +112,7 @@
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
-                <DataGridTextColumn x:Name="LotwColumn" local:ColumnKey.Key="Lotw" Header="LoTW S/R" Width="80" MinWidth="60">
+                <DataGridTextColumn x:Name="LotwColumn" local:ColumnKey.Key="Lotw" Header="LoTW S/R" Width="80" MinWidth="60" ElementStyle="{StaticResource CenteredCellText}">
                     <DataGridTextColumn.Binding>
                         <MultiBinding StringFormat="{}{0}/{1}">
                             <Binding Path="LotwQslSent"/>
@@ -97,20 +120,27 @@
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
-                <DataGridTextColumn x:Name="QslViaColumn" local:ColumnKey.Key="QslVia" Header="QSL Via" Binding="{Binding QslViaCallsign}" Width="90" MinWidth="55"/>
-                <DataGridTextColumn x:Name="TimeOffColumn" local:ColumnKey.Key="TimeOff" Header="Time Off (UTC)" Binding="{Binding QsoDateTimeOffUtc, StringFormat='yyyy-MM-dd HH:mm'}" Width="140" MinWidth="90"/>
-                <DataGridTextColumn x:Name="StationColumn" local:ColumnKey.Key="Station" Header="Station Callsign" Binding="{Binding StationCallsign}" Width="100" MinWidth="80"/>
-                <DataGridTextColumn x:Name="OperatorColumn" local:ColumnKey.Key="Operator" Header="Operator" Binding="{Binding OperatorCallsign}" Width="90" MinWidth="70"/>
-                <DataGridTextColumn x:Name="MyGridColumn" local:ColumnKey.Key="MyGrid" Header="My Grid" Binding="{Binding MyGridSquare}" Width="80" MinWidth="50"/>
-                <DataGridTextColumn x:Name="MyStateColumn" local:ColumnKey.Key="MyState" Header="My State" Binding="{Binding MyState}" Width="70" MinWidth="55"/>
-                <DataGridTextColumn x:Name="MyCountyColumn" local:ColumnKey.Key="MyCounty" Header="My County" Binding="{Binding MyCounty}" Width="100" MinWidth="65"/>
-                <DataGridTextColumn x:Name="QthColumn" local:ColumnKey.Key="Qth" Header="QTH" Binding="{Binding Qth}" Width="100" MinWidth="40"/>
-                <DataGridTextColumn x:Name="OpColumn" local:ColumnKey.Key="Op" Header="OP" Binding="{Binding Op}" Width="80" MinWidth="35"/>
-                <DataGridTextColumn x:Name="MySotaColumn" local:ColumnKey.Key="MySota" Header="My SOTA" Binding="{Binding MySotaRef}" Width="90" MinWidth="55"/>
-                <DataGridTextColumn x:Name="SotaColumn" local:ColumnKey.Key="Sota" Header="SOTA" Binding="{Binding SotaRef}" Width="90" MinWidth="45"/>
-                <DataGridTextColumn x:Name="MyPotaColumn" local:ColumnKey.Key="MyPota" Header="My POTA" Binding="{Binding MySigInfo}" Width="90" MinWidth="55"/>
-                <DataGridTextColumn x:Name="PotaColumn" local:ColumnKey.Key="Pota" Header="POTA" Binding="{Binding SigInfo}" Width="90" MinWidth="45"/>
-                <DataGridTextColumn x:Name="CommentColumn" local:ColumnKey.Key="Comment" Header="Comment" Binding="{Binding Comment}" Width="*" MinWidth="70"/>
+                <DataGridTextColumn x:Name="QslViaColumn" local:ColumnKey.Key="QslVia" Header="QSL Via" Binding="{Binding QslViaCallsign}" Width="90" MinWidth="55" ElementStyle="{StaticResource CenteredCellText}"/>
+                <DataGridTextColumn x:Name="TimeOffColumn" local:ColumnKey.Key="TimeOff" Header="Time Off (UTC)" Binding="{Binding QsoDateTimeOffUtc, StringFormat='yyyy-MM-dd HH:mm'}" Width="140" MinWidth="90" ElementStyle="{StaticResource CenteredCellText}"/>
+                <DataGridTextColumn x:Name="StationColumn" local:ColumnKey.Key="Station" Header="Station Callsign" Binding="{Binding StationCallsign}" Width="100" MinWidth="80" ElementStyle="{StaticResource CenteredCellText}"/>
+                <DataGridTextColumn x:Name="OperatorColumn" local:ColumnKey.Key="Operator" Header="Operator" Binding="{Binding OperatorCallsign}" Width="90" MinWidth="70" ElementStyle="{StaticResource CenteredCellText}"/>
+                <DataGridTextColumn x:Name="MyGridColumn" local:ColumnKey.Key="MyGrid" Header="My Grid" Binding="{Binding MyGridSquare}" Width="65" MinWidth="45" ElementStyle="{StaticResource CenteredCellText}"/>
+                <DataGridTextColumn x:Name="MyStateColumn" local:ColumnKey.Key="MyState" Header="My State" Binding="{Binding MyState}" Width="45" MinWidth="40" ElementStyle="{StaticResource CenteredCellText}"/>
+                <DataGridTextColumn x:Name="MyCountyColumn" local:ColumnKey.Key="MyCounty" Header="My County" Binding="{Binding MyCounty}" Width="100" MinWidth="65" ElementStyle="{StaticResource CenteredCellText}"/>
+                <DataGridTextColumn x:Name="QthColumn" local:ColumnKey.Key="Qth" Header="QTH" Binding="{Binding Qth}" Width="100" MinWidth="40" ElementStyle="{StaticResource CenteredCellText}"/>
+                <DataGridTextColumn x:Name="OpColumn" local:ColumnKey.Key="Op" Header="OP" Binding="{Binding Op}" Width="80" MinWidth="35" ElementStyle="{StaticResource CenteredCellText}"/>
+                <DataGridTextColumn x:Name="MySotaColumn" local:ColumnKey.Key="MySota" Header="My SOTA" Binding="{Binding MySotaRef}" Width="100" MinWidth="60" ElementStyle="{StaticResource CenteredCellText}"/>
+                <DataGridTextColumn x:Name="SotaColumn" local:ColumnKey.Key="Sota" Header="SOTA" Binding="{Binding SotaRef}" Width="100" MinWidth="60" ElementStyle="{StaticResource CenteredCellText}"/>
+                <DataGridTextColumn x:Name="MyPotaColumn" local:ColumnKey.Key="MyPota" Header="My POTA" Binding="{Binding MySigInfo}" Width="160" MinWidth="80" ElementStyle="{StaticResource CenteredCellText}"/>
+                <DataGridTextColumn x:Name="PotaColumn" local:ColumnKey.Key="Pota" Header="POTA" Binding="{Binding SigInfo}" Width="160" MinWidth="80" ElementStyle="{StaticResource CenteredCellText}"/>
+                <!-- Fixed width rather than "*" (star-sized/fill-remaining-space). A star column
+                     absorbs whatever space other columns don't use, which works fine on a wide window
+                     but gets squeezed to its MinWidth on a narrower one (e.g. maximized to a single
+                     monitor). Once squeezed to the floor, it has no slack left to lend when resizing any
+                     other column, so WPF silently refuses the resize instead of scrolling. A fixed width
+                     avoids that failure mode entirely: widening any column just extends the grid's
+                     total content width, triggering the horizontal scrollbar instead. -->
+                <DataGridTextColumn x:Name="CommentColumn" local:ColumnKey.Key="Comment" Header="Comment" Binding="{Binding Comment}" Width="200" MinWidth="70" ElementStyle="{StaticResource CenteredCellText}"/>
             </DataGrid.Columns>
         </DataGrid>
     </Grid>

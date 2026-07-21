@@ -206,18 +206,10 @@ public class SettingsService
         return DefaultDatabasePath();
     }
 
-    /// <summary>Where a brand-new database is created when nothing else has been chosen: next to the
-    /// exe, so a copied/portable install carries its data with it instead of scattering it into
-    /// %LOCALAPPDATA%. An install from before this changed keeps using its existing
-    /// %LOCALAPPDATA%\CVARC Logger\cvarclogger.db rather than silently starting a second, empty database
-    /// next to the exe.</summary>
-    private static string DefaultDatabasePath()
-    {
-        string legacyPath = Path.Combine(App.DataDirectory, "cvarclogger.db");
-        if (File.Exists(legacyPath)) return legacyPath;
-
-        return Path.Combine(AppContext.BaseDirectory, "cvarclogger.db");
-    }
+    /// <summary>Where a brand-new database is created when nothing else has been chosen: alongside
+    /// everything else CvarcLogger creates -- see App.DataDirectory for the legacy-preserving logic that
+    /// decides whether that's next to the exe or an existing %LOCALAPPDATA% install.</summary>
+    private static string DefaultDatabasePath() => Path.Combine(App.DataDirectory, "cvarclogger.db");
 
     private AppSettingsData Load()
     {
@@ -269,7 +261,7 @@ public class SettingsService
         public Dictionary<string, double> LogColumnWidths { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
         public bool CatEnabled { get; set; }
-        public bool LaunchRigctldAutomatically { get; set; } = true;
+        public bool LaunchRigctldAutomatically { get; set; }
 
         public bool GridTrackerEnabled { get; set; }
         public string GridTrackerHost { get; set; } = "127.0.0.1";
