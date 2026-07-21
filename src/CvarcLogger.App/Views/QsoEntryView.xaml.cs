@@ -34,6 +34,7 @@ public partial class QsoEntryView : UserControl
     {
         if (DataContext is not QsoEntryViewModel viewModel) return;
 
+        TimeOffPanel.Visibility = ToVisibility(viewModel.IsFieldVisible("TimeOff"));
         FreqPanel.Visibility = ToVisibility(viewModel.IsFieldVisible("Freq"));
         RstSentPanel.Visibility = ToVisibility(viewModel.IsFieldVisible("Rst"));
         RstRcvdPanel.Visibility = ToVisibility(viewModel.IsFieldVisible("Rst"));

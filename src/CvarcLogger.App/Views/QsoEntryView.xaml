@@ -8,13 +8,44 @@
              mc:Ignorable="d" d:DesignWidth="900">
     <UserControl.Resources>
         <converters:SubModeVisibilityConverter x:Key="SubModeVisibilityConverter"/>
-        <!-- +2 font-size bump applied here (rather than on every individual control) so it covers every
-             TextBox/ComboBox in this form's input row consistently. -->
+        <!-- +2 font-size bump applied here (rather than on every individual control), plus a fixed
+             Height so every TextBox and every ComboBox in this form measures identically. Without this,
+             ComboBox's extra dropdown-arrow chrome makes it a few pixels taller than a plain TextBox by
+             default, misaligning the two control types row to row. -->
         <Style TargetType="TextBox">
             <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Height" Value="28"/>
         </Style>
         <Style TargetType="ComboBox">
             <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Height" Value="28"/>
+        </Style>
+        <!-- Centers every field caption over its input control (each is the first child of its own
+             StackPanel, directly above a TextBox/ComboBox), and reserves the same MinHeight for all of
+             them regardless of whether a given one wraps onto a second line. Several captions wrap,
+             including the two-Run "static" ones (see below) when the combined text doesn't fit their
+             column, and the plain ones on narrow columns (ARRL Section, CQ Zone, ITU Zone, etc.) via
+             TextWrapping below. Without a shared MinHeight, a wrapped 2-line caption is taller than its
+             1-line neighbors, and StackPanel pushes that field's input box down relative to the rest of
+             the row: exactly the "Station/RST Sent/RST Rcvd/ARRL Section sit lower" misalignment. Also
+             applies to the CAT status message TextBlock, the only other TextBlock in this view; harmless
+             there, it's a short line with room to spare. -->
+        <Style TargetType="TextBlock">
+            <Setter Property="TextAlignment" Value="Center"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="MinHeight" Value="34"/>
+        </Style>
+        <!-- Applied to fields that carry their value over to the next QSO instead of clearing after
+             Log QSO (Station, Band, Mode, Sub-Mode, RST, My SOTA/POTA, OP, QTH, TX Power). A light
+             background tint plus the "static" label suffix (see each field below) makes that carry-over
+             behavior visible instead of looking like fields that simply failed to clear. -->
+        <Style x:Key="StickyTextBox" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+            <Setter Property="Background" Value="#FFF6D9"/>
+            <Setter Property="ToolTip" Value="Carries over to the next QSO -- edit manually if it should be different for this contact."/>
+        </Style>
+        <Style x:Key="StickyComboBox" TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
+            <Setter Property="Background" Value="#FFF6D9"/>
+            <Setter Property="ToolTip" Value="Carries over to the next QSO -- edit manually if it should be different for this contact."/>
         </Style>
     </UserControl.Resources>
     <UserControl.InputBindings>
@@ -22,22 +53,29 @@
     </UserControl.InputBindings>
     <Border BorderBrush="#CCC" BorderThickness="0,0,0,1" Padding="8">
         <StackPanel>
-            <!-- Left-to-right order: Station, Callsign, Date/Time UTC, Local Time, Band, Frequency, Mode,
-                 Sub-Mode, RST Sent, RST Rcvd, Name, Grid, City, State, County, Country, ARRL Section,
-                 CQ Zone, ITU Zone, My SOTA, SOTA, My POTA, POTA, OP, QTH, TX Power, Comment. One WrapPanel
-                 so it reflows evenly regardless of window width instead of relying on hand-picked row
-                 breaks. -->
+            <!-- Left-to-right order: Station, Callsign, Date/Time UTC, Local Time, Time Off (UTC), Band,
+                 Frequency, Mode, Sub-Mode, RST Sent, RST Rcvd, Name, Grid, City, State, County, Country,
+                 ARRL Section, CQ Zone, ITU Zone, My SOTA, SOTA, My POTA, POTA, OP, QTH, TX Power,
+                 Comment. One WrapPanel so it reflows evenly regardless of window width instead of
+                 relying on hand-picked row breaks. -->
             <!-- Fixed Width so wrapping is stable and predictable when this whole form is later scaled by
                  a Viewbox in MainWindow (Viewbox measures its child with infinite available width, which
                  would otherwise make a WrapPanel refuse to wrap at all). -->
             <WrapPanel HorizontalAlignment="Center" Width="1100">
                 <StackPanel Margin="0,0,10,4" Width="130">
-                    <TextBlock Text="Station" FontSize="13" FontWeight="Bold" Foreground="Black"/>
-                    <ComboBox ItemsSource="{Binding StationProfiles}"
-                              SelectedItem="{Binding SelectedStationProfile}"
-                              DisplayMemberPath="Callsign"/>
+                    <TextBlock>
+                        <Run Text="Station" FontSize="13" FontWeight="Bold" Foreground="Black"/>
+                        <Run Text=" static" FontSize="11" FontStyle="Italic" Foreground="#999999"/>
+                    </TextBlock>
+                    <!-- ComboBox's default template ignores a plain Background setter for its own display
+                         area, so the "static" tint has to come from a wrapping Border instead. -->
+                    <Border Background="#FFF6D9" Padding="1" CornerRadius="2">
+                        <ComboBox ItemsSource="{Binding StationProfiles}"
+                                  SelectedItem="{Binding SelectedStationProfile}"
+                                  DisplayMemberPath="Callsign" Style="{StaticResource StickyComboBox}"/>
+                    </Border>
                 </StackPanel>
-                <StackPanel Margin="0,0,10,4" Width="130">
+                <StackPanel Margin="0,0,10,4" Width="115">
                     <TextBlock Text="Callsign" FontSize="13" FontWeight="Bold" Foreground="Black"/>
                     <TextBox Text="{Binding Callsign, UpdateSourceTrigger=PropertyChanged}"
                              CharacterCasing="Upper" FontWeight="Bold"/>
@@ -52,36 +90,62 @@
                     <TextBox Text="{Binding QsoDateTimeLocalText, UpdateSourceTrigger=PropertyChanged}"
                              behaviors:DateInputMask.Format="yyyy-MM-dd HH:mm:ss"/>
                 </StackPanel>
-                <StackPanel Margin="0,0,10,4" Width="90">
-                    <TextBlock Text="Band" FontSize="13" FontWeight="Bold" Foreground="Black"/>
-                    <ComboBox ItemsSource="{Binding Bands}" SelectedItem="{Binding Band}" IsEditable="True"/>
+                <StackPanel x:Name="TimeOffPanel" Margin="0,0,10,4" Width="175">
+                    <TextBlock Text="Time Off (UTC)" FontSize="13" FontWeight="Bold" Foreground="Black"/>
+                    <TextBox Text="{Binding QsoDateTimeOffUtcText, UpdateSourceTrigger=PropertyChanged}"
+                             behaviors:DateInputMask.Format="yyyy-MM-dd HH:mm:ss"/>
                 </StackPanel>
-                <StackPanel x:Name="FreqPanel" Margin="0,0,10,4" Width="100">
-                    <TextBlock Text="Freq (MHz)" FontSize="13" FontWeight="Bold" Foreground="Black"/>
+                <StackPanel Margin="0,0,10,4" Width="65">
+                    <TextBlock>
+                        <Run Text="Band" FontSize="13" FontWeight="Bold" Foreground="Black"/>
+                        <Run Text=" static" FontSize="11" FontStyle="Italic" Foreground="#999999"/>
+                    </TextBlock>
+                    <Border Background="#FFF6D9" Padding="1" CornerRadius="2">
+                        <ComboBox ItemsSource="{Binding Bands}" SelectedItem="{Binding Band}" IsEditable="True" Style="{StaticResource StickyComboBox}"/>
+                    </Border>
+                </StackPanel>
+                <StackPanel x:Name="FreqPanel" Margin="0,0,10,4" Width="80">
+                    <TextBlock Text="Freq (MHz)" FontSize="13" FontWeight="Bold" Foreground="Black" TextWrapping="Wrap"/>
                     <TextBox Text="{Binding FrequencyMhz, UpdateSourceTrigger=PropertyChanged}"/>
                 </StackPanel>
                 <StackPanel Margin="0,0,10,4" Width="90">
-                    <TextBlock Text="Mode" FontSize="13" FontWeight="Bold" Foreground="Black"/>
-                    <ComboBox ItemsSource="{Binding Modes}" SelectedItem="{Binding Mode}" IsEditable="True"/>
+                    <TextBlock>
+                        <Run Text="Mode" FontSize="13" FontWeight="Bold" Foreground="Black"/>
+                        <Run Text=" static" FontSize="11" FontStyle="Italic" Foreground="#999999"/>
+                    </TextBlock>
+                    <Border Background="#FFF6D9" Padding="1" CornerRadius="2">
+                        <ComboBox ItemsSource="{Binding Modes}" SelectedItem="{Binding Mode}" IsEditable="True" Style="{StaticResource StickyComboBox}"/>
+                    </Border>
                 </StackPanel>
                 <StackPanel Margin="0,0,10,4" Width="95"
                             Visibility="{Binding Mode, Converter={StaticResource SubModeVisibilityConverter}}">
-                    <TextBlock Text="Sub-Mode" FontSize="13" FontWeight="Bold" Foreground="Black"/>
-                    <ComboBox ItemsSource="{Binding SubModes}" SelectedItem="{Binding SubMode}" IsEditable="True"/>
+                    <TextBlock>
+                        <Run Text="Sub-Mode" FontSize="13" FontWeight="Bold" Foreground="Black"/>
+                        <Run Text=" static" FontSize="11" FontStyle="Italic" Foreground="#999999"/>
+                    </TextBlock>
+                    <Border Background="#FFF6D9" Padding="1" CornerRadius="2">
+                        <ComboBox ItemsSource="{Binding SubModes}" SelectedItem="{Binding SubMode}" IsEditable="True" Style="{StaticResource StickyComboBox}"/>
+                    </Border>
                 </StackPanel>
-                <StackPanel x:Name="RstSentPanel" Margin="0,0,10,4" Width="80">
-                    <TextBlock Text="RST Sent" FontSize="13" FontWeight="Bold" Foreground="Black"/>
-                    <TextBox Text="{Binding RstSent, UpdateSourceTrigger=PropertyChanged}"/>
+                <StackPanel x:Name="RstSentPanel" Margin="0,0,10,4" Width="55">
+                    <TextBlock TextWrapping="Wrap">
+                        <Run Text="RST Sent" FontSize="13" FontWeight="Bold" Foreground="Black"/>
+                        <Run Text=" static" FontSize="11" FontStyle="Italic" Foreground="#999999"/>
+                    </TextBlock>
+                    <TextBox Text="{Binding RstSent, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource StickyTextBox}"/>
                 </StackPanel>
-                <StackPanel x:Name="RstRcvdPanel" Margin="0,0,10,4" Width="80">
-                    <TextBlock Text="RST Rcvd" FontSize="13" FontWeight="Bold" Foreground="Black"/>
-                    <TextBox Text="{Binding RstRcvd, UpdateSourceTrigger=PropertyChanged}"/>
+                <StackPanel x:Name="RstRcvdPanel" Margin="0,0,10,4" Width="55">
+                    <TextBlock TextWrapping="Wrap">
+                        <Run Text="RST Rcvd" FontSize="13" FontWeight="Bold" Foreground="Black"/>
+                        <Run Text=" static" FontSize="11" FontStyle="Italic" Foreground="#999999"/>
+                    </TextBlock>
+                    <TextBox Text="{Binding RstRcvd, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource StickyTextBox}"/>
                 </StackPanel>
                 <StackPanel x:Name="NamePanel" Margin="0,0,10,4" Width="150">
                     <TextBlock Text="Name" FontSize="13" FontWeight="Bold" Foreground="Black"/>
                     <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"/>
                 </StackPanel>
-                <StackPanel x:Name="GridPanel" Margin="0,0,10,4" Width="90">
+                <StackPanel x:Name="GridPanel" Margin="0,0,10,4" Width="80">
                     <TextBlock Text="Grid" FontSize="13" FontWeight="Bold" Foreground="Black"/>
                     <TextBox Text="{Binding GridSquare, UpdateSourceTrigger=PropertyChanged}"/>
                 </StackPanel>
@@ -89,8 +153,8 @@
                     <TextBlock Text="City" FontSize="13" FontWeight="Bold" Foreground="Black"/>
                     <TextBox Text="{Binding City, UpdateSourceTrigger=PropertyChanged}"/>
                 </StackPanel>
-                <StackPanel x:Name="StatePanel" Margin="0,0,10,4" Width="70">
-                    <TextBlock Text="State" FontSize="13" FontWeight="Bold" Foreground="Black"/>
+                <StackPanel x:Name="StatePanel" Margin="0,0,10,4" Width="50">
+                    <TextBlock Text="State" FontSize="13" FontWeight="Bold" Foreground="Black" TextWrapping="Wrap"/>
                     <TextBox Text="{Binding State, UpdateSourceTrigger=PropertyChanged}" CharacterCasing="Upper"/>
                 </StackPanel>
                 <StackPanel x:Name="CountyPanel" Margin="0,0,10,4" Width="100">
@@ -101,45 +165,60 @@
                     <TextBlock Text="Country" FontSize="13" FontWeight="Bold" Foreground="Black"/>
                     <TextBox Text="{Binding Country, UpdateSourceTrigger=PropertyChanged}"/>
                 </StackPanel>
-                <StackPanel x:Name="ArrlSectionPanel" Margin="0,0,10,4" Width="105">
-                    <TextBlock Text="ARRL Section" FontSize="13" FontWeight="Bold" Foreground="Black"/>
+                <StackPanel x:Name="ArrlSectionPanel" Margin="0,0,10,4" Width="70">
+                    <TextBlock Text="ARRL Section" FontSize="13" FontWeight="Bold" Foreground="Black" TextWrapping="Wrap"/>
                     <TextBox Text="{Binding ArrlSection, UpdateSourceTrigger=PropertyChanged}" CharacterCasing="Upper"/>
                 </StackPanel>
-                <StackPanel x:Name="CqZonePanel" Margin="0,0,10,4" Width="80">
-                    <TextBlock Text="CQ Zone" FontSize="13" FontWeight="Bold" Foreground="Black"/>
+                <StackPanel x:Name="CqZonePanel" Margin="0,0,10,4" Width="55">
+                    <TextBlock Text="CQ Zone" FontSize="13" FontWeight="Bold" Foreground="Black" TextWrapping="Wrap"/>
                     <TextBox Text="{Binding CqZone, UpdateSourceTrigger=PropertyChanged}"/>
                 </StackPanel>
-                <StackPanel x:Name="ItuZonePanel" Margin="0,0,10,4" Width="80">
-                    <TextBlock Text="ITU Zone" FontSize="13" FontWeight="Bold" Foreground="Black"/>
+                <StackPanel x:Name="ItuZonePanel" Margin="0,0,10,4" Width="55">
+                    <TextBlock Text="ITU Zone" FontSize="13" FontWeight="Bold" Foreground="Black" TextWrapping="Wrap"/>
                     <TextBox Text="{Binding ItuZone, UpdateSourceTrigger=PropertyChanged}"/>
                 </StackPanel>
-                <StackPanel x:Name="MySotaPanel" Margin="0,0,10,4" Width="105">
-                    <TextBlock Text="My SOTA" FontSize="13" FontWeight="Bold" Foreground="Black"/>
-                    <TextBox Text="{Binding MySotaRef, UpdateSourceTrigger=PropertyChanged}"/>
+                <StackPanel x:Name="MySotaPanel" Margin="0,0,10,4" Width="110">
+                    <TextBlock>
+                        <Run Text="My SOTA" FontSize="13" FontWeight="Bold" Foreground="Black"/>
+                        <Run Text=" static" FontSize="11" FontStyle="Italic" Foreground="#999999"/>
+                    </TextBlock>
+                    <TextBox Text="{Binding MySotaRef, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource StickyTextBox}"/>
                 </StackPanel>
-                <StackPanel x:Name="SotaPanel" Margin="0,0,10,4" Width="105">
+                <StackPanel x:Name="SotaPanel" Margin="0,0,10,4" Width="110">
                     <TextBlock Text="SOTA" FontSize="13" FontWeight="Bold" Foreground="Black"/>
                     <TextBox Text="{Binding SotaRef, UpdateSourceTrigger=PropertyChanged}"/>
                 </StackPanel>
-                <StackPanel x:Name="MyPotaPanel" Margin="0,0,10,4" Width="95">
-                    <TextBlock Text="My POTA" FontSize="13" FontWeight="Bold" Foreground="Black"/>
-                    <TextBox Text="{Binding MySigInfo, UpdateSourceTrigger=PropertyChanged}"/>
+                <StackPanel x:Name="MyPotaPanel" Margin="0,0,10,4" Width="175">
+                    <TextBlock>
+                        <Run Text="My POTA" FontSize="13" FontWeight="Bold" Foreground="Black"/>
+                        <Run Text=" static" FontSize="11" FontStyle="Italic" Foreground="#999999"/>
+                    </TextBlock>
+                    <TextBox Text="{Binding MySigInfo, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource StickyTextBox}"/>
                 </StackPanel>
-                <StackPanel x:Name="PotaPanel" Margin="0,0,10,4" Width="95">
+                <StackPanel x:Name="PotaPanel" Margin="0,0,10,4" Width="175">
                     <TextBlock Text="POTA" FontSize="13" FontWeight="Bold" Foreground="Black"/>
                     <TextBox Text="{Binding SigInfo, UpdateSourceTrigger=PropertyChanged}"/>
                 </StackPanel>
                 <StackPanel x:Name="OpPanel" Margin="0,0,10,4" Width="90">
-                    <TextBlock Text="OP" FontSize="13" FontWeight="Bold" Foreground="Black"/>
-                    <TextBox Text="{Binding Op, UpdateSourceTrigger=PropertyChanged}"/>
+                    <TextBlock>
+                        <Run Text="OP" FontSize="13" FontWeight="Bold" Foreground="Black"/>
+                        <Run Text=" static" FontSize="11" FontStyle="Italic" Foreground="#999999"/>
+                    </TextBlock>
+                    <TextBox Text="{Binding Op, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource StickyTextBox}"/>
                 </StackPanel>
                 <StackPanel x:Name="QthPanel" Margin="0,0,10,4" Width="110">
-                    <TextBlock Text="QTH" FontSize="13" FontWeight="Bold" Foreground="Black"/>
-                    <TextBox Text="{Binding Qth, UpdateSourceTrigger=PropertyChanged}"/>
+                    <TextBlock>
+                        <Run Text="QTH" FontSize="13" FontWeight="Bold" Foreground="Black"/>
+                        <Run Text=" static" FontSize="11" FontStyle="Italic" Foreground="#999999"/>
+                    </TextBlock>
+                    <TextBox Text="{Binding Qth, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource StickyTextBox}"/>
                 </StackPanel>
                 <StackPanel x:Name="TxPowerPanel" Margin="0,0,10,4" Width="90">
-                    <TextBlock Text="TX Power (W)" FontSize="13" FontWeight="Bold" Foreground="Black"/>
-                    <TextBox Text="{Binding TxPowerWatts, UpdateSourceTrigger=PropertyChanged}"/>
+                    <TextBlock>
+                        <Run Text="TX Power (W)" FontSize="13" FontWeight="Bold" Foreground="Black"/>
+                        <Run Text=" static" FontSize="11" FontStyle="Italic" Foreground="#999999"/>
+                    </TextBlock>
+                    <TextBox Text="{Binding TxPowerWatts, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource StickyTextBox}"/>
                 </StackPanel>
                 <StackPanel x:Name="CommentPanel" Margin="0,0,10,4" Width="220">
                     <TextBlock Text="Comment" FontSize="13" FontWeight="Bold" Foreground="Black"/>

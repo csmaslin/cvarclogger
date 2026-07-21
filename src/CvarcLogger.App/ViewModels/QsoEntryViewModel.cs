@@ -94,6 +94,7 @@ public partial class QsoEntryViewModel : ObservableObject
     [ObservableProperty] private string callsign = string.Empty;
     [ObservableProperty] private string qsoDateTimeUtcText = string.Empty;
     [ObservableProperty] private string qsoDateTimeLocalText = string.Empty;
+    [ObservableProperty] private string? qsoDateTimeOffUtcText;
     [ObservableProperty] private string band = "20m";
     [ObservableProperty] private string mode = "SSB";
     [ObservableProperty] private string? frequencyMhz;
@@ -459,6 +460,9 @@ public partial class QsoEntryViewModel : ObservableObject
         {
             Callsign = Callsign.Trim().ToUpperInvariant(),
             QsoDateTimeOnUtc = DateTime.SpecifyKind(qsoDateTimeUtc, DateTimeKind.Utc),
+            QsoDateTimeOffUtc = !string.IsNullOrWhiteSpace(QsoDateTimeOffUtcText) && TryParseQsoDateTime(QsoDateTimeOffUtcText, out var qsoDateTimeOffUtc)
+                ? DateTime.SpecifyKind(qsoDateTimeOffUtc, DateTimeKind.Utc)
+                : null,
             Band = Band,
             Mode = Mode,
             SubMode = string.Equals(Mode, "DATA", StringComparison.OrdinalIgnoreCase)
@@ -531,6 +535,7 @@ public partial class QsoEntryViewModel : ObservableObject
             _isLiveClockUpdate = false;
         }
 
+        QsoDateTimeOffUtcText = null;
         FrequencyMhz = null;
         Name = null;
         GridSquare = null;

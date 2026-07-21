@@ -10,6 +10,31 @@
         ResizeMode="CanResize">
     <Window.Resources>
         <converters:SubModeVisibilityConverter x:Key="SubModeVisibilityConverter"/>
+        <!-- A fixed Height so every TextBox and every ComboBox in this window measures identically.
+             ComboBox's extra dropdown-arrow chrome otherwise makes it a few pixels taller than a plain
+             TextBox by default, misaligning the two control types row to row. The whole form sits inside
+             a Viewbox (see below), so this natural/unscaled height still scales proportionally with
+             everything else at runtime. -->
+        <Style TargetType="TextBox">
+            <Setter Property="Height" Value="24"/>
+        </Style>
+        <Style TargetType="ComboBox">
+            <Setter Property="Height" Value="24"/>
+        </Style>
+        <!-- Centers every field caption over its input control (each is the first child of its own
+             StackPanel, directly above a TextBox/ComboBox), and reserves the same MinHeight for all of
+             them regardless of whether a given one wraps onto a second line (several do, on the
+             narrower columns: RST Sent/Rcvd, State, ARRL Section, CQ/ITU Zone, My State). Without a
+             shared MinHeight, a wrapped 2-line caption is taller than its 1-line neighbors, and
+             StackPanel pushes that field's input box down relative to the rest of the row. Also applies
+             to the "SOTA / POTA"/"QSL Status" section headings and the "EDIT QSO" banner title, which
+             already set TextAlignment explicitly inline; a local value always wins over this style, so
+             those are unaffected. -->
+        <Style TargetType="TextBlock">
+            <Setter Property="TextAlignment" Value="Center"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="MinHeight" Value="28"/>
+        </Style>
     </Window.Resources>
     <DockPanel>
         <Border DockPanel.Dock="Top" Background="MediumBlue" Padding="0,8">
@@ -37,12 +62,12 @@
                 <TextBox Text="{Binding LocalDateTimeText, UpdateSourceTrigger=PropertyChanged}"
                          behaviors:DateInputMask.Format="yyyy-MM-dd HH:mm"/>
             </StackPanel>
-            <StackPanel Margin="0,0,10,8" Width="140">
+            <StackPanel Margin="0,0,10,8" Width="100">
                 <TextBlock Text="Callsign" FontSize="11" Foreground="Gray"/>
                 <TextBox Text="{Binding Callsign, UpdateSourceTrigger=PropertyChanged}"
                          CharacterCasing="Upper" FontWeight="Bold"/>
             </StackPanel>
-            <StackPanel Margin="0,0,10,8" Width="90">
+            <StackPanel Margin="0,0,10,8" Width="65">
                 <TextBlock Text="Band" FontSize="11" Foreground="Gray"/>
                 <ComboBox ItemsSource="{Binding Bands}" SelectedItem="{Binding Band}" IsEditable="True"/>
             </StackPanel>
@@ -55,30 +80,30 @@
                 <TextBlock Text="Sub-Mode" FontSize="11" Foreground="Gray"/>
                 <ComboBox ItemsSource="{Binding SubModes}" SelectedItem="{Binding SubMode}" IsEditable="True"/>
             </StackPanel>
-            <StackPanel Margin="0,0,10,8" Width="100">
-                <TextBlock Text="Freq (MHz)" FontSize="11" Foreground="Gray"/>
+            <StackPanel Margin="0,0,10,8" Width="70">
+                <TextBlock Text="Freq (MHz)" FontSize="11" Foreground="Gray" TextWrapping="Wrap"/>
                 <TextBox Text="{Binding FrequencyMhz, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
-            <StackPanel Margin="0,0,0,8" Width="100">
-                <TextBlock Text="Freq Rx (MHz)" FontSize="11" Foreground="Gray"/>
+            <StackPanel Margin="0,0,0,8" Width="70">
+                <TextBlock Text="Freq Rx (MHz)" FontSize="11" Foreground="Gray" TextWrapping="Wrap"/>
                 <TextBox Text="{Binding FrequencyRxMhz, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
         </WrapPanel>
 
         <WrapPanel>
-            <StackPanel Margin="0,0,10,8" Width="70">
-                <TextBlock Text="RST Sent" FontSize="11" Foreground="Gray"/>
+            <StackPanel Margin="0,0,10,8" Width="50">
+                <TextBlock Text="RST Sent" FontSize="11" Foreground="Gray" TextWrapping="Wrap"/>
                 <TextBox Text="{Binding RstSent, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
-            <StackPanel Margin="0,0,10,8" Width="70">
-                <TextBlock Text="RST Rcvd" FontSize="11" Foreground="Gray"/>
+            <StackPanel Margin="0,0,10,8" Width="50">
+                <TextBlock Text="RST Rcvd" FontSize="11" Foreground="Gray" TextWrapping="Wrap"/>
                 <TextBox Text="{Binding RstRcvd, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="160">
                 <TextBlock Text="Name" FontSize="11" Foreground="Gray"/>
                 <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
-            <StackPanel Margin="0,0,10,8" Width="90">
+            <StackPanel Margin="0,0,10,8" Width="70">
                 <TextBlock Text="Grid" FontSize="11" Foreground="Gray"/>
                 <TextBox Text="{Binding GridSquare, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
@@ -86,8 +111,8 @@
                 <TextBlock Text="City" FontSize="11" Foreground="Gray"/>
                 <TextBox Text="{Binding City, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
-            <StackPanel Margin="0,0,10,8" Width="60">
-                <TextBlock Text="State" FontSize="11" Foreground="Gray"/>
+            <StackPanel Margin="0,0,10,8" Width="45">
+                <TextBlock Text="State" FontSize="11" Foreground="Gray" TextWrapping="Wrap"/>
                 <TextBox Text="{Binding State, UpdateSourceTrigger=PropertyChanged}" CharacterCasing="Upper"/>
             </StackPanel>
             <StackPanel Margin="0,0,0,8" Width="100">
@@ -101,20 +126,20 @@
                 <TextBlock Text="Country" FontSize="11" Foreground="Gray"/>
                 <TextBox Text="{Binding Country, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
-            <StackPanel Margin="0,0,10,8" Width="90">
-                <TextBlock Text="ARRL Section" FontSize="11" Foreground="Gray"/>
+            <StackPanel Margin="0,0,10,8" Width="60">
+                <TextBlock Text="ARRL Section" FontSize="11" Foreground="Gray" TextWrapping="Wrap"/>
                 <TextBox Text="{Binding ArrlSection, UpdateSourceTrigger=PropertyChanged}" CharacterCasing="Upper"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="80">
                 <TextBlock Text="Continent" FontSize="11" Foreground="Gray"/>
                 <TextBox Text="{Binding Continent, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
-            <StackPanel Margin="0,0,10,8" Width="70">
-                <TextBlock Text="CQ Zone" FontSize="11" Foreground="Gray"/>
+            <StackPanel Margin="0,0,10,8" Width="50">
+                <TextBlock Text="CQ Zone" FontSize="11" Foreground="Gray" TextWrapping="Wrap"/>
                 <TextBox Text="{Binding CqZone, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
-            <StackPanel Margin="0,0,10,8" Width="70">
-                <TextBlock Text="ITU Zone" FontSize="11" Foreground="Gray"/>
+            <StackPanel Margin="0,0,10,8" Width="50">
+                <TextBlock Text="ITU Zone" FontSize="11" Foreground="Gray" TextWrapping="Wrap"/>
                 <TextBox Text="{Binding ItuZone, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
             <StackPanel Margin="0,0,0,8" Width="80">
@@ -132,12 +157,12 @@
                 <TextBlock Text="Operator" FontSize="11" Foreground="Gray"/>
                 <TextBox Text="{Binding OperatorCallsign, UpdateSourceTrigger=PropertyChanged}" CharacterCasing="Upper"/>
             </StackPanel>
-            <StackPanel Margin="0,0,10,8" Width="90">
+            <StackPanel Margin="0,0,10,8" Width="70">
                 <TextBlock Text="My Grid" FontSize="11" Foreground="Gray"/>
                 <TextBox Text="{Binding MyGridSquare, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
-            <StackPanel Margin="0,0,10,8" Width="60">
-                <TextBlock Text="My State" FontSize="11" Foreground="Gray"/>
+            <StackPanel Margin="0,0,10,8" Width="45">
+                <TextBlock Text="My State" FontSize="11" Foreground="Gray" TextWrapping="Wrap"/>
                 <TextBox Text="{Binding MyState, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="100">
@@ -172,19 +197,19 @@
 
         <TextBlock Text="SOTA / POTA" FontWeight="Bold" Margin="0,0,0,6"/>
         <WrapPanel>
-            <StackPanel Margin="0,0,10,8" Width="120">
+            <StackPanel Margin="0,0,10,8" Width="100">
                 <TextBlock Text="My SOTA" FontSize="11" Foreground="Gray"/>
                 <TextBox Text="{Binding MySotaRef, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
-            <StackPanel Margin="0,0,10,8" Width="120">
+            <StackPanel Margin="0,0,10,8" Width="100">
                 <TextBlock Text="SOTA" FontSize="11" Foreground="Gray"/>
                 <TextBox Text="{Binding SotaRef, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
-            <StackPanel Margin="0,0,10,8" Width="110">
+            <StackPanel Margin="0,0,10,8" Width="160">
                 <TextBlock Text="My POTA" FontSize="11" Foreground="Gray"/>
                 <TextBox Text="{Binding MySigInfo, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
-            <StackPanel Margin="0,0,0,8" Width="110">
+            <StackPanel Margin="0,0,0,8" Width="160">
                 <TextBlock Text="POTA" FontSize="11" Foreground="Gray"/>
                 <TextBox Text="{Binding SigInfo, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>

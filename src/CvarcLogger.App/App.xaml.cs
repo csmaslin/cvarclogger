@@ -23,8 +23,26 @@ public partial class App : Application
     private IHost? _host;
     private IServiceScope? _scope;
 
-    public static string DataDirectory { get; } = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CVARC Logger");
+    /// <summary>Where CvarcLogger stores everything it creates: settings, logs, backups, credentials,
+    /// the database (see SettingsService.ResolveActiveDatabasePath -- also overridable per-install via
+    /// New/Open Log), and cached reference data (e.g. the SOTA summits list). Defaults to right next to
+    /// the exe, so a copied/portable install carries everything with it. An install from before this
+    /// changed keeps using its existing %LOCALAPPDATA%\CVARC Logger folder instead of silently starting
+    /// fresh (and looking like all its data vanished) next to the exe.</summary>
+    public static string DataDirectory { get; } = ResolveDataDirectory();
+
+    private static string ResolveDataDirectory()
+    {
+        string legacyDir = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CVARC Logger");
+
+        bool legacyHasData =
+            File.Exists(Path.Combine(legacyDir, "settings.json")) ||
+            File.Exists(Path.Combine(legacyDir, "cvarclogger.db")) ||
+            File.Exists(Path.Combine(legacyDir, "credentials.dpapi"));
+
+        return legacyHasData ? legacyDir : AppContext.BaseDirectory;
+    }
 
     /// <summary>Resolves from one long-lived scope created at startup (this is a single-window desktop
     /// app, so a single "session" scope for the whole run is simplest and keeps Scoped services, like

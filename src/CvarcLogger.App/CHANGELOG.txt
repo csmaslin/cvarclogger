@@ -5,6 +5,62 @@ build meant to reach the user (see AppVersion.cs) -- before running publish.ps1.
 
 Versions before 1.17 predate this changelog and are not documented here.
 
+1.38
+----
+- QSO Entry form: added a "Time Off (UTC)" field, next to Local Time, for logging a contact's end time.
+- QSO Entry form and Edit QSO window: every field's title is now centered above its input box, and
+  every input box (TextBox and ComboBox alike) is a consistent height, fixing a misalignment where
+  captions that wrapped onto two lines (e.g. the "static" carry-over label, or a caption on a narrow
+  column) pushed that one field's box lower than its neighbors on the same row.
+- Settings: "Show password" now actually reveals the saved password, not just newly-typed text --
+  the credential was already being decrypted successfully on load, it just wasn't being displayed.
+- Station Profiles window: opening it now shows the default profile's details immediately instead of
+  a blank form, without needing to click it first. Clicking a different profile still switches the
+  displayed fields as before.
+- QSO log grid: fixed data not lining up under its column titles -- headers are centered but cell text
+  defaulted to left-aligned, which barely showed at the old column widths but became obvious once
+  several columns were narrowed. Also fixed manually resizing a column silently failing to do anything
+  when the window was maximized to a single monitor (the Comment column's old "fill remaining space"
+  sizing left no slack to redistribute once the window was narrow enough).
+- QSO log grid: column titles and their data now line up exactly (header content wasn't stretching to
+  the column's full width), and gained visible vertical divider lines between columns.
+- QSO log grid: several columns (Freq, Band, RST, Grid, State, ARRL Section, CQ/ITU Zone, SOTA, POTA,
+  Callsign, and their "My ..." counterparts) narrowed to fit their actual content across the log grid,
+  entry form, and Edit QSO window consistently.
+
+1.37
+----
+- User Manual: reworded the Max Power (W) paragraph in Section 10.2 -- the previous wording's "It is
+  not filled in automatically" was ambiguous about which of two similarly-named fields ("it") referred
+  to, since TX Power (W) does auto-fill from CAT while Max Power (W) itself does not. Also reworded the
+  rigctld/Hamlib intro paragraph, which incorrectly implied Hamlib usually needs a separate install --
+  CvarcLogger uses its own bundled copy automatically unless the rigctld path field is explicitly
+  pointed elsewhere.
+- Settings > Radio Control (CAT): the description paragraph now matches the corrected manual wording
+  above.
+- Station Profiles: Callsign and UTC Offset (the two required fields) are now marked with an asterisk,
+  with a "* Required" note at the bottom of the window.
+- Settings: QRZ/QRZCQ credential status now reads "Configured" / "Not Configured" instead of the raw
+  True/False it showed before. Added a "Show password" checkbox next to each password field so you can
+  verify what you typed before saving.
+- Settings > Radio Control: each radio slot's Hamlib dropdown now has a "-none-" entry. Selecting it
+  resets that slot's Hamlib Model ID, COM Port, Baud Rate, and Max Power (W) to their unconfigured
+  defaults, so a slot can be explicitly cleared instead of just left with a stale model ID.
+- New installs (no existing settings.json) now start with CAT, Launch rigctld automatically,
+  GridTracker2 broadcast, and WSJT-X log receiving all unchecked -- Launch rigctld automatically
+  previously defaulted on by itself, inconsistently with the other three.
+
+1.36
+----
+- User Manual: documented the Max Power (W) field in Settings > Radio Control (Section 10.2) -- it
+  shipped in 1.35 but was never written up. Explains that it defaults to 100, is never auto-filled from
+  Hamlib or the radio, and how to calibrate it against the radio's own power meter. Added a matching
+  Troubleshooting entry (Section 12) for when TX Power (W) doesn't match the radio's reading.
+- User Manual: removed the hard page breaks that forced every numbered section onto a fresh page
+  regardless of how much room was left on the previous one -- this was leaving large blank gaps at the
+  bottom of pages after short sections. Pages now flow continuously; only the cover-page-to-Table-of-
+  Contents break was kept.
+
 1.35
 ----
 - WSJT-X/GridTracker2-relayed QSOs now run the same online callsign lookup the manual entry form uses

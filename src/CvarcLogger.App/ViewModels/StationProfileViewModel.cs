@@ -39,6 +39,13 @@ public partial class StationProfileViewModel : ObservableObject
         var profiles = await _repository.GetAllAsync();
         Profiles.Clear();
         foreach (var p in profiles) Profiles.Add(p);
+
+        // Pre-select the default profile (if any) so its fields show immediately on open, without
+        // requiring a click first. Only when nothing is already selected -- SaveAsync also calls
+        // LoadAsync and relies on the just-saved profile staying selected afterward, so this must not
+        // override that. DeleteAsync explicitly nulls SelectedProfile first, so deleting the current
+        // profile falls back to showing the default one, which is a reasonable landing spot too.
+        SelectedProfile ??= Profiles.FirstOrDefault(p => p.IsDefault);
     }
 
     [RelayCommand]
