@@ -1,6 +1,9 @@
 # Builds a self-contained, single-file CvarcLogger.exe that can be copied to any 64-bit Windows 10/11
 # machine and run directly -- no .NET runtime install required on the target machine.
 # Note: Hamlib (rigctld.exe) is still a separate install on each machine that needs CAT control.
+# Note: the overview-PDF step below needs Python (with the `markdown` and `Pillow` packages) and
+# mermaid-cli (`npm install -g @mermaid-js/mermaid-cli`, plus its bundled Chromium) on the machine
+# running this script -- it falls back to the raw .md if either is missing.
 
 $ErrorActionPreference = "Stop"
 
@@ -37,7 +40,22 @@ if (Test-Path $changelogFile) {
     Write-Warning "CHANGELOG.txt not found at $changelogFile -- publishing without it."
 }
 
-if (Test-Path $overviewFile) {
+# Render the overview doc to PDF (Mermaid diagram included, via mermaid-cli) rather than shipping
+# the raw .md -- see render-overview-pdf.py for why (LibreOffice's own HTML->PDF step doesn't scale
+# an oversized image on its own, so the diagram is pre-rendered and pre-sized before that step).
+# Best-effort like the manual-PDF export below: falls back to the raw .md if the render fails.
+$overviewPdf = Join-Path $outDir "Program Overview and Data Flow.pdf"
+$overviewRenderScript = Join-Path $root "render-overview-pdf.py"
+if ((Test-Path $overviewFile) -and (Test-Path $overviewRenderScript)) {
+    & python $overviewRenderScript --md "$overviewFile" --out "$overviewPdf"
+    if ($LASTEXITCODE -eq 0 -and (Test-Path $overviewPdf)) {
+        Write-Host "Included overview PDF: $overviewPdf"
+    } else {
+        Write-Warning "Could not render the Program Overview to PDF -- publishing the raw .md instead."
+        Copy-Item -Path $overviewFile -Destination $outDir -Force
+    }
+} elseif (Test-Path $overviewFile) {
+    Write-Warning "render-overview-pdf.py not found -- publishing the raw .md instead of a PDF."
     Copy-Item -Path $overviewFile -Destination $outDir -Force
 } else {
     Write-Warning "Program Overview and Data Flow.md not found at $overviewFile -- publishing without it."

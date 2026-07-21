@@ -4,8 +4,13 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:vm="clr-namespace:CvarcCellLog.ViewModels"
+    xmlns:converters="clr-namespace:CvarcCellLog.Converters"
     x:DataType="vm:QsoEntryViewModel"
     Title="Log a QSO">
+
+    <ContentPage.Resources>
+        <converters:BoolToYesNoConverter x:Key="BoolToYesNoConverter" />
+    </ContentPage.Resources>
 
     <ScrollView>
         <VerticalStackLayout Padding="16" Spacing="10">
@@ -17,7 +22,10 @@
             <Label Text="Contact" FontAttributes="Bold" FontSize="16" Margin="0,4,0,0" />
 
             <Label Text="Callsign" />
-            <Entry Text="{Binding Callsign}" AutoCapitalization="Characters" />
+            <Entry Text="{Binding Callsign}" MaxLength="10" />
+
+            <Button Text="Lookup" Command="{Binding LookupCommand}" FontSize="13" Padding="0,6" />
+            <ActivityIndicator IsRunning="{Binding IsLookingUp}" IsVisible="{Binding IsLookingUp}" />
 
             <Label Text="Date/Time (UTC)" />
             <Entry Text="{Binding QsoDateTimeUtcText}" Placeholder="yyyy-MM-dd HH:mm:ss" />
@@ -25,35 +33,62 @@
             <Label Text="Local Time" />
             <Entry Text="{Binding QsoDateTimeLocalText}" Placeholder="yyyy-MM-dd HH:mm:ss" />
 
-            <Label Text="Band" />
-            <Picker ItemsSource="{Binding Bands}" SelectedItem="{Binding Band}" />
+            <Label Text="Time Off (UTC)" />
+            <Entry Text="{Binding QsoDateTimeOffUtcText}" Placeholder="yyyy-MM-dd HH:mm:ss (optional)" />
 
-            <Label Text="Mode" />
-            <Picker ItemsSource="{Binding Modes}" SelectedItem="{Binding Mode}" />
+            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                <VerticalStackLayout Grid.Column="0">
+                    <Label Text="Band" />
+                    <Picker ItemsSource="{Binding Bands}" SelectedItem="{Binding Band}" />
+                </VerticalStackLayout>
+                <VerticalStackLayout Grid.Column="1">
+                    <Label Text="Mode" />
+                    <Picker ItemsSource="{Binding Modes}" SelectedItem="{Binding SelectedModeOption}" />
+                </VerticalStackLayout>
+                <VerticalStackLayout Grid.Column="2" IsVisible="{Binding HasSubModes}">
+                    <Label Text="SubM" />
+                    <Picker ItemsSource="{Binding SubModes}" SelectedItem="{Binding SubMode}" />
+                </VerticalStackLayout>
+            </Grid>
 
-            <Label Text="Sub-Mode" IsVisible="{Binding HasSubModes}" />
-            <Picker ItemsSource="{Binding SubModes}" SelectedItem="{Binding SubMode}" IsVisible="{Binding HasSubModes}" />
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                <VerticalStackLayout Grid.Column="0">
+                    <Label Text="Frequency (MHz)" />
+                    <Entry Text="{Binding FrequencyMhz}" MaxLength="6" />
+                </VerticalStackLayout>
+                <VerticalStackLayout Grid.Column="1">
+                    <Label Text="TXp (Watts)" />
+                    <Entry Text="{Binding TxPowerWatts}" />
+                </VerticalStackLayout>
+            </Grid>
 
-            <Label Text="Frequency (MHz)" />
-            <Entry Text="{Binding FrequencyMhz}" Keyboard="Numeric" />
-
-            <Label Text="RST Sent" />
-            <Entry Text="{Binding RstSent}" />
-
-            <Label Text="RST Rcvd" />
-            <Entry Text="{Binding RstRcvd}" />
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                <VerticalStackLayout Grid.Column="0">
+                    <Label Text="RST/S" />
+                    <Entry Text="{Binding RstSent}" MaxLength="4" />
+                </VerticalStackLayout>
+                <VerticalStackLayout Grid.Column="1">
+                    <Label Text="RST/R" />
+                    <Entry Text="{Binding RstRcvd}" MaxLength="4" />
+                </VerticalStackLayout>
+            </Grid>
 
             <Label Text="Name" />
             <Entry Text="{Binding Name}" />
 
-            <Label Text="Grid Square" />
-            <Entry Text="{Binding GridSquare}" AutoCapitalization="Characters" />
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                <VerticalStackLayout Grid.Column="0">
+                    <Label Text="Grid Square" />
+                    <Entry Text="{Binding GridSquare}" MaxLength="6" />
+                </VerticalStackLayout>
+                <VerticalStackLayout Grid.Column="1">
+                    <Label Text="State" />
+                    <Entry Text="{Binding State}" MaxLength="2" />
+                </VerticalStackLayout>
+            </Grid>
 
             <Label Text="City" />
             <Entry Text="{Binding City}" />
-
-            <Label Text="State" />
-            <Entry Text="{Binding State}" AutoCapitalization="Characters" />
 
             <Label Text="County" />
             <Entry Text="{Binding County}" />
@@ -62,49 +97,97 @@
             <Entry Text="{Binding Country}" />
 
             <Label Text="ARRL Section" />
-            <Entry Text="{Binding ArrlSection}" AutoCapitalization="Characters" />
+            <Entry Text="{Binding ArrlSection}" MaxLength="4" />
 
-            <Label Text="CQ Zone" />
-            <Entry Text="{Binding CqZone}" Keyboard="Numeric" />
-
-            <Label Text="ITU Zone" />
-            <Entry Text="{Binding ItuZone}" Keyboard="Numeric" />
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                <VerticalStackLayout Grid.Column="0">
+                    <Label Text="CQ Zone" />
+                    <Entry Text="{Binding CqZone}" MaxLength="1" />
+                </VerticalStackLayout>
+                <VerticalStackLayout Grid.Column="1">
+                    <Label Text="ITU Zone" />
+                    <Entry Text="{Binding ItuZone}" MaxLength="1" />
+                </VerticalStackLayout>
+            </Grid>
 
             <Label Text="Comment" />
             <Entry Text="{Binding Comment}" />
 
             <BoxView HeightRequest="1" BackgroundColor="LightGray" Margin="0,8" />
 
+            <Label Text="SOTA / POTA" FontAttributes="Bold" FontSize="16" />
+
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                <VerticalStackLayout Grid.Column="0">
+                    <Label Text="My SOTA" FontSize="11" TextColor="Gray" />
+                    <Entry Text="{Binding MySotaRef}" Placeholder="e.g. W6/CT-003" />
+                </VerticalStackLayout>
+                <VerticalStackLayout Grid.Column="1">
+                    <Label Text="SOTA (contacted station)" FontSize="11" TextColor="Gray" />
+                    <Entry Text="{Binding SotaRef}" Placeholder="e.g. W6/CT-003" />
+                </VerticalStackLayout>
+            </Grid>
+
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                <VerticalStackLayout Grid.Column="0">
+                    <Label Text="My POTA" FontSize="11" TextColor="Gray" />
+                    <Entry Text="{Binding MySigInfo}" Placeholder="e.g. US-0001" />
+                </VerticalStackLayout>
+                <VerticalStackLayout Grid.Column="1">
+                    <Label Text="POTA (contacted station)" FontSize="11" TextColor="Gray" />
+                    <Entry Text="{Binding SigInfo}" Placeholder="e.g. US-0001" />
+                </VerticalStackLayout>
+            </Grid>
+
+            <BoxView HeightRequest="1" BackgroundColor="LightGray" Margin="0,8" />
+
             <Label Text="Your Station" FontAttributes="Bold" FontSize="16" />
 
-            <Label Text="Station Callsign" />
-            <Entry Text="{Binding StationCallsign}" AutoCapitalization="Characters" />
+            <Label Text="Station Profile *" FontSize="11" TextColor="Gray" />
+            <Picker ItemsSource="{Binding StationProfiles}"
+                    SelectedItem="{Binding SelectedStationProfile}"
+                    ItemDisplayBinding="{Binding Callsign}" />
 
-            <Label Text="Operator Callsign" />
-            <Entry Text="{Binding OperatorCallsign}" AutoCapitalization="Characters" />
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                <VerticalStackLayout Grid.Column="0">
+                    <Label Text="Operator Callsign" FontSize="11" TextColor="Gray" />
+                    <Label Text="{Binding SelectedStationProfile.OperatorCallsign}" />
+                </VerticalStackLayout>
+                <VerticalStackLayout Grid.Column="1">
+                    <Label Text="Op" FontSize="11" TextColor="Gray" />
+                    <Label Text="{Binding SelectedStationProfile.Op}" />
+                </VerticalStackLayout>
+            </Grid>
 
-            <Label Text="My Grid Square" />
-            <Entry Text="{Binding MyGridSquare}" AutoCapitalization="Characters" />
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                <VerticalStackLayout Grid.Column="0">
+                    <Label Text="My Grid Square" FontSize="11" TextColor="Gray" />
+                    <Label Text="{Binding SelectedStationProfile.MyGridSquare}" />
+                </VerticalStackLayout>
+                <VerticalStackLayout Grid.Column="1">
+                    <Label Text="My State" FontSize="11" TextColor="Gray" />
+                    <Label Text="{Binding SelectedStationProfile.MyState}" />
+                </VerticalStackLayout>
+            </Grid>
 
-            <Label Text="My State" />
-            <Entry Text="{Binding MyState}" AutoCapitalization="Characters" />
+            <Label Text="My County" FontSize="11" TextColor="Gray" />
+            <Label Text="{Binding SelectedStationProfile.MyCounty}" />
 
-            <Label Text="My County" />
-            <Entry Text="{Binding MyCounty}" />
+            <Label Text="QTH" FontSize="11" TextColor="Gray" />
+            <Label Text="{Binding SelectedStationProfile.Qth}" />
 
-            <Label Text="QTH" />
-            <Entry Text="{Binding Qth}" />
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                <VerticalStackLayout Grid.Column="0">
+                    <Label Text="UTC Offset" FontSize="11" TextColor="Gray" />
+                    <Label Text="{Binding SelectedStationProfile.UtcOffsetHours}" />
+                </VerticalStackLayout>
+                <VerticalStackLayout Grid.Column="1">
+                    <Label Text="DST" FontSize="11" TextColor="Gray" />
+                    <Label Text="{Binding SelectedStationProfile.ObservesDaylightSavingTime, Converter={StaticResource BoolToYesNoConverter}}" />
+                </VerticalStackLayout>
+            </Grid>
 
-            <Label Text="OP" />
-            <Entry Text="{Binding Op}" />
-
-            <Label Text="UTC Offset (hours)" />
-            <Entry Text="{Binding UtcOffsetHoursText}" Keyboard="Numeric" />
-
-            <HorizontalStackLayout Spacing="8">
-                <CheckBox IsChecked="{Binding ObservesDaylightSavingTime}" />
-                <Label Text="Observes Daylight Saving Time" VerticalOptions="Center" />
-            </HorizontalStackLayout>
+            <Button Text="Manage Station Profiles" Clicked="OnManageProfilesClicked" Padding="0,8" FontSize="13" />
 
             <Button Text="Log QSO" Command="{Binding LogQsoCommand}" Margin="0,12,0,0" />
 

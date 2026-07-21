@@ -14,6 +14,7 @@ public partial class LoadingPage : ContentPage
         InitializeComponent();
         _db = db;
         _appShell = appShell;
+        VersionLabel.Text = $"v{AppInfo.Current.VersionString}";
     }
 
     protected override async void OnAppearing()

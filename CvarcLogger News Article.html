@@ -1,4 +1,4 @@
-<title>Meet CVARC Logger: A New Logging Program for Everyday QSOs, SOTA, and POTA Alike</title>
+<title>CVARC Logger Gets a Real Installer as CvarcCellLog Ships Its First Android Release</title>
 
 <style>
   :root {
@@ -301,13 +301,13 @@
     <span>Software &amp; Station Notes</span>
   </div>
 
-  <h1 class="headline">Meet CVARC Logger: A New Logging Program for Everyday QSOs, SOTA, and POTA Alike</h1>
-  <p class="dek">CvarcLogger, the club's own homegrown contact-logging program, is built to handle an ordinary, everyday QSO just as capably as a SOTA summit activation or a POTA park activation — and version 1.34, out this week, sharpens exactly that versatility, alongside a real-world fix to how it talks to WSJT-X and GridTracker2.</p>
+  <h1 class="headline">CVARC Logger Gets a Real Installer as CvarcCellLog Ships Its First Android Release</h1>
+  <p class="dek">CvarcLogger, the club's homegrown contact-logging program, climbs to version 1.37 with a proper Windows installer and sharper Settings screens — while its Android sibling, CvarcCellLog, clears its own first public version, putting logging, search, editing, and sortable columns in members' hands as a signed APK.</p>
 
   <div class="byline-row">
     <span>By the CVARC Technical Desk</span>
     <span>Conejo Valley, CA</span>
-    <span>19 July 2026</span>
+    <span>21 July 2026</span>
   </div>
 
   <article>
@@ -315,21 +315,28 @@
       <div class="plate-header">At a Glance</div>
       <dl>
         <dt>Program</dt><dd>CvarcLogger</dd>
-        <dt>Version</dt><dd class="hi">1.34</dd>
+        <dt>Version</dt><dd class="hi">1.37</dd>
+        <dt>Install</dt><dd>Setup.exe or portable</dd>
         <dt>Author</dt><dd>W6CSM</dd>
         <dt>Club Callsign</dt><dd>AA6CV</dd>
         <dt>Platform</dt><dd>Windows 10/11</dd>
         <dt>Runtime</dt><dd>.NET 9 / WPF</dd>
-        <dt>QSOs Logged</dt><dd class="hi">5,677 (W6CSM)</dd>
         <dt>Awards Tracked</dt><dd>DXCC, WAS, SOTA, POTA</dd>
         <dt>Rig Control</dt><dd>Hamlib</dd>
-        <dt>In Progress</dt><dd>CvarcCellLog</dd>
+      </dl>
+      <div class="plate-header">CvarcCellLog</div>
+      <dl>
+        <dt>Version</dt><dd class="hi">1.02</dd>
+        <dt>Platform</dt><dd>Android</dd>
+        <dt>Runtime</dt><dd>.NET MAUI</dd>
+        <dt>Format</dt><dd>Signed APK</dd>
+        <dt>Manual</dt><dd>Included</dd>
       </dl>
     </div>
 
-    <p class="lede">CvarcLogger is a new logging program, built from the ground up in-house rather than bought off the shelf — but "new" doesn't mean narrow. The same program that logs a routine ragchew on 20 meters also tracks a SOTA summit activation or a POTA park activation automatically, with no separate spreadsheet or website tab required. More than 5,600 contacts now sit in the shared log, entered field-by-field, band-by-band, by members running CvarcLogger day to day. Version 1.34, out this week, adds nothing flashy on the surface, but fixes a real-world snag in how CvarcLogger, WSJT-X, and GridTracker2 share the airwaves together.</p>
+    <p class="lede">CvarcLogger is a new logging program, built from the ground up in-house rather than bought off the shelf — but "new" doesn't mean narrow, and it no longer means Windows-only, either. The same program that logs a routine ragchew on 20 meters also tracks a SOTA summit activation or a POTA park activation automatically, with no separate spreadsheet or website tab required. Version 1.37 adds a real Windows installer and a round of Settings-screen polish; alongside it, the club's Android companion app, CvarcCellLog, has quietly cleared its own first public version — the same log, the same lookups, now in a pocket instead of just on a desk.</p>
 
-    <p>Those 5,600-plus contacts all come from one place: the personal station log of CVARC Technical Director Charles S. Maslin, W6CSM, who wrote CvarcLogger and has been running his own day-to-day logging through it since early development. Station profiles, DXCC lookups, and the rest of CvarcLogger's feature set are designed around individual operation, and can be switched at any time to reflect operation under the club's shared callsign, <strong>AA6CV</strong>, even as the log's current contents still reflect one member's individual history. Log a contact and the software does the busywork a paper logbook never could: it resolves the DXCC entity, CQ zone, and ITU zone straight from the callsign and grid square, keeps UTC and local time in sync for late or backdated entries, and — when a radio is connected over Hamlib — pulls frequency, band, and mode straight off the rig as you tune.</p>
+    <p>CvarcLogger was written by CVARC Technical Director Charles S. Maslin, W6CSM, who has been running his own day-to-day logging through it since early development. Station profiles, DXCC lookups, and the rest of CvarcLogger's feature set are designed around individual operation, and can be switched at any time to reflect operation under the club's shared callsign, <strong>AA6CV</strong>. Log a contact and the software does the busywork a paper logbook never could: it resolves the DXCC entity, CQ zone, and ITU zone straight from the callsign and grid square, keeps UTC and local time in sync for late or backdated entries, and — when a radio is connected over Hamlib — pulls frequency, band, and mode straight off the rig as you tune.</p>
 
     <h2>What CvarcLogger Does</h2>
     <p>At its core, CvarcLogger is built for fast, in-the-chair logging: type a callsign, click Lookup (or just log the contact — the lookup runs automatically either way), and the operator's name, grid square, city, state, county, and country fill in from Callook.info, QRZ.com, or QRZCQ.com, whichever the station has configured. ARRL Section is derived automatically from state and county rather than looked up separately, and CQ/ITU zone resolve from the grid square itself, which matters for split-zone countries like the United States. Every field on the entry form — RST, name, grid, location, ARRL Section, zones, SOTA/POTA references, operator, QTH, transmit power, and a free-text comment — can be shown or hidden to match how an operator actually works, and the choice is remembered between sessions.</p>
@@ -359,22 +366,37 @@
 
     <p>The fix leans on a feature GridTracker2 already had: its own "Forward UDP messages" relay. WSJT-X still broadcasts to GridTracker2 exactly as before; GridTracker2 logs the contact for its own map, then forwards the same message on to CvarcLogger on a separate port. CvarcLogger's own outbound broadcast to GridTracker2 (for QSOs typed in directly) got a dedicated port too, matching GridTracker2's "Receive ADIF UDP (Broadcasts for Logging)" setting. Both directions are now confirmed working with real WSJT-X traffic, not just a hand-built test packet.</p>
 
+    <h2>An Actual Installer, and a Tidier First Run</h2>
+    <p>Three point releases since 1.34 have been quieter but no less real. WSJT-X-relayed contacts now get the same automatic online lookup as anything typed in by hand, filling Name, Grid, Country, State, County, City, and ARRL Section without overwriting whatever the over-the-air exchange already supplied. CAT-connected radios now report transmit power alongside frequency, band, and mode, converted from the raw fraction Hamlib reports into real watts using a per-radio "Max Power" setting. Log row numbers now count chronologically — the oldest QSO is always row 1 — regardless of how the grid is currently sorted or searched.</p>
+
+    <p>Version 1.37 turns its attention to the parts of the program a new member sees first. CvarcLogger now installs like any other Windows program: a proper <code>CvarcLogger-Setup-1.37.exe</code> puts it in the Windows "Apps &amp; Features" list with a real uninstall entry, alongside the existing no-install portable zip for anyone who'd rather just run it from a folder. Settings got a pass for clarity — QRZ.com and QRZCQ.com credential status now reads "Configured" or "Not Configured" instead of a bare <code>True</code>/<code>False</code>, each password field has a show/hide toggle, and every Radio Control slot's Hamlib dropdown gained a "-none-" entry to explicitly clear a slot instead of leaving a stale model ID behind. Station Profiles now marks its two required fields, Callsign and UTC Offset, with an asterisk. And a fresh install now starts with CAT, automatic rigctld launch, GridTracker2 broadcast, and WSJT-X log receiving all switched off by default, rather than quietly assuming a new user has already wired up a shack full of other software.</p>
+
+    <h2>CvarcCellLog Ships Its First Release</h2>
+    <p>The Android companion app mentioned as "early builds" just a couple of releases ago is no longer early. CvarcCellLog reached its Milestone 1 goal in full — boot, database migration, and logging, viewing, searching, editing, and deleting a QSO, all built on the exact same Core and Data code CvarcLogger runs on the desktop — and then kept going. Version 1.02 is out now as a signed APK, with its own user manual, and a changelog of its own to match: a Show/Hide toggle on the QRZ.com and QRZCQ.com password fields, a Lookup button added to the Edit QSO screen (previously only on the entry form), a fix for four fields (UTC Offset, Frequency, CQ Zone, ITU Zone) that were silently suppressing Android's on-screen keyboard, and a redesigned QSO Log — one line per record, a header row that stays put while the list scrolls, and a new Columns screen to choose which fields show and in what order. As of 1.02, tapping a column header sorts the log by it, with a second tap reversing the direction, mirroring how a desktop spreadsheet behaves.</p>
+
+    <div class="callout">
+      <span class="tag">Stress-tested, not just tapped a few times</span>
+      Before shipping, CvarcCellLog's log screen was pointed at a real 5,676-QSO ADIF export and confirmed to import, scroll, and search without choking — not just a handful of test rows. Verification so far has all been on an Android emulator; testing on a real phone (a Samsung Galaxy S24) is the next item on the list before a wider release.
+    </div>
+
     <h2>Meet the Beta Team</h2>
-    <p>CvarcLogger 1.34 continues to ship first to a small in-house testing group rather than the full club roster, the same stress-testing approach that's caught real bugs before every release so far. The current roster:</p>
+    <p>CvarcLogger continues to ship first to a small in-house testing group rather than the full club roster, the same stress-testing approach that's caught real bugs before every release so far. The current roster:</p>
 
     <ul class="roster">
       <li><span>Norm</span><span class="call">AB6ET</span></li>
       <li><span>Greg</span><span class="call">K7SDW</span></li>
       <li><span>Keith Elliot</span><span class="call">W6KME</span></li>
       <li><span>Rob</span><span class="call">W6RH</span></li>
+      <li><span>John</span><span class="call">NS6X</span></li>
+      <li><span>Martin</span><span class="call">AJ6CL</span></li>
     </ul>
 
     <p>Members who regularly chase summits or parks, and would be willing to log a few activations through CvarcLogger and report back what does and doesn't work, should reach out to the Technical Desk to join the group.</p>
 
-    <h2>Next Up: The Log Goes Mobile</h2>
-    <p>Work is already underway on <strong>CvarcCellLog</strong>, an Android counterpart built with .NET MAUI that shares CvarcLogger's data and logging engine unchanged. Early builds already boot, migrate the database, and log a contact from a phone-sized card list — the groundwork for logging a QSO from the field, a summit activation, or a park bench, with the same log that's waiting back at the home station. CAT control and full ADIF tools are planned for later milestones; the first release is aimed squarely at the basics: log it, search it, edit it.</p>
+    <h2>What's Still Ahead for the Log in Your Pocket</h2>
+    <p>CAT control, GridTracker broadcast, and full ADIF import/export polish are the next milestones on CvarcCellLog's list — QRZ.com/QRZCQ.com lookup, editable Station Profiles, and a Settings screen already made it in ahead of schedule. The Android app shares CvarcLogger's Core and Data code outright, so a contact logged in one program is a contact the other can see the moment the two are pointed at the same database file — the field-to-desk workflow the whole effort was started for.</p>
 
-    <p>CvarcLogger 1.34 arrives as a single-file download for 64-bit Windows — no installer, no dependencies beyond what's already bundled in — and the changelog, as always, ships in the box.</p>
+    <p>CvarcLogger 1.37 is available both ways: run <code>CvarcLogger-Setup-1.37.exe</code> for a normal Windows install, or grab the portable zip and run it from anywhere with no install step at all. CvarcCellLog 1.02 ships as a signed APK with its manual alongside it. Both changelogs, as always, ship in the box.</p>
   </article>
 
   <svg class="signal-wave" viewBox="0 0 700 28" preserveAspectRatio="none" aria-hidden="true">
@@ -383,7 +405,7 @@
 
   <footer>
     <div class="grid">
-      <span>CvarcLogger v1.34 &middot; AA6CV &middot; Conejo Valley Amateur Radio Club</span>
+      <span>CvarcLogger v1.37 &middot; CvarcCellLog v1.02 &middot; AA6CV &middot; Conejo Valley Amateur Radio Club</span>
       <span>Program by Charles S. Maslin, W6CSM &mdash; CVARC Technical Director</span>
     </div>
   </footer>
