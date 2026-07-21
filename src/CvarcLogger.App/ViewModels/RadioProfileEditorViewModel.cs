@@ -64,6 +64,17 @@ public partial class RadioProfileEditorViewModel : ObservableObject
         if (_syncing || value is null) return;
         _syncing = true;
         HamlibModelId = value.Id.ToString();
+        if (value.Id == 0)
+        {
+            // -none- selected -- reset the rest of the slot to RadioProfile's own unconfigured
+            // defaults too, so it reads as genuinely blank rather than just missing a model ID.
+            // ApplyTo() below deliberately keeps the previous ComPort/BaudRate when those fields
+            // are blank or unparseable (so a moment of empty text while retyping doesn't silently
+            // wipe a saved value), so an empty string here wouldn't actually persist on Save.
+            ComPort = "COM1";
+            BaudRate = "38400";
+            MaxPowerWatts = "100";
+        }
         _syncing = false;
     }
 

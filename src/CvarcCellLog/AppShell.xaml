@@ -8,8 +8,8 @@
     Title="CvarcCellLog">
 
     <ShellContent
-        Title="QSO Log"
-        ContentTemplate="{DataTemplate pages:QsoLogPage}"
-        Route="QsoLogPage" />
+        Title="CVARC Cell Logger"
+        ContentTemplate="{DataTemplate pages:HomePage}"
+        Route="HomePage" />
 
 </Shell>

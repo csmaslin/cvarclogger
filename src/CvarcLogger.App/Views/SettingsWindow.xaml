@@ -46,11 +46,14 @@
                 <TextBox Text="{Binding QrzUsername, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
 
                 <TextBlock Text="Password" Foreground="Gray"/>
-                <PasswordBox x:Name="PasswordBox" Margin="0,0,0,8"/>
+                <PasswordBox x:Name="QrzPasswordBox" Margin="0,0,0,4"/>
+                <TextBox x:Name="QrzPasswordTextBox" Margin="0,0,0,4" Visibility="Collapsed"/>
+                <CheckBox x:Name="QrzShowPasswordCheckBox" Content="Show password" Margin="0,0,0,8"
+                          Checked="QrzShowPassword_Checked" Unchecked="QrzShowPassword_Unchecked"/>
 
                 <TextBlock Margin="0,0,0,8" FontStyle="Italic">
                     <Run Text="Status: "/>
-                    <Run Text="{Binding IsQrzConfigured, Mode=OneWay}"/>
+                    <Run Text="{Binding QrzStatusText, Mode=OneWay}"/>
                 </TextBlock>
 
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
@@ -68,11 +71,14 @@
                 <TextBox Text="{Binding QrzCqUsername, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
 
                 <TextBlock Text="Password" Foreground="Gray"/>
-                <PasswordBox x:Name="QrzCqPasswordBox" Margin="0,0,0,8"/>
+                <PasswordBox x:Name="QrzCqPasswordBox" Margin="0,0,0,4"/>
+                <TextBox x:Name="QrzCqPasswordTextBox" Margin="0,0,0,4" Visibility="Collapsed"/>
+                <CheckBox x:Name="QrzCqShowPasswordCheckBox" Content="Show password" Margin="0,0,0,8"
+                          Checked="QrzCqShowPassword_Checked" Unchecked="QrzCqShowPassword_Unchecked"/>
 
                 <TextBlock Margin="0,0,0,8" FontStyle="Italic">
                     <Run Text="Status: "/>
-                    <Run Text="{Binding IsQrzCqConfigured, Mode=OneWay}"/>
+                    <Run Text="{Binding QrzCqStatusText, Mode=OneWay}"/>
                 </TextBlock>
 
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
@@ -116,7 +122,7 @@
             <StackPanel Grid.Column="2">
                 <TextBlock Text="Radio Control (CAT)" FontWeight="Bold" Margin="0,0,0,6"/>
                 <TextBlock Margin="0,0,0,8" Foreground="Gray" TextWrapping="Wrap"
-                           Text="Uses Hamlib's rigctld as a TCP backend. Hamlib must be installed separately (hamlib.org, or bundled with software like WSJT-X) — this only configures how CvarcLogger talks to it. Pick your radio from the dropdown below for each slot; if it isn't listed, look up its Model ID with 'rigctl --list' and enter that directly."/>
+                           Text="Uses Hamlib's rigctld as a TCP backend. CvarcLogger uses the copy of rigctld.exe bundled alongside it automatically — no separate Hamlib install is needed. To use a different copy instead (for example one already installed from WSJT-X or hamlib.org), set rigctld path below to its full location. Pick your radio from the dropdown below for each slot; if it isn't listed, look up its Model ID with 'rigctl --list' and enter that directly."/>
 
                 <CheckBox Content="Enable CAT (Radio Control)" IsChecked="{Binding CatEnabled}" Margin="0,0,0,10"/>
 

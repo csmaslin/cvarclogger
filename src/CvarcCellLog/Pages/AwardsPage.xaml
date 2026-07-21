@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage
+    x:Class="CvarcCellLog.Pages.AwardsPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:CvarcCellLog.ViewModels"
+    xmlns:models="clr-namespace:CvarcLogger.Core.Models;assembly=CvarcLogger.Core"
+    x:DataType="vm:AwardsViewModel"
+    Title="Awards">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="10">
+
+            <!-- ===================================================== Mountain Goat (SOTA) -->
+            <Label Text="Mountain Goat (SOTA)" FontAttributes="Bold" FontSize="18" />
+            <Label Text="Activation requires 4+ contacts logged from the summit on the same UTC date."
+                   FontSize="11" TextColor="Gray" />
+
+            <Label Text="{Binding MountainGoat.ErrorMessage}" TextColor="#C0392B" IsVisible="{Binding MountainGoat.HasErrorMessage}" />
+            <Label Text="{Binding MountainGoat.TotalPoints, StringFormat='Total Points: {0}'}" FontAttributes="Bold" />
+
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                <Entry Grid.Column="0" Text="{Binding MountainGoat.NewSummitCode}" Placeholder="Summit code, e.g. W6/CT-003" />
+                <Button Grid.Column="1" Text="Add" Command="{Binding MountainGoat.AddSummitCommand}" />
+            </Grid>
+            <ActivityIndicator IsRunning="{Binding MountainGoat.IsLookingUp}" IsVisible="{Binding MountainGoat.IsLookingUp}" />
+
+            <Button Text="Refresh Summit List" Command="{Binding MountainGoat.RefreshListCommand}" FontSize="12" Padding="0,6" />
+            <ActivityIndicator IsRunning="{Binding MountainGoat.IsRefreshing}" IsVisible="{Binding MountainGoat.IsRefreshing}" />
+
+            <CollectionView ItemsSource="{Binding MountainGoat.Activations}" HeightRequest="300">
+                <CollectionView.EmptyView>
+                    <Label Text="No summits tracked yet." TextColor="Gray" Margin="0,8" />
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:SotaActivation">
+                        <Grid ColumnDefinitions="*,Auto,Auto" Padding="0,8" RowDefinitions="Auto,Auto">
+                            <Label Grid.Row="0" Grid.Column="0" Text="{Binding SummitCode}" FontAttributes="Bold" FontSize="14" />
+                            <Label Grid.Row="1" Grid.Column="0" Text="{Binding SummitName}" FontSize="12" TextColor="Gray" />
+                            <Label Grid.Row="0" Grid.Column="1" Text="{Binding Points, StringFormat='{0} pts'}" VerticalOptions="Center" />
+                            <Label Grid.Row="1" Grid.Column="1" FontSize="11" TextColor="Gray">
+                                <Label.Triggers>
+                                    <DataTrigger TargetType="Label" Binding="{Binding Activated}" Value="True">
+                                        <Setter Property="Text" Value="Activated" />
+                                        <Setter Property="TextColor" Value="Green" />
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Label" Binding="{Binding Activated}" Value="False">
+                                        <Setter Property="Text" Value="Not yet" />
+                                    </DataTrigger>
+                                </Label.Triggers>
+                            </Label>
+                            <Button Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" Text="✕" FontSize="12" Padding="10,4"
+                                    BackgroundColor="#C0392B" TextColor="White" Clicked="OnDeleteSummitClicked" />
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <BoxView HeightRequest="1" BackgroundColor="LightGray" Margin="0,12" />
+
+            <!-- ===================================================== Parks on the Air (POTA) -->
+            <Label Text="Parks on the Air (POTA)" FontAttributes="Bold" FontSize="18" />
+            <Label Text="Activation requires 10+ contacts with 10 different callsigns on the same UTC date."
+                   FontSize="11" TextColor="Gray" />
+
+            <Label Text="{Binding ParksOnTheAir.ErrorMessage}" TextColor="#C0392B" IsVisible="{Binding ParksOnTheAir.HasErrorMessage}" />
+            <Label Text="{Binding ParksOnTheAir.TotalParksActivated, StringFormat='Parks Activated: {0}'}" FontAttributes="Bold" />
+            <Label Text="{Binding ParksOnTheAir.CurrentAwardTier, StringFormat='Current Tier: {0}'}" />
+            <Label Text="{Binding ParksOnTheAir.KiloParkCount, StringFormat='Kilo Parks (1000+ QSOs): {0}'}" FontSize="12" TextColor="Gray" />
+
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                <Entry Grid.Column="0" Text="{Binding ParksOnTheAir.NewParkReference}" Placeholder="Park reference, e.g. US-0001" />
+                <Button Grid.Column="1" Text="Add" Command="{Binding ParksOnTheAir.AddParkCommand}" />
+            </Grid>
+            <ActivityIndicator IsRunning="{Binding ParksOnTheAir.IsLookingUp}" IsVisible="{Binding ParksOnTheAir.IsLookingUp}" />
+
+            <Button Text="Refresh Park Info" Command="{Binding ParksOnTheAir.RefreshCommand}" FontSize="12" Padding="0,6" />
+            <ActivityIndicator IsRunning="{Binding ParksOnTheAir.IsRefreshing}" IsVisible="{Binding ParksOnTheAir.IsRefreshing}" />
+
+            <CollectionView ItemsSource="{Binding ParksOnTheAir.Activations}" HeightRequest="300">
+                <CollectionView.EmptyView>
+                    <Label Text="No parks tracked yet." TextColor="Gray" Margin="0,8" />
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:PotaActivation">
+                        <Grid ColumnDefinitions="*,Auto,Auto" Padding="0,8" RowDefinitions="Auto,Auto">
+                            <Label Grid.Row="0" Grid.Column="0" Text="{Binding ParkReference}" FontAttributes="Bold" FontSize="14" />
+                            <Label Grid.Row="1" Grid.Column="0" Text="{Binding ParkName}" FontSize="12" TextColor="Gray" />
+                            <Label Grid.Row="0" Grid.Column="1" Text="{Binding TotalQsoCount, StringFormat='{0} QSOs'}" VerticalOptions="Center" />
+                            <Label Grid.Row="1" Grid.Column="1" FontSize="11" TextColor="Gray">
+                                <Label.Triggers>
+                                    <DataTrigger TargetType="Label" Binding="{Binding Activated}" Value="True">
+                                        <Setter Property="Text" Value="Activated" />
+                                        <Setter Property="TextColor" Value="Green" />
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Label" Binding="{Binding Activated}" Value="False">
+                                        <Setter Property="Text" Value="Not yet" />
+                                    </DataTrigger>
+                                </Label.Triggers>
+                            </Label>
+                            <Button Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" Text="✕" FontSize="12" Padding="10,4"
+                                    BackgroundColor="#C0392B" TextColor="White" Clicked="OnDeleteParkClicked" />
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

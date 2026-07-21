@@ -7,54 +7,61 @@
 CvarcLogger is a Windows desktop program for logging amateur radio contacts (QSOs). It's built
 for club members who want a straightforward, offline-first logbook: log a contact in a few
 keystrokes, optionally have the radio and online callsign lookups fill in details automatically,
-track progress toward awards like DXCC and Worked All States, and exchange logs with other
-software (QRZ Logbook, LoTW, etc.) via the standard ADIF file format.
+track progress toward awards like DXCC, Worked All States, SOTA, and POTA, and exchange logs with
+other software (QRZ Logbook, LoTW, etc.) via the standard ADIF file format.
 
-It runs as a single `.exe` with no installer and no external database server — everything lives
-in one SQLite file that travels with the program.
+Everything lives in one SQLite file that travels with the program — no external database server.
+It ships two ways: a self-contained `.exe`/`.zip` that runs directly with no install step, and a
+Windows installer (Inno Setup) that adds a normal Apps & Features entry under `C:\CvarcLogger`.
+Both contain the same program; the installer is just a more conventional install/uninstall path.
 
 ## What it does, at a glance
 
 - **Logs QSOs** with a dedicated entry form (callsign, band, mode, RST, name, grid, location,
   SOTA/POTA references, and more), either typed by hand or auto-filled from the radio and lookup
   services.
-- **Controls the radio (CAT)** through Hamlib's `rigctld`, reading frequency/mode live and pushing
-  Band/Frequency/Mode into the entry form as you tune.
+- **Controls the radio (CAT)** through Hamlib's `rigctld`, reading frequency/mode/TX power live and
+  pushing Band/Frequency/Mode/TX Power into the entry form as you tune.
 - **Looks up callsigns** against Callook.info, QRZ.com, and QRZCQ.com, merging whichever fields
   each service actually provides.
 - **Shows the whole log** in a sortable, searchable, customizable grid, with edit/delete and
   clipboard copy/paste of QSOs.
 - **Imports and exports ADIF** (`.adi`) files, the standard ham radio log interchange format, so
   logs can move to/from QRZ Logbook, LoTW, and other loggers.
+- **Receives QSOs from WSJT-X**, relayed through GridTracker2 over UDP, and logs them automatically
+  with the same online lookup the manual entry form uses.
 - **Broadcasts QSOs to GridTracker2** over UDP in real time, so a contact you log shows up on
   GridTracker's map immediately.
-- **Tracks awards progress** (DXCC entities worked/confirmed, Worked All States) computed directly
-  from the logged QSOs.
+- **Tracks awards progress**: DXCC entities and US states worked/confirmed (Worked All States),
+  plus SOTA's Mountain Goat and POTA's activator award tiers, all computed from the logged QSOs.
 - **Supports multiple station profiles** (callsign, grid, UTC offset/DST, etc.), so one install can
   serve more than one operator or operating location.
+- **Supports multiple independent log files** (separate `.db` databases), so contest logs or
+  alternate callsigns can be kept apart from the everyday log.
 
 ## Program structure
 
-The code is split into three .NET projects, each with a distinct job:
+The code is split into three .NET projects, each with a distinct job, plus a test project:
 
 | Project | Responsibility |
 |---|---|
-| **CvarcLogger.Core** | Logic with no UI or database dependency: ADIF reading/writing, callsign lookup clients, CAT/rig control protocol, awards calculations, grid-square math, band/mode data. Fully unit-tested. |
-| **CvarcLogger.Data** | The SQLite database: EF Core `DbContext`, migrations, and repositories for QSOs, station profiles, and DXCC reference data. |
-| **CvarcLogger.App** | The WPF desktop UI (MVVM: Views + ViewModels), plus app-specific services that glue Core and Data together — settings storage, the lookup/CAT/GridTracker coordinators, Windows credential encryption. |
+| **CvarcLogger.Core** | Logic with no UI or database dependency: ADIF reading/writing, callsign lookup clients, CAT/rig control protocol, awards calculations, grid-square math, band/mode data. |
+| **CvarcLogger.Data** | The SQLite database: EF Core `DbContext`, migrations, and repositories for QSOs, station profiles, SOTA/POTA activations, and DXCC reference data. |
+| **CvarcLogger.App** | The WPF desktop UI (MVVM: Views + ViewModels), plus app-specific services that glue Core and Data together — settings storage, the lookup/CAT/GridTracker/WSJT-X coordinators, Windows credential encryption. |
 
-This separation is what makes the ADIF and CAT logic independently testable (157 automated tests
-cover Core) without needing a live database or a running instance of the app.
+This separation is what makes the ADIF and CAT logic independently testable — 158 automated tests
+in `tests/CvarcLogger.Tests` cover Core and Data — without needing a running instance of the app.
 
 ## High-level data flow
 
 ```mermaid
 flowchart TB
-    Radio["Radio<br/>(via rigctld)"] -- "live freq/mode" --> Entry
+    Radio["Radio<br/>(via rigctld)"] -- "live freq/mode/power" --> Entry
     Lookup["Lookup services<br/>Callook / QRZ / QRZCQ"] -- "name, grid, location" --> Entry
     StationProfile["Station Profile<br/>(callsign, grid, UTC offset)"] --> Entry
+    WsjtxRelay["WSJT-X<br/>(via GridTracker2 relay, UDP)"] -- "logged QSO" --> DB
 
-    Entry["QSO Entry Form"] -- "Log QSO" --> DB[("SQLite Database<br/>cvarclogger.db")]
+    Entry["QSO Entry Form"] -- "Log QSO" --> DB[("SQLite Database<br/>(per log file)")]
     DB -- "displayed rows" --> Grid["QSO Log Grid"]
     Grid -- "Edit / Delete" --> DB
 
@@ -62,11 +69,12 @@ flowchart TB
     DB -- "Export" --> AdifFile
 
     DB -- "on log/edit" --> GridTracker["GridTracker2<br/>(UDP broadcast)"]
-    DB --> Awards["Awards Progress<br/>(DXCC / WAS)"]
+    DB --> Awards["Awards Progress<br/>(DXCC / WAS / SOTA / POTA)"]
 
-    Settings["Settings<br/>(credentials, radio, GridTracker config)"] --> Lookup
+    Settings["Settings<br/>(credentials, radio, GridTracker/WSJT-X config)"] --> Lookup
     Settings --> Radio
     Settings --> GridTracker
+    Settings --> WsjtxRelay
 ```
 
 ## Process walkthroughs
@@ -85,12 +93,15 @@ flowchart TB
 
 1. On **Connect CAT**, CvarcLogger starts (or connects to an already-running) `rigctld` — Hamlib's
    TCP radio-control daemon — using the model, COM port, and baud rate configured for the active
-   radio profile in Settings.
-2. Once connected, it polls the radio's current frequency and mode on a timer.
+   radio profile in Settings. It uses the copy of `rigctld.exe` bundled alongside the app
+   automatically, unless the rigctld path setting has been pointed at a different, still-valid
+   location.
+2. Once connected, it polls the radio's current frequency, mode, and transmit power on a timer.
 3. Frequency is converted to a ham band (`BandCalculator`) and the radio's raw mode string is
-   mapped to CvarcLogger's Mode/Sub-Mode vocabulary (`RigModeMapper`), then both are pushed into
-   the entry form — unless "Pause auto-fill" is checked, so a manual override during a QSO isn't
-   immediately overwritten.
+   mapped to CvarcLogger's Mode/Sub-Mode vocabulary (`RigModeMapper`); the radio's 0.0–1.0 power
+   fraction is scaled by that radio slot's Max Power (W) calibration setting into an estimated
+   TX Power (W). All three are pushed into the entry form — unless "Pause auto-fill" is checked, so
+   a manual override during a QSO isn't immediately overwritten.
 
 ### 3. Callsign lookup
 
@@ -119,28 +130,46 @@ flowchart TB
    (`AdifWriter`) with ADIF 3.1.4-conformant field-length encoding (measured in UTF-8 bytes, not
    .NET characters) so international names round-trip correctly.
 
-### 6. Awards progress
+### 6. WSJT-X log receiving
+
+1. WSJT-X broadcasts each logged QSO to GridTracker2 (its own default UDP port, 2237).
+2. GridTracker2 logs it as usual, then forwards the same message on to CvarcLogger over a second
+   UDP port (2238) if its "Forward UDP messages" setting is enabled — CvarcLogger never receives
+   WSJT-X's broadcast directly.
+3. `WsjtxUdpListenerService` parses the relayed message and runs it through the same online
+   callsign lookup the manual entry form uses, filling in only the fields WSJT-X left blank, before
+   logging it. These QSOs are not broadcast back to GridTracker2, since it already has them.
+
+### 7. Awards progress
 
 `AwardsService` reads the full QSO log and computes, on demand: which DXCC entities have been
-worked and/or confirmed, and which U.S. states have been worked and/or confirmed for Worked All
-States — no separate tracking table, it's derived fresh from the log each time the Awards window
-is opened.
+worked and/or confirmed, which U.S. states have been worked and/or confirmed for Worked All
+States, progress toward SOTA's 1,000-point Mountain Goat award (summit info from the official SOTA
+summit list, points counted once a summit has 4+ contacts on the same UTC date), and progress
+toward POTA's activator award tiers (Bronze through Emerald, based on unique parks activated, each
+needing 10+ unique callsigns on the same UTC date). None of this is a separate tracking table — all
+of it is derived fresh from the log and from the SOTA/POTA reference data each time the Awards
+window is opened.
 
-### 7. Settings and credentials
+### 8. Settings and credentials
 
-Callsign-lookup and radio-control settings live in a local JSON settings file. QRZ/QRZCQ
-passwords are the exception: they're encrypted with Windows DPAPI (`DpapiCredentialStore`) tied
-to the current Windows user account, so credentials never appear in plain text on disk or in the
-QSO log itself.
+Callsign-lookup, radio-control, GridTracker2, and WSJT-X settings live in a local JSON settings
+file. QRZ/QRZCQ passwords are the exception: they're encrypted with Windows DPAPI
+(`DpapiCredentialStore`) tied to the current Windows user account, so credentials never appear in
+plain text on disk or in the QSO log itself.
 
 ## Where the data lives
 
-- **Database**: `cvarclogger.db`, an EF Core-managed SQLite file created next to `CvarcLogger.exe`
-  by default (so a portable copy — e.g. on a USB drive — carries its data with it). Installs from
-  before this behavior existed keep using their original `%LOCALAPPDATA%\CVARC Logger\` database
-  instead of silently starting a second, empty one.
-- **Settings**: a JSON file alongside the database, holding lookup/radio/GridTracker
-  configuration and encrypted credentials.
+- **Database**: an EF Core-managed SQLite file (`cvarclogger.db` by default), created next to
+  `CvarcLogger.exe` by default (so a portable copy — e.g. on a USB drive — carries its data with
+  it). Installs from before this behavior existed keep using their original
+  `%LOCALAPPDATA%\CVARC Logger\` database instead of silently starting a second, empty one. A
+  single install can hold more than one log (File > New Log / Open Log), each its own independent
+  `.db` file.
+- **Settings**: `%LOCALAPPDATA%\CVARC Logger\settings.json` — a separate location from the
+  database, so it persists across portable copies, log switches, and reinstalls. Holds
+  lookup/radio/GridTracker/WSJT-X configuration and encrypted credentials, but not QSO data.
 - **rigctld**: a copy of Hamlib's `rigctld.exe` is bundled in a `hamlib\` folder next to the exe,
-  so CAT control works out of the box without a separate Hamlib install (a system-installed copy
-  is still used instead if the user has one).
+  so CAT control works out of the box without a separate Hamlib install. CvarcLogger uses that
+  bundled copy automatically; a separately-installed copy is only used if the rigctld path setting
+  is explicitly pointed at it.
