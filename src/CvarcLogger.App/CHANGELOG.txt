@@ -22,6 +22,10 @@ Versions before 1.17 predate this changelog and are not documented here.
   were hidden). Widened the Freq (MHz) box so the full frequency shows without clipping.
 - Columns picker: added "All" and "None" buttons to show or hide every toggleable column at once.
 - Renamed the entry form's "Connect CAT" button to "Connect the CAT".
+- Installer: when an existing CVARC Logger is found, it now asks whether to Update (keep your log,
+  settings, and profiles) or do a Fresh install (start with clean settings). Fresh never erases your log
+  outright -- it first copies it to backuplog.db in the install folder so you can restore or delete it
+  yourself later. A running copy is closed automatically before files are updated.
 
 1.39
 ----
