@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:views="clr-namespace:CvarcLogger.App.Views"
         mc:Ignorable="d"
-        Title="CVARC Logger" Icon="/Assets/AppIcon.ico" Height="700" Width="1150"
+        Title="CVARC Logger" Icon="/Assets/AppIcon.ico" Height="820" Width="1450"
         Loaded="Window_Loaded">
     <DockPanel>
         <Border DockPanel.Dock="Top" Background="DarkBlue" Padding="10,6">
@@ -33,7 +33,8 @@
                 <MenuItem Header="_Awards Progress..." Click="AwardsMenuItem_Click"/>
             </MenuItem>
             <MenuItem Header="_Tools">
-                <MenuItem Header="_Settings..." Click="SettingsMenuItem_Click"/>
+                <MenuItem Header="_Lookup..." Click="LookupMenuItem_Click"/>
+                <MenuItem Header="_CAT Control..." Click="CatControlMenuItem_Click"/>
             </MenuItem>
         </Menu>
 
@@ -61,13 +62,15 @@
 
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="3*" MinHeight="150"/>
+                <RowDefinition Height="4*" MinHeight="150"/>
                 <RowDefinition Height="7*"/>
             </Grid.RowDefinitions>
 
-            <Viewbox Grid.Row="0" Stretch="Uniform">
-                <views:QsoEntryView DataContext="{Binding QsoEntry}"/>
-            </Viewbox>
+            <Border Grid.Row="0" Background="AliceBlue">
+                <Viewbox Stretch="Uniform">
+                    <views:QsoEntryView DataContext="{Binding QsoEntry}"/>
+                </Viewbox>
+            </Border>
 
             <views:QsoLogGridView Grid.Row="1" DataContext="{Binding QsoLog}"/>
         </Grid>

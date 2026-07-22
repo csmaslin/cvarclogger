@@ -3,11 +3,11 @@ using CvarcLogger.App.ViewModels;
 
 namespace CvarcLogger.App.Views;
 
-public partial class SettingsWindow : Window
+public partial class LookupSettingsWindow : Window
 {
     private readonly SettingsViewModel _viewModel;
 
-    public SettingsWindow(SettingsViewModel viewModel)
+    public LookupSettingsWindow(SettingsViewModel viewModel)
     {
         InitializeComponent();
         _viewModel = viewModel;

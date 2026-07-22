@@ -21,6 +21,7 @@ public partial class QsoEntryViewModel : ObservableObject
     private readonly IGridZoneResolver _gridZoneResolver;
     private readonly LookupCoordinator _lookupCoordinator;
     private readonly RigControlCoordinator _rigCoordinator;
+    private readonly InternetCatCoordinator _internetCat;
     private readonly SettingsService _settings;
     private readonly DialogService _dialogService;
     private readonly IClock _clock;
@@ -28,6 +29,11 @@ public partial class QsoEntryViewModel : ObservableObject
     private readonly DispatcherTimer _catPollTimer;
     private readonly DispatcherTimer _liveClockTimer;
     private string? _lastLookedUpCallsign;
+
+    /// <summary>Which CAT source the current connection actually uses, captured at connect time so a later
+    /// toggle of the Internet Control enable setting can't make Disconnect/Poll target the wrong backend
+    /// mid-session. True = network K4 (InternetCatCoordinator); false = Hamlib (RigControlCoordinator).</summary>
+    private bool _connectedViaInternet;
 
     /// <summary>Guards QsoDateTimeUtcText/QsoDateTimeLocalText's bidirectional sync (see
     /// OnQsoDateTimeUtcTextChanged/OnQsoDateTimeLocalTextChanged) against re-entrant feedback -- setting
@@ -147,6 +153,7 @@ public partial class QsoEntryViewModel : ObservableObject
         IGridZoneResolver gridZoneResolver,
         LookupCoordinator lookupCoordinator,
         RigControlCoordinator rigCoordinator,
+        InternetCatCoordinator internetCat,
         SettingsService settings,
         DialogService dialogService,
         IClock clock,
@@ -158,6 +165,7 @@ public partial class QsoEntryViewModel : ObservableObject
         _gridZoneResolver = gridZoneResolver;
         _lookupCoordinator = lookupCoordinator;
         _rigCoordinator = rigCoordinator;
+        _internetCat = internetCat;
         _settings = settings;
         _dialogService = dialogService;
         _clock = clock;
@@ -374,14 +382,29 @@ public partial class QsoEntryViewModel : ObservableObject
         if (IsCatConnected)
         {
             _catPollTimer.Stop();
-            await _rigCoordinator.DisconnectAsync();
+            if (_connectedViaInternet) await _internetCat.DisconnectAsync();
+            else await _rigCoordinator.DisconnectAsync();
             IsCatConnected = false;
             CatStatusMessage = "CAT disconnected.";
             return;
         }
 
+        // Internet Control (network K4), when enabled in Settings, takes precedence over the Hamlib serial
+        // path. _connectedViaInternet is latched here so Disconnect/Poll keep using this same backend even
+        // if the enable setting is flipped while connected.
+        if (_settings.InternetRadioEnabled)
+        {
+            var (ok, err) = await _internetCat.ConnectAsync();
+            IsCatConnected = ok;
+            _connectedViaInternet = ok;
+            CatStatusMessage = ok ? "Internet CAT connected." : $"Internet CAT connect failed: {err}";
+            if (ok) _catPollTimer.Start();
+            return;
+        }
+
         var (success, error) = await _rigCoordinator.ConnectAsync();
         IsCatConnected = success;
+        _connectedViaInternet = false;
         CatStatusMessage = success ? "CAT connected." : $"CAT connect failed: {error}";
         if (success) _catPollTimer.Start();
     }
@@ -393,6 +416,12 @@ public partial class QsoEntryViewModel : ObservableObject
         // "Pause auto-fill" is the deliberate, explicit control for stopping that.
         if (IsCatAutoFillPaused) return;
 
+        if (_connectedViaInternet) await PollInternetCatAsync();
+        else await PollRigCatAsync();
+    }
+
+    private async Task PollRigCatAsync()
+    {
         var result = await _rigCoordinator.PollAsync();
         if (!result.Success)
         {
@@ -417,6 +446,37 @@ public partial class QsoEntryViewModel : ObservableObject
         if (result.PowerFraction is decimal fraction && _rigCoordinator.ActiveRadioMaxPowerWatts is int maxWatts)
         {
             TxPowerWatts = Math.Round(fraction * maxWatts, MidpointRounding.AwayFromZero).ToString(CultureInfo.InvariantCulture);
+        }
+
+        CatStatusMessage = null;
+    }
+
+    private async Task PollInternetCatAsync()
+    {
+        var result = await _internetCat.PollAsync();
+        if (!result.Success)
+        {
+            CatStatusMessage = $"CAT: {result.Error}";
+            if (_internetCat.State != K4ConnectionState.Connected)
+            {
+                Log.Warning("Internet CAT poll failed and radio is no longer connected — stopping poll timer: {Error}", result.Error);
+                _catPollTimer.Stop();
+                IsCatConnected = false;
+            }
+            return;
+        }
+
+        FrequencyMhz = result.FrequencyMhz?.ToString("0.000000");
+        if (result.Band is not null) Band = result.Band;
+        Mode = result.MappedMode ?? Mode;
+        if (result.SubMode is not null) SubMode = result.SubMode;
+
+        // Unlike Hamlib's RFPOWER fraction, the K4's PCX; reply is already actual watts (see
+        // K4ReplyParser), so it maps straight to TX Power with no max-wattage scaling. Left sticky
+        // between QSOs when the radio doesn't report a parseable power.
+        if (result.PowerWatts is decimal watts)
+        {
+            TxPowerWatts = Math.Round(watts, MidpointRounding.AwayFromZero).ToString(CultureInfo.InvariantCulture);
         }
 
         CatStatusMessage = null;

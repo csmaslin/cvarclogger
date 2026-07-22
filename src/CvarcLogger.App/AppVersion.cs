@@ -6,5 +6,5 @@ namespace CvarcLogger.App;
 /// gets published to the user.</summary>
 public static class AppVersion
 {
-    public const string Current = "1.38";
+    public const string Current = "1.40";
 }

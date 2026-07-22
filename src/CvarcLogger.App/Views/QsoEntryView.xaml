@@ -13,12 +13,12 @@
              ComboBox's extra dropdown-arrow chrome makes it a few pixels taller than a plain TextBox by
              default, misaligning the two control types row to row. -->
         <Style TargetType="TextBox">
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Height" Value="28"/>
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="Height" Value="40"/>
         </Style>
         <Style TargetType="ComboBox">
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Height" Value="28"/>
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="Height" Value="40"/>
         </Style>
         <!-- Centers every field caption over its input control (each is the first child of its own
              StackPanel, directly above a TextBox/ComboBox), and reserves the same MinHeight for all of
@@ -33,7 +33,7 @@
         <Style TargetType="TextBlock">
             <Setter Property="TextAlignment" Value="Center"/>
             <Setter Property="TextWrapping" Value="Wrap"/>
-            <Setter Property="MinHeight" Value="34"/>
+            <Setter Property="MinHeight" Value="66"/>
         </Style>
         <!-- Applied to fields that carry their value over to the next QSO instead of clearing after
              Log QSO (Station, Band, Mode, Sub-Mode, RST, My SOTA/POTA, OP, QTH, TX Power). A light
@@ -53,18 +53,23 @@
     </UserControl.InputBindings>
     <Border BorderBrush="#CCC" BorderThickness="0,0,0,1" Padding="8">
         <StackPanel>
-            <!-- Left-to-right order: Station, Callsign, Date/Time UTC, Local Time, Time Off (UTC), Band,
-                 Frequency, Mode, Sub-Mode, RST Sent, RST Rcvd, Name, Grid, City, State, County, Country,
-                 ARRL Section, CQ Zone, ITU Zone, My SOTA, SOTA, My POTA, POTA, OP, QTH, TX Power,
-                 Comment. One WrapPanel so it reflows evenly regardless of window width instead of
-                 relying on hand-picked row breaks. -->
-            <!-- Fixed Width so wrapping is stable and predictable when this whole form is later scaled by
-                 a Viewbox in MainWindow (Viewbox measures its child with infinite available width, which
-                 would otherwise make a WrapPanel refuse to wrap at all). -->
-            <WrapPanel HorizontalAlignment="Center" Width="1100">
-                <StackPanel Margin="0,0,10,4" Width="130">
+            <!-- Fields sit on THREE FIXED rows (not one reflowing WrapPanel), so a field never jumps to a
+                 different row when others are hidden. Each row is a horizontal StackPanel: hiding a field
+                 (Visibility=Collapsed, set by ApplyFieldVisibility in the code-behind, in step with the
+                 log grid's Choose Columns picker) makes it take zero width, so its row-mates just slide
+                 left and everything else stays on its own row. Every caption shares the same MinHeight, so
+                 all boxes in a row line up no matter which fields are showing.
+                 Row 1: Station, Callsign, Date/Time UTC, Local Time, Time Off, Band, Freq, Mode, Sub-Mode.
+                 Row 2: RST/S, RST/R, Name, Grid, City, State, County, Country, ARRL Sec, CQ/ITU Zone, My SOTA.
+                 Row 3: SOTA, My POTA, POTA, OP, QTH, TX(W), Comment.
+                 The outer StackPanel has a fixed Width so the MainWindow Viewbox scales the form by a
+                 constant amount however many fields are hidden; hidden fields leave empty space on the
+                 right rather than enlarging everything. -->
+            <StackPanel Width="1500" HorizontalAlignment="Center">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                <StackPanel Margin="0,0,20,12" Width="130">
                     <TextBlock>
-                        <Run Text="Station" FontSize="13" FontWeight="Bold" Foreground="Black"/>
+                        <Run Text="Station" FontSize="24" FontWeight="Bold" Foreground="Black"/>
                         <Run Text=" static" FontSize="11" FontStyle="Italic" Foreground="#999999"/>
                     </TextBlock>
                     <!-- ComboBox's default template ignores a plain Background setter for its own display
@@ -75,160 +80,167 @@
                                   DisplayMemberPath="Callsign" Style="{StaticResource StickyComboBox}"/>
                     </Border>
                 </StackPanel>
-                <StackPanel Margin="0,0,10,4" Width="115">
-                    <TextBlock Text="Callsign" FontSize="13" FontWeight="Bold" Foreground="Black"/>
+                <StackPanel Margin="0,0,20,12" Width="115">
+                    <TextBlock Text="Callsign" FontSize="24" FontWeight="Bold" Foreground="Black"/>
                     <TextBox Text="{Binding Callsign, UpdateSourceTrigger=PropertyChanged}"
                              CharacterCasing="Upper" FontWeight="Bold"/>
                 </StackPanel>
-                <StackPanel Margin="0,0,10,4" Width="175">
-                    <TextBlock Text="Date/Time (UTC)" FontSize="13" FontWeight="Bold" Foreground="Black"/>
+                <StackPanel Margin="0,0,20,12" Width="215">
+                    <TextBlock Text="Date/Time (UTC)" FontSize="24" FontWeight="Bold" Foreground="Black"/>
                     <TextBox Text="{Binding QsoDateTimeUtcText, UpdateSourceTrigger=PropertyChanged}"
                              behaviors:DateInputMask.Format="yyyy-MM-dd HH:mm:ss"/>
                 </StackPanel>
-                <StackPanel Margin="0,0,10,4" Width="175">
-                    <TextBlock Text="Local Time" FontSize="13" FontWeight="Bold" Foreground="Black"/>
+                <StackPanel Margin="0,0,20,12" Width="215">
+                    <TextBlock Text="Local Time" FontSize="24" FontWeight="Bold" Foreground="Black"/>
                     <TextBox Text="{Binding QsoDateTimeLocalText, UpdateSourceTrigger=PropertyChanged}"
                              behaviors:DateInputMask.Format="yyyy-MM-dd HH:mm:ss"/>
                 </StackPanel>
-                <StackPanel x:Name="TimeOffPanel" Margin="0,0,10,4" Width="175">
-                    <TextBlock Text="Time Off (UTC)" FontSize="13" FontWeight="Bold" Foreground="Black"/>
+                <StackPanel x:Name="TimeOffPanel" Margin="0,0,20,12" Width="215">
+                    <TextBlock Text="Time Off (UTC)" FontSize="24" FontWeight="Bold" Foreground="Black"/>
                     <TextBox Text="{Binding QsoDateTimeOffUtcText, UpdateSourceTrigger=PropertyChanged}"
                              behaviors:DateInputMask.Format="yyyy-MM-dd HH:mm:ss"/>
                 </StackPanel>
-                <StackPanel Margin="0,0,10,4" Width="65">
+                <StackPanel Margin="0,0,20,12" Width="65">
                     <TextBlock>
-                        <Run Text="Band" FontSize="13" FontWeight="Bold" Foreground="Black"/>
+                        <Run Text="Band" FontSize="24" FontWeight="Bold" Foreground="Black"/>
                         <Run Text=" static" FontSize="11" FontStyle="Italic" Foreground="#999999"/>
                     </TextBlock>
                     <Border Background="#FFF6D9" Padding="1" CornerRadius="2">
                         <ComboBox ItemsSource="{Binding Bands}" SelectedItem="{Binding Band}" IsEditable="True" Style="{StaticResource StickyComboBox}"/>
                     </Border>
                 </StackPanel>
-                <StackPanel x:Name="FreqPanel" Margin="0,0,10,4" Width="80">
-                    <TextBlock Text="Freq (MHz)" FontSize="13" FontWeight="Bold" Foreground="Black" TextWrapping="Wrap"/>
+                <StackPanel x:Name="FreqPanel" Margin="0,0,20,12" Width="130">
+                    <TextBlock Text="Freq (MHz)" FontSize="24" FontWeight="Bold" Foreground="Black" TextWrapping="Wrap"/>
                     <TextBox Text="{Binding FrequencyMhz, UpdateSourceTrigger=PropertyChanged}"/>
                 </StackPanel>
-                <StackPanel Margin="0,0,10,4" Width="90">
+                <StackPanel Margin="0,0,20,12" Width="90">
                     <TextBlock>
-                        <Run Text="Mode" FontSize="13" FontWeight="Bold" Foreground="Black"/>
+                        <Run Text="Mode" FontSize="24" FontWeight="Bold" Foreground="Black"/>
                         <Run Text=" static" FontSize="11" FontStyle="Italic" Foreground="#999999"/>
                     </TextBlock>
                     <Border Background="#FFF6D9" Padding="1" CornerRadius="2">
                         <ComboBox ItemsSource="{Binding Modes}" SelectedItem="{Binding Mode}" IsEditable="True" Style="{StaticResource StickyComboBox}"/>
                     </Border>
                 </StackPanel>
-                <StackPanel Margin="0,0,10,4" Width="95"
+                <StackPanel Margin="0,0,20,12" Width="140"
                             Visibility="{Binding Mode, Converter={StaticResource SubModeVisibilityConverter}}">
                     <TextBlock>
-                        <Run Text="Sub-Mode" FontSize="13" FontWeight="Bold" Foreground="Black"/>
+                        <Run Text="Sub-Mode" FontSize="24" FontWeight="Bold" Foreground="Black"/>
                         <Run Text=" static" FontSize="11" FontStyle="Italic" Foreground="#999999"/>
                     </TextBlock>
                     <Border Background="#FFF6D9" Padding="1" CornerRadius="2">
                         <ComboBox ItemsSource="{Binding SubModes}" SelectedItem="{Binding SubMode}" IsEditable="True" Style="{StaticResource StickyComboBox}"/>
                     </Border>
                 </StackPanel>
-                <StackPanel x:Name="RstSentPanel" Margin="0,0,10,4" Width="55">
+                </StackPanel>
+                <!-- Row 2 -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                <StackPanel x:Name="RstSentPanel" Margin="0,0,20,12" Width="75">
                     <TextBlock TextWrapping="Wrap">
-                        <Run Text="RST Sent" FontSize="13" FontWeight="Bold" Foreground="Black"/>
+                        <Run Text="RST/S" FontSize="24" FontWeight="Bold" Foreground="Black"/>
                         <Run Text=" static" FontSize="11" FontStyle="Italic" Foreground="#999999"/>
                     </TextBlock>
                     <TextBox Text="{Binding RstSent, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource StickyTextBox}"/>
                 </StackPanel>
-                <StackPanel x:Name="RstRcvdPanel" Margin="0,0,10,4" Width="55">
+                <StackPanel x:Name="RstRcvdPanel" Margin="0,0,20,12" Width="75">
                     <TextBlock TextWrapping="Wrap">
-                        <Run Text="RST Rcvd" FontSize="13" FontWeight="Bold" Foreground="Black"/>
+                        <Run Text="RST/R" FontSize="24" FontWeight="Bold" Foreground="Black"/>
                         <Run Text=" static" FontSize="11" FontStyle="Italic" Foreground="#999999"/>
                     </TextBlock>
                     <TextBox Text="{Binding RstRcvd, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource StickyTextBox}"/>
                 </StackPanel>
-                <StackPanel x:Name="NamePanel" Margin="0,0,10,4" Width="150">
-                    <TextBlock Text="Name" FontSize="13" FontWeight="Bold" Foreground="Black"/>
+                <StackPanel x:Name="NamePanel" Margin="0,0,20,12" Width="150">
+                    <TextBlock Text="Name" FontSize="24" FontWeight="Bold" Foreground="Black"/>
                     <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"/>
                 </StackPanel>
-                <StackPanel x:Name="GridPanel" Margin="0,0,10,4" Width="80">
-                    <TextBlock Text="Grid" FontSize="13" FontWeight="Bold" Foreground="Black"/>
+                <StackPanel x:Name="GridPanel" Margin="0,0,20,12" Width="80">
+                    <TextBlock Text="Grid" FontSize="24" FontWeight="Bold" Foreground="Black"/>
                     <TextBox Text="{Binding GridSquare, UpdateSourceTrigger=PropertyChanged}"/>
                 </StackPanel>
-                <StackPanel x:Name="CityPanel" Margin="0,0,10,4" Width="110">
-                    <TextBlock Text="City" FontSize="13" FontWeight="Bold" Foreground="Black"/>
+                <StackPanel x:Name="CityPanel" Margin="0,0,20,12" Width="110">
+                    <TextBlock Text="City" FontSize="24" FontWeight="Bold" Foreground="Black"/>
                     <TextBox Text="{Binding City, UpdateSourceTrigger=PropertyChanged}"/>
                 </StackPanel>
-                <StackPanel x:Name="StatePanel" Margin="0,0,10,4" Width="50">
-                    <TextBlock Text="State" FontSize="13" FontWeight="Bold" Foreground="Black" TextWrapping="Wrap"/>
+                <StackPanel x:Name="StatePanel" Margin="0,0,20,12" Width="75">
+                    <TextBlock Text="State" FontSize="24" FontWeight="Bold" Foreground="Black" TextWrapping="Wrap"/>
                     <TextBox Text="{Binding State, UpdateSourceTrigger=PropertyChanged}" CharacterCasing="Upper"/>
                 </StackPanel>
-                <StackPanel x:Name="CountyPanel" Margin="0,0,10,4" Width="100">
-                    <TextBlock Text="County" FontSize="13" FontWeight="Bold" Foreground="Black"/>
+                <StackPanel x:Name="CountyPanel" Margin="0,0,20,12" Width="100">
+                    <TextBlock Text="County" FontSize="24" FontWeight="Bold" Foreground="Black"/>
                     <TextBox Text="{Binding County, UpdateSourceTrigger=PropertyChanged}"/>
                 </StackPanel>
-                <StackPanel x:Name="CountryPanel" Margin="0,0,10,4" Width="130">
-                    <TextBlock Text="Country" FontSize="13" FontWeight="Bold" Foreground="Black"/>
+                <StackPanel x:Name="CountryPanel" Margin="0,0,20,12" Width="130">
+                    <TextBlock Text="Country" FontSize="24" FontWeight="Bold" Foreground="Black"/>
                     <TextBox Text="{Binding Country, UpdateSourceTrigger=PropertyChanged}"/>
                 </StackPanel>
-                <StackPanel x:Name="ArrlSectionPanel" Margin="0,0,10,4" Width="70">
-                    <TextBlock Text="ARRL Section" FontSize="13" FontWeight="Bold" Foreground="Black" TextWrapping="Wrap"/>
+                <StackPanel x:Name="ArrlSectionPanel" Margin="0,0,20,12" Width="80">
+                    <TextBlock Text="ARRL Sec" FontSize="24" FontWeight="Bold" Foreground="Black" TextWrapping="Wrap"/>
                     <TextBox Text="{Binding ArrlSection, UpdateSourceTrigger=PropertyChanged}" CharacterCasing="Upper"/>
                 </StackPanel>
-                <StackPanel x:Name="CqZonePanel" Margin="0,0,10,4" Width="55">
-                    <TextBlock Text="CQ Zone" FontSize="13" FontWeight="Bold" Foreground="Black" TextWrapping="Wrap"/>
+                <StackPanel x:Name="CqZonePanel" Margin="0,0,20,12" Width="80">
+                    <TextBlock Text="CQ Zone" FontSize="24" FontWeight="Bold" Foreground="Black" TextWrapping="Wrap"/>
                     <TextBox Text="{Binding CqZone, UpdateSourceTrigger=PropertyChanged}"/>
                 </StackPanel>
-                <StackPanel x:Name="ItuZonePanel" Margin="0,0,10,4" Width="55">
-                    <TextBlock Text="ITU Zone" FontSize="13" FontWeight="Bold" Foreground="Black" TextWrapping="Wrap"/>
+                <StackPanel x:Name="ItuZonePanel" Margin="0,0,20,12" Width="80">
+                    <TextBlock Text="ITU Zone" FontSize="24" FontWeight="Bold" Foreground="Black" TextWrapping="Wrap"/>
                     <TextBox Text="{Binding ItuZone, UpdateSourceTrigger=PropertyChanged}"/>
                 </StackPanel>
-                <StackPanel x:Name="MySotaPanel" Margin="0,0,10,4" Width="110">
+                <StackPanel x:Name="MySotaPanel" Margin="0,0,20,12" Width="110">
                     <TextBlock>
-                        <Run Text="My SOTA" FontSize="13" FontWeight="Bold" Foreground="Black"/>
+                        <Run Text="My SOTA" FontSize="24" FontWeight="Bold" Foreground="Black"/>
                         <Run Text=" static" FontSize="11" FontStyle="Italic" Foreground="#999999"/>
                     </TextBlock>
                     <TextBox Text="{Binding MySotaRef, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource StickyTextBox}"/>
                 </StackPanel>
-                <StackPanel x:Name="SotaPanel" Margin="0,0,10,4" Width="110">
-                    <TextBlock Text="SOTA" FontSize="13" FontWeight="Bold" Foreground="Black"/>
+                </StackPanel>
+                <!-- Row 3 -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                <StackPanel x:Name="SotaPanel" Margin="0,0,20,12" Width="110">
+                    <TextBlock Text="SOTA" FontSize="24" FontWeight="Bold" Foreground="Black"/>
                     <TextBox Text="{Binding SotaRef, UpdateSourceTrigger=PropertyChanged}"/>
                 </StackPanel>
-                <StackPanel x:Name="MyPotaPanel" Margin="0,0,10,4" Width="175">
+                <StackPanel x:Name="MyPotaPanel" Margin="0,0,20,12" Width="175">
                     <TextBlock>
-                        <Run Text="My POTA" FontSize="13" FontWeight="Bold" Foreground="Black"/>
+                        <Run Text="My POTA" FontSize="24" FontWeight="Bold" Foreground="Black"/>
                         <Run Text=" static" FontSize="11" FontStyle="Italic" Foreground="#999999"/>
                     </TextBlock>
                     <TextBox Text="{Binding MySigInfo, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource StickyTextBox}"/>
                 </StackPanel>
-                <StackPanel x:Name="PotaPanel" Margin="0,0,10,4" Width="175">
-                    <TextBlock Text="POTA" FontSize="13" FontWeight="Bold" Foreground="Black"/>
+                <StackPanel x:Name="PotaPanel" Margin="0,0,20,12" Width="175">
+                    <TextBlock Text="POTA" FontSize="24" FontWeight="Bold" Foreground="Black"/>
                     <TextBox Text="{Binding SigInfo, UpdateSourceTrigger=PropertyChanged}"/>
                 </StackPanel>
-                <StackPanel x:Name="OpPanel" Margin="0,0,10,4" Width="90">
+                <StackPanel x:Name="OpPanel" Margin="0,0,20,12" Width="90">
                     <TextBlock>
-                        <Run Text="OP" FontSize="13" FontWeight="Bold" Foreground="Black"/>
+                        <Run Text="OP" FontSize="24" FontWeight="Bold" Foreground="Black"/>
                         <Run Text=" static" FontSize="11" FontStyle="Italic" Foreground="#999999"/>
                     </TextBlock>
                     <TextBox Text="{Binding Op, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource StickyTextBox}"/>
                 </StackPanel>
-                <StackPanel x:Name="QthPanel" Margin="0,0,10,4" Width="110">
+                <StackPanel x:Name="QthPanel" Margin="0,0,20,12" Width="110">
                     <TextBlock>
-                        <Run Text="QTH" FontSize="13" FontWeight="Bold" Foreground="Black"/>
+                        <Run Text="QTH" FontSize="24" FontWeight="Bold" Foreground="Black"/>
                         <Run Text=" static" FontSize="11" FontStyle="Italic" Foreground="#999999"/>
                     </TextBlock>
                     <TextBox Text="{Binding Qth, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource StickyTextBox}"/>
                 </StackPanel>
-                <StackPanel x:Name="TxPowerPanel" Margin="0,0,10,4" Width="90">
+                <StackPanel x:Name="TxPowerPanel" Margin="0,0,20,12" Width="130">
                     <TextBlock>
-                        <Run Text="TX Power (W)" FontSize="13" FontWeight="Bold" Foreground="Black"/>
+                        <Run Text="TX(W)" FontSize="24" FontWeight="Bold" Foreground="Black"/>
                         <Run Text=" static" FontSize="11" FontStyle="Italic" Foreground="#999999"/>
                     </TextBlock>
                     <TextBox Text="{Binding TxPowerWatts, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource StickyTextBox}"/>
                 </StackPanel>
-                <StackPanel x:Name="CommentPanel" Margin="0,0,10,4" Width="220">
-                    <TextBlock Text="Comment" FontSize="13" FontWeight="Bold" Foreground="Black"/>
+                <StackPanel x:Name="CommentPanel" Margin="0,0,20,12" Width="280">
+                    <TextBlock Text="Comment" FontSize="24" FontWeight="Bold" Foreground="Black"/>
                     <TextBox Text="{Binding Comment, UpdateSourceTrigger=PropertyChanged}"/>
                 </StackPanel>
-            </WrapPanel>
+                </StackPanel>
+            </StackPanel>
 
-            <DockPanel Margin="0,4,0,0">
+            <DockPanel Margin="0,12,0,0" Width="2000" HorizontalAlignment="Center">
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
-                    <Image Width="34" Margin="0,0,6,0" VerticalAlignment="Center"
+                    <Image Width="68" Margin="0,0,14,0" VerticalAlignment="Center"
                            Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality">
                         <Image.Style>
                             <Style TargetType="Image">
@@ -241,33 +253,33 @@
                             </Style>
                         </Image.Style>
                     </Image>
-                    <StackPanel Margin="0,0,10,0" VerticalAlignment="Center">
-                        <Button Command="{Binding ToggleCatConnectionCommand}" Padding="10,4" FontSize="14">
+                    <StackPanel Margin="0,0,24,0" VerticalAlignment="Center">
+                        <Button Command="{Binding ToggleCatConnectionCommand}" Padding="20,8" FontSize="28">
                             <Button.Style>
                                 <Style TargetType="Button">
-                                    <Setter Property="Content" Value="Connect CAT"/>
+                                    <Setter Property="Content" Value="Connect the CAT"/>
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding IsCatConnected}" Value="True">
-                                            <Setter Property="Content" Value="Disconnect CAT"/>
+                                            <Setter Property="Content" Value="Disconnect the CAT"/>
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
                             </Button.Style>
                         </Button>
                     </StackPanel>
-                    <StackPanel Margin="0,0,10,0" VerticalAlignment="Center">
-                        <CheckBox Content="Pause auto-fill" IsChecked="{Binding IsCatAutoFillPaused}" FontSize="14"/>
+                    <StackPanel Margin="0,0,24,0" VerticalAlignment="Center">
+                        <CheckBox Content="Pause auto-fill" IsChecked="{Binding IsCatAutoFillPaused}" FontSize="28"/>
                     </StackPanel>
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="{Binding CatStatusMessage}" FontSize="13" Foreground="Gray"/>
+                        <TextBlock Text="{Binding CatStatusMessage}" FontSize="26" Foreground="Gray"/>
                     </StackPanel>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <StackPanel Margin="0,0,10,0" VerticalAlignment="Center">
-                        <Button Content="Lookup" Command="{Binding LookupCommand}" Padding="10,4" FontSize="14"/>
+                    <StackPanel Margin="0,0,24,0" VerticalAlignment="Center">
+                        <Button Content="Lookup" Command="{Binding LookupCommand}" Padding="20,8" FontSize="28"/>
                     </StackPanel>
                     <StackPanel VerticalAlignment="Center">
-                        <Button Content="Log QSO" Command="{Binding LogQsoCommand}" Padding="16,4" FontSize="14"
+                        <Button Content="Log QSO" Command="{Binding LogQsoCommand}" Padding="32,8" FontSize="28"
                                 Background="#2E7D32" Foreground="White" FontWeight="Bold"/>
                     </StackPanel>
                 </StackPanel>
