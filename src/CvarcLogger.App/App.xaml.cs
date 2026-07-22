@@ -99,6 +99,7 @@ public partial class App : Application
                 services.AddSingleton<IRigControlService, RigctldClient>();
                 services.AddSingleton<RigctldProcessManager>();
                 services.AddSingleton<RigControlCoordinator>();
+                services.AddSingleton<InternetCatCoordinator>();
                 services.AddSingleton<HamlibRigCatalog>();
 
                 services.AddSingleton<DialogService>();
@@ -119,7 +120,8 @@ public partial class App : Application
 
                 services.AddScoped<MainWindow>();
                 services.AddTransient<Views.AwardsWindow>();
-                services.AddTransient<Views.SettingsWindow>();
+                services.AddTransient<Views.LookupSettingsWindow>();
+                services.AddTransient<Views.CatControlWindow>();
                 services.AddTransient<Views.StationProfileEditorWindow>();
                 services.AddTransient<Views.QsoEditWindow>();
             })

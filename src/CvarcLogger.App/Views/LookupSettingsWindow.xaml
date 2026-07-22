@@ -1,24 +1,26 @@
-<Window x:Class="CvarcLogger.App.Views.SettingsWindow"
+<Window x:Class="CvarcLogger.App.Views.LookupSettingsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:services="clr-namespace:CvarcLogger.App.Services"
         mc:Ignorable="d"
-        Title="Settings" Icon="/Assets/AppIcon.ico" FontSize="14"
-        Height="850" Width="900" MinHeight="850" MinWidth="900"
+        Title="Lookup" Icon="/Assets/AppIcon.ico" FontSize="14"
+        Height="620" Width="900" MinHeight="500" MinWidth="700"
         WindowStartupLocation="CenterOwner" ResizeMode="CanResize"
         Loaded="Window_Loaded">
-    <!-- Fixed Width so wrapping is predictable. Viewbox measures its child at infinite available size.
-         Two columns (left: lookup/credentials/GridTracker, right: Radio Control) so the window doesn't
-         need to be very tall to show everything at a readable scale. -->
+    <!-- This window used to be the left column of a combined Settings window (see CatControlWindow for
+         the other half, split out the same day): callsign lookup preference, QRZ/QRZCQ credentials,
+         and the two log-relay integrations (GridTracker2, WSJT-X). Landscape two-column layout (left:
+         Callsign Lookup + QRZ, right: QRZCQ + GridTracker2 + WSJT-X) rather than one long portrait
+         column. Fixed Width so wrapping is predictable; Viewbox measures its child at infinite
+         available size otherwise. -->
     <Viewbox Stretch="Uniform">
         <Grid Margin="14" Width="872">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="410"/>
-                <ColumnDefinition Width="20"/>
-                <ColumnDefinition Width="410"/>
                 <ColumnDefinition Width="32"/>
+                <ColumnDefinition Width="410"/>
             </Grid.ColumnDefinitions>
 
             <StackPanel Grid.Column="0">
@@ -60,9 +62,9 @@
                     <Button Content="Save Credentials" Click="SaveCredentials_Click" Padding="10,4" Margin="0,0,8,0"/>
                     <Button Content="Clear" Command="{Binding ClearQrzCredentialsCommand}" Padding="10,4"/>
                 </StackPanel>
+            </StackPanel>
 
-                <Separator Margin="0,0,0,14"/>
-
+            <StackPanel Grid.Column="2">
                 <TextBlock Text="QRZCQ.com XML API Credentials" FontWeight="Bold" Margin="0,0,0,6"/>
                 <TextBlock Margin="0,0,0,8" Foreground="Gray" TextWrapping="Wrap"
                            Text="Requires a Premium QRZCQ account. Stored encrypted (Windows DPAPI) on this machine only, never in the QSO log. QRZCQ doesn't provide County, so that field still comes from whichever other configured service has it."/>
@@ -117,78 +119,6 @@
                            Text="Receives WSJT-X's logged-QSO data as relayed by GridTracker2 on UDP port 2238 (requires &quot;Forward UDP messages&quot; enabled on port 2238 under GridTracker2's own General tab) and adds each one to the log automatically. These are not forwarded back to GridTracker2 above, to avoid duplicate entries there."/>
 
                 <CheckBox Content="Enable WSJT-X log receiving (UDP 2238, via GridTracker2)" IsChecked="{Binding WsjtxEnabled}" Margin="0,0,0,10"/>
-            </StackPanel>
-
-            <StackPanel Grid.Column="2">
-                <TextBlock Text="Radio Control (CAT)" FontWeight="Bold" Margin="0,0,0,6"/>
-                <TextBlock Margin="0,0,0,8" Foreground="Gray" TextWrapping="Wrap"
-                           Text="Uses Hamlib's rigctld as a TCP backend. CvarcLogger uses the copy of rigctld.exe bundled alongside it automatically — no separate Hamlib install is needed. To use a different copy instead (for example one already installed from WSJT-X or hamlib.org), set rigctld path below to its full location. Pick your radio from the dropdown below for each slot; if it isn't listed, look up its Model ID with 'rigctl --list' and enter that directly."/>
-
-                <CheckBox Content="Enable CAT (Radio Control)" IsChecked="{Binding CatEnabled}" Margin="0,0,0,10"/>
-
-                <TextBlock Text="Active radio" Foreground="Gray"/>
-                <ComboBox ItemsSource="{Binding RadioNames}" SelectedIndex="{Binding ActiveRadioIndex}"
-                          HorizontalAlignment="Left" Width="200" Margin="0,0,0,4"/>
-                <DockPanel Margin="0,0,0,10">
-                    <Button Content="Refresh Ports" Command="{Binding RefreshAvailableComPortsCommand}" Padding="8,2"
-                            DockPanel.Dock="Right" Margin="8,0,0,0" VerticalAlignment="Center"/>
-                    <TextBlock Text="COM ports are re-scanned each time this window opens." Foreground="Gray"
-                               TextWrapping="Wrap" VerticalAlignment="Center"/>
-                </DockPanel>
-
-                <ItemsControl ItemsSource="{Binding RadioProfileEditors}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Border BorderBrush="#DDD" BorderThickness="1" Padding="8" Margin="0,0,0,8">
-                                <StackPanel>
-                                    <TextBlock Text="{Binding SlotLabel}" FontWeight="Bold" Margin="0,0,0,4"/>
-
-                                    <TextBlock Text="Radio (Hamlib)" Foreground="Gray"/>
-                                    <ComboBox ItemsSource="{Binding AvailableRigs}"
-                                              SelectedItem="{Binding SelectedRig}"
-                                              DisplayMemberPath="DisplayName"
-                                              IsEditable="True" IsTextSearchEnabled="True"
-                                              Margin="0,0,0,6"/>
-
-                                    <WrapPanel>
-                                        <StackPanel Margin="0,0,10,0" Width="120">
-                                            <TextBlock Text="Hamlib Model ID" Foreground="Gray"/>
-                                            <TextBox Text="{Binding HamlibModelId, UpdateSourceTrigger=PropertyChanged}"/>
-                                        </StackPanel>
-                                        <StackPanel Margin="0,0,10,0" Width="100">
-                                            <TextBlock Text="COM Port" Foreground="Gray"/>
-                                            <ComboBox ItemsSource="{Binding AvailableComPorts}"
-                                                      SelectedItem="{Binding ComPort}"
-                                                      IsEditable="True" IsTextSearchEnabled="True"/>
-                                        </StackPanel>
-                                        <StackPanel Margin="0,0,10,0" Width="100">
-                                            <TextBlock Text="Baud Rate" Foreground="Gray"/>
-                                            <TextBox Text="{Binding BaudRate, UpdateSourceTrigger=PropertyChanged}"/>
-                                        </StackPanel>
-                                        <StackPanel Width="100">
-                                            <TextBlock Text="Max Power (W)" Foreground="Gray"/>
-                                            <TextBox Text="{Binding MaxPowerWatts, UpdateSourceTrigger=PropertyChanged}"/>
-                                        </StackPanel>
-                                    </WrapPanel>
-                                </StackPanel>
-                            </Border>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-
-                <TextBlock Text="rigctld path (assumed on PATH unless given a full path)" Foreground="Gray"/>
-                <TextBox Text="{Binding RigctldExecutablePath, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
-
-                <TextBlock Text="rigctld TCP port" Foreground="Gray"/>
-                <TextBox Text="{Binding RigctldTcpPort, UpdateSourceTrigger=PropertyChanged}"
-                         HorizontalAlignment="Left" Width="100" Margin="0,0,0,8"/>
-
-                <CheckBox Content="Launch rigctld automatically" IsChecked="{Binding LaunchRigctldAutomatically}" Margin="0,0,0,12"/>
-
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                    <Button Content="Save Radio Settings" Command="{Binding SaveRadioSettingsCommand}" Padding="10,4" Margin="0,0,8,0"/>
-                    <Button Content="Test Connection" Command="{Binding TestCatConnectionCommand}" Padding="10,4"/>
-                </StackPanel>
             </StackPanel>
         </Grid>
     </Viewbox>

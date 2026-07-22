@@ -5,6 +5,37 @@ build meant to reach the user (see AppVersion.cs) -- before running publish.ps1.
 
 Versions before 1.17 predate this changelog and are not documented here.
 
+1.40
+----
+- Internet Control (CAT): CvarcLogger can now read frequency, band, mode, sub-mode, and TX power from an
+  Elecraft K4 over the network (its native TCP command protocol, default port 9200), in addition to the
+  existing Hamlib/rigctld serial radios. Configure it under Tools > CAT Control: host/IP, port, and an
+  optional (encrypted) password. Connect the CAT on the main form then auto-fills those fields live from
+  the radio, exactly as the serial path does.
+- CAT Control window: the two separate enable checkboxes were replaced with a single "CAT Source"
+  selector (Off / USB (Hamlib) / Internet) so only one source is ever active, plus one "Save Settings"
+  button (saves both the serial and internet settings) and one "Test Connection" button (tests whichever
+  source is selected).
+- QSO Entry form: fields are now laid out on fixed rows, so hiding columns via the log's Columns picker
+  makes a field's row-mates slide left instead of reflowing onto other rows -- this keeps every box lined
+  up with its row in all column configurations (previously QTH could drop out of line when SOTA/POTA/OP
+  were hidden). Widened the Freq (MHz) box so the full frequency shows without clipping.
+- Columns picker: added "All" and "None" buttons to show or hide every toggleable column at once.
+- Renamed the entry form's "Connect CAT" button to "Connect the CAT".
+
+1.39
+----
+- Tools menu: split the combined Settings window into two windows, "Lookup" (callsign lookup
+  preference, QRZ/QRZCQ credentials, GridTracker2, WSJT-X) and "CAT Control" (Hamlib/rigctld radio
+  settings), each laid out as two landscape columns instead of one long portrait window.
+- QSO Entry form: significantly enlarged throughout -- field titles, input boxes, and the CAT/Lookup/
+  Log QSO action row are all noticeably bigger and better spaced, with the main window growing to fit.
+  Renamed "RST Sent"/"RST Rcvd" to "RST/S"/"RST/R" and "ARRL Section" to "ARRL Sec" to fit the wider
+  fonts without wrapping awkwardly; fixed a few fields (Sub-Mode, My SOTA/ARRL Sec/CQ Zone/ITU Zone,
+  TX Power) that briefly fell out of alignment with their row as a result.
+- QSO Entry form background tinted a light blue (AliceBlue), spanning the full window width, to set it
+  visually apart from the log grid below.
+
 1.38
 ----
 - QSO Entry form: added a "Time Off (UTC)" field, next to Local Time, for logging a contact's end time.

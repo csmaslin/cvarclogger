@@ -37,7 +37,7 @@ public partial class SettingsViewModel : ObservableObject
     public string QrzStatusText => IsQrzConfigured ? "Configured" : "Not Configured";
     public string QrzCqStatusText => IsQrzCqConfigured ? "Configured" : "Not Configured";
 
-    [ObservableProperty] private bool catEnabled;
+    [ObservableProperty] private CatSource catSource;
     [ObservableProperty] private bool launchRigctldAutomatically;
     [ObservableProperty] private string rigctldExecutablePath = "rigctld.exe";
     [ObservableProperty] private string rigctldTcpPort = "4532";
@@ -48,6 +48,19 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private string gridTrackerPort = "2240";
 
     [ObservableProperty] private bool wsjtxEnabled;
+
+    // Internet Control (CAT): a network-reachable Elecraft K4 (its native TCP protocol, default port
+    // 9200), distinct from the Hamlib/rigctld serial radios above. Password is optional (the K4 protocol
+    // itself needs no auth) and, when set, stored encrypted via ICredentialStore, never in settings.json.
+    private const string InternetRadioCredentialKey = "INTERNET_RADIO";
+    [ObservableProperty] private string internetRadioHost = string.Empty;
+    [ObservableProperty] private string internetRadioPortText = "9200";
+    [ObservableProperty] private string internetRadioPassword = string.Empty;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(InternetRadioStatusText))]
+    private bool isInternetRadioConfigured;
+
+    public string InternetRadioStatusText => IsInternetRadioConfigured ? "Configured" : "Not Configured";
 
     public ObservableCollection<string> RadioNames { get; } = new();
     public ObservableCollection<RadioProfileEditorViewModel> RadioProfileEditors { get; } = new();
@@ -72,7 +85,7 @@ public partial class SettingsViewModel : ObservableObject
         _wsjtxListener = wsjtxListener;
         preferredLookupService = _settings.PreferredLookupService;
 
-        catEnabled = _settings.CatEnabled;
+        catSource = _settings.CatSource;
         launchRigctldAutomatically = _settings.LaunchRigctldAutomatically;
         rigctldExecutablePath = _settings.RigctldExecutablePath;
         rigctldTcpPort = _settings.RigctldTcpPort.ToString();
@@ -83,6 +96,10 @@ public partial class SettingsViewModel : ObservableObject
         gridTrackerPort = _settings.GridTrackerPort.ToString();
 
         wsjtxEnabled = _settings.WsjtxEnabled;
+
+        internetRadioHost = _settings.InternetRadioHost;
+        internetRadioPortText = _settings.InternetRadioPort.ToString();
+
         for (int i = 0; i < _settings.RadioProfiles.Count; i++)
         {
             var profile = _settings.RadioProfiles[i];
@@ -113,6 +130,12 @@ public partial class SettingsViewModel : ObservableObject
             QrzCqUsername = qrzCqCreds.Value.Username;
             QrzCqPassword = qrzCqCreds.Value.Password;
         }
+
+        var internetCreds = await _credentialStore.LoadAsync(InternetRadioCredentialKey);
+        IsInternetRadioConfigured = internetCreds is not null;
+        // Load the saved password back so "Show password" can reveal what's stored (stays masked in the
+        // PasswordBox otherwise), same reversible-DPAPI approach as the QRZ credentials above.
+        if (internetCreds is not null) InternetRadioPassword = internetCreds.Value.Password;
 
         var rigs = await _rigCatalog.GetRigsAsync(_settings.RigctldExecutablePath);
         AvailableRigs.Clear();
@@ -194,14 +217,18 @@ public partial class SettingsViewModel : ObservableObject
         _settings.PreferredLookupService = value;
     }
 
-    partial void OnCatEnabledChanged(bool value) => _settings.CatEnabled = value;
+    partial void OnCatSourceChanged(CatSource value) => _settings.CatSource = value;
 
     partial void OnLaunchRigctldAutomaticallyChanged(bool value) => _settings.LaunchRigctldAutomatically = value;
 
     partial void OnActiveRadioIndexChanged(int value) => _settings.ActiveRadioIndex = value;
 
+    /// <summary>The single "Save Settings" button on the CAT Control window: persists both the Hamlib
+    /// radio profiles + rigctld path/port AND the Internet Control host/port + (optional) password in one
+    /// click, regardless of which CAT source is currently selected. CatSource itself, ActiveRadioIndex,
+    /// and Launch-rigctld persist immediately via their own change handlers, so they aren't repeated here.</summary>
     [RelayCommand]
-    private void SaveRadioSettings()
+    private async Task SaveCatSettingsAsync()
     {
         for (int i = 0; i < RadioProfileEditors.Count && i < _settings.RadioProfiles.Count; i++)
         {
@@ -210,13 +237,43 @@ public partial class SettingsViewModel : ObservableObject
         _settings.SaveRadioProfiles();
 
         _settings.RigctldExecutablePath = string.IsNullOrWhiteSpace(RigctldExecutablePath) ? "rigctld.exe" : RigctldExecutablePath;
-        _settings.RigctldTcpPort = int.TryParse(RigctldTcpPort, out var port) ? port : _settings.RigctldTcpPort;
+        _settings.RigctldTcpPort = int.TryParse(RigctldTcpPort, out var rigctldPort) ? rigctldPort : _settings.RigctldTcpPort;
 
-        _dialogService.ShowInfo("Radio settings saved.");
+        _settings.InternetRadioHost = InternetRadioHost?.Trim() ?? string.Empty;
+        _settings.InternetRadioPort = int.TryParse(InternetRadioPortText, out var netPort) ? netPort : 9200;
+        // Host/port save regardless of whether a password was entered -- unlike QRZ's all-or-nothing rule,
+        // the K4 protocol needs no password to connect, so only the encrypted credential write itself is
+        // gated on a non-blank password (paired with a fixed placeholder username, no username concept).
+        if (!string.IsNullOrWhiteSpace(InternetRadioPassword))
+        {
+            await _credentialStore.SaveAsync(InternetRadioCredentialKey, "radio", InternetRadioPassword);
+            IsInternetRadioConfigured = true;
+        }
+        InternetRadioPassword = string.Empty;
+
+        _dialogService.ShowInfo("CAT settings saved.");
     }
 
+    /// <summary>The single "Test Connection" button: tests whichever CAT source is currently selected
+    /// (USB/Hamlib or Internet/K4). Off = nothing to test.</summary>
     [RelayCommand]
     private async Task TestCatConnectionAsync()
+    {
+        switch (CatSource)
+        {
+            case CatSource.Usb:
+                await TestHamlibConnectionAsync();
+                break;
+            case CatSource.Internet:
+                await TestInternetConnectionAsync();
+                break;
+            default:
+                _dialogService.ShowError("Select a CAT source (USB or Internet) first.");
+                break;
+        }
+    }
+
+    private async Task TestHamlibConnectionAsync()
     {
         var (success, error) = await _rigCoordinator.ConnectAsync();
         if (success)
@@ -227,6 +284,42 @@ public partial class SettingsViewModel : ObservableObject
         else
         {
             _dialogService.ShowError($"CAT connection failed: {error}");
+        }
+    }
+
+    /// <summary>Live end-to-end check of the Internet Control path: opens a fresh K4 TCP connection to the
+    /// configured host/port, reads the radio's current frequency/mode once, then disconnects. Reports what
+    /// it read so the operator can confirm it's really talking to their radio, not just reaching a socket.</summary>
+    private async Task TestInternetConnectionAsync()
+    {
+        string host = InternetRadioHost?.Trim() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(host))
+        {
+            _dialogService.ShowError("Enter the radio's host or IP address first.");
+            return;
+        }
+        int port = int.TryParse(InternetRadioPortText, out var p) ? p : 9200;
+
+        await using var client = new K4CatClient();
+        var connect = await client.ConnectAsync(host, port);
+        if (!connect.Success)
+        {
+            _dialogService.ShowError($"Could not connect to {host}:{port}\n{connect.Error}");
+            return;
+        }
+
+        var poll = await client.PollAsync();
+        await client.DisconnectAsync();
+
+        if (poll.Success)
+        {
+            string mode = poll.MappedMode ?? "unknown mode";
+            string band = poll.Band is not null ? $", {poll.Band}" : string.Empty;
+            _dialogService.ShowInfo($"Connected to {host}:{port}.\nRadio reports {poll.FrequencyMhz:0.000000} MHz ({mode}{band}).");
+        }
+        else
+        {
+            _dialogService.ShowInfo($"Connected to {host}:{port}, but reading the radio's status failed:\n{poll.Error}");
         }
     }
 

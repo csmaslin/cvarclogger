@@ -11,6 +11,16 @@ public enum LookupServicePreference
     QrzCq
 }
 
+/// <summary>Which CAT backend the entry form's Connect CAT uses. Mutually exclusive by construction —
+/// stored as the two underlying CatEnabled/InternetRadioEnabled bools (which RigControlCoordinator and
+/// QsoEntryViewModel read directly), but surfaced as a single choice so the UI can't leave both on.</summary>
+public enum CatSource
+{
+    Off,
+    Usb,
+    Internet
+}
+
 /// <summary>Simple JSON-file-backed app preferences (not QSO data, not credentials).</summary>
 public class SettingsService
 {
@@ -46,6 +56,22 @@ public class SettingsService
     {
         get => _data.CatEnabled;
         set { _data.CatEnabled = value; Save(); }
+    }
+
+    /// <summary>The single mutually-exclusive CAT source selector (see CatSource). Reading prefers
+    /// Internet over Usb if both underlying flags were somehow set; writing forces exactly one (or
+    /// neither) of CatEnabled/InternetRadioEnabled on, so the two can never both be true again.</summary>
+    public CatSource CatSource
+    {
+        get => _data.InternetRadioEnabled ? CatSource.Internet
+             : _data.CatEnabled ? CatSource.Usb
+             : CatSource.Off;
+        set
+        {
+            _data.CatEnabled = value == CatSource.Usb;
+            _data.InternetRadioEnabled = value == CatSource.Internet;
+            Save();
+        }
     }
 
     public bool LaunchRigctldAutomatically
@@ -112,6 +138,31 @@ public class SettingsService
     {
         get => _data.ActiveRadioIndex;
         set { _data.ActiveRadioIndex = value; Save(); }
+    }
+
+    /// <summary>When enabled, the entry form's Connect CAT / auto-fill uses the network K4 (Internet
+    /// Control) instead of the Hamlib/rigctld serial path. Takes precedence over CatEnabled when both are
+    /// on.</summary>
+    public bool InternetRadioEnabled
+    {
+        get => _data.InternetRadioEnabled;
+        set { _data.InternetRadioEnabled = value; Save(); }
+    }
+
+    /// <summary>Host/IP of an Elecraft K4 reachable over the network for "Internet Control (CAT)" (its
+    /// native TCP command protocol, distinct from the Hamlib/rigctld serial radios above). The optional
+    /// password for it isn't stored here -- it goes to the encrypted ICredentialStore instead.</summary>
+    public string InternetRadioHost
+    {
+        get => _data.InternetRadioHost;
+        set { _data.InternetRadioHost = value; Save(); }
+    }
+
+    /// <summary>TCP port for the network K4 (Elecraft's default is 9200).</summary>
+    public int InternetRadioPort
+    {
+        get => _data.InternetRadioPort;
+        set { _data.InternetRadioPort = value; Save(); }
     }
 
     /// <summary>Mutate entries in place, then call SaveRadioProfiles().</summary>
@@ -270,6 +321,10 @@ public class SettingsService
         public string RigctldExecutablePath { get; set; } = ResolveDefaultRigctldPath();
         public int RigctldTcpPort { get; set; } = 4532;
         public int ActiveRadioIndex { get; set; }
+
+        public bool InternetRadioEnabled { get; set; }
+        public string InternetRadioHost { get; set; } = string.Empty;
+        public int InternetRadioPort { get; set; } = 9200;
 
         public List<RadioProfile> RadioProfiles { get; set; } = new()
         {

@@ -42,9 +42,16 @@ public partial class MainWindow : Window
         window.Show();
     }
 
-    private void SettingsMenuItem_Click(object sender, RoutedEventArgs e)
+    private void LookupMenuItem_Click(object sender, RoutedEventArgs e)
     {
-        var window = App.Services.GetRequiredService<SettingsWindow>();
+        var window = App.Services.GetRequiredService<LookupSettingsWindow>();
+        window.Owner = this;
+        window.ShowDialog();
+    }
+
+    private void CatControlMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        var window = App.Services.GetRequiredService<CatControlWindow>();
         window.Owner = this;
         window.ShowDialog();
     }

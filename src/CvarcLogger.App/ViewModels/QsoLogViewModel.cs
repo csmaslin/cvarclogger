@@ -88,6 +88,23 @@ public partial class QsoLogViewModel : ObservableObject
     public bool IsColumnVisible(string key) =>
         ColumnOptions.FirstOrDefault(c => c.Key == key)?.IsVisible ?? true;
 
+    /// <summary>"All" button in the Columns picker: shows every toggleable column. Setting each
+    /// option's IsVisible fires OnColumnOptionChanged the same as a manual checkbox click, so the grid,
+    /// entry form, and saved settings all update through the existing path.</summary>
+    [RelayCommand]
+    private void SelectAllColumns()
+    {
+        foreach (var option in ColumnOptions) option.IsVisible = true;
+    }
+
+    /// <summary>"None" button in the Columns picker: hides every toggleable column. Callsign and Station
+    /// Callsign are always shown and aren't in ColumnOptions, so they stay visible.</summary>
+    [RelayCommand]
+    private void SelectNoColumns()
+    {
+        foreach (var option in ColumnOptions) option.IsVisible = false;
+    }
+
     /// <summary>Saved column display order, keyed by column key (see SettingsService.LogColumnOrder).</summary>
     public IReadOnlyDictionary<string, int> ColumnOrder => _settings.LogColumnOrder;
 
