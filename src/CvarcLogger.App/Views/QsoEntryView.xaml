@@ -12,13 +12,29 @@
              Height so every TextBox and every ComboBox in this form measures identically. Without this,
              ComboBox's extra dropdown-arrow chrome makes it a few pixels taller than a plain TextBox by
              default, misaligning the two control types row to row. -->
+        <!-- The IsKeyboardFocused/IsKeyboardFocusWithin trigger gives the field the cursor is currently in
+             a bold blue border (same blue as the log grid's selected row), so it's obvious at a glance
+             which box you're typing in across this wide form. Inherited by the Sticky styles below via
+             BasedOn. -->
         <Style TargetType="TextBox">
             <Setter Property="FontSize" Value="20"/>
             <Setter Property="Height" Value="40"/>
+            <Style.Triggers>
+                <Trigger Property="IsKeyboardFocused" Value="True">
+                    <Setter Property="BorderBrush" Value="#2E7DD1"/>
+                    <Setter Property="BorderThickness" Value="2"/>
+                </Trigger>
+            </Style.Triggers>
         </Style>
         <Style TargetType="ComboBox">
             <Setter Property="FontSize" Value="20"/>
             <Setter Property="Height" Value="40"/>
+            <Style.Triggers>
+                <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                    <Setter Property="BorderBrush" Value="#2E7DD1"/>
+                    <Setter Property="BorderThickness" Value="2"/>
+                </Trigger>
+            </Style.Triggers>
         </Style>
         <!-- Centers every field caption over its input control (each is the first child of its own
              StackPanel, directly above a TextBox/ComboBox), and reserves the same MinHeight for all of
