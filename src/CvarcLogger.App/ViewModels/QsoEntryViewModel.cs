@@ -579,6 +579,23 @@ public partial class QsoEntryViewModel : ObservableObject
         ResetForNextQso();
     }
 
+    /// <summary>Wipes every QSO from the current log after an explicit Yes/No confirmation. Destructive
+    /// and irreversible, so it's gated on the confirm and reuses the QsoLogged event to refresh the (now
+    /// empty) grid.</summary>
+    [RelayCommand]
+    private async Task ClearDatabaseAsync()
+    {
+        if (!_dialogService.Confirm(
+                "This permanently deletes ALL QSOs from the current log." + Environment.NewLine +
+                "This cannot be undone." + Environment.NewLine + Environment.NewLine +
+                "Clear the entire log?"))
+            return;
+
+        int removed = await _qsoRepository.DeleteAllAsync();
+        QsoLogged?.Invoke(this, EventArgs.Empty);
+        _dialogService.ShowInfo($"Cleared the log. {removed} QSO(s) deleted.");
+    }
+
     private void ResetForNextQso()
     {
         _lastLookedUpCallsign = null;
@@ -596,7 +613,9 @@ public partial class QsoEntryViewModel : ObservableObject
         }
 
         QsoDateTimeOffUtcText = null;
-        FrequencyMhz = null;
+        // Frequency carries over to the next QSO (like Band and Mode) instead of clearing, so a
+        // manually-tuned frequency doesn't have to be re-typed for every contact when CAT isn't
+        // connected. When CAT is connected the live poll keeps overwriting it anyway.
         Name = null;
         GridSquare = null;
         City = null;

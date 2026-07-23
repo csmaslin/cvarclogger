@@ -62,4 +62,14 @@ public class QsoRepository : IQsoRepository
         _db.Qsos.Remove(qso);
         await _db.SaveChangesAsync(ct).ConfigureAwait(false);
     }
+
+    public async Task<int> DeleteAllAsync(CancellationToken ct = default)
+    {
+        // Bulk delete straight against the database (no per-row load). Any entities this long-lived
+        // context happened to be tracking are cleared afterward so a later read doesn't resurrect a
+        // now-deleted row from the change tracker.
+        int removed = await _db.Qsos.ExecuteDeleteAsync(ct).ConfigureAwait(false);
+        _db.ChangeTracker.Clear();
+        return removed;
+    }
 }

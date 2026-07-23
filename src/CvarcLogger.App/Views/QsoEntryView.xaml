@@ -298,6 +298,13 @@
                         <Button Content="Log QSO" Command="{Binding LogQsoCommand}" Padding="32,8" FontSize="28"
                                 Background="#2E7D32" Foreground="White" FontWeight="Bold"/>
                     </StackPanel>
+                    <!-- Destructive: wipes the whole log. Deliberately styled dark red (not the green Log
+                         QSO) and smaller, and its command shows a Yes/No confirmation, so it can't be an
+                         accidental one-click erase. -->
+                    <StackPanel Margin="24,0,0,0" VerticalAlignment="Center">
+                        <Button Content="Clear Database" Command="{Binding ClearDatabaseCommand}" Padding="16,8" FontSize="18"
+                                Background="#B23A3A" Foreground="White"/>
+                    </StackPanel>
                 </StackPanel>
             </DockPanel>
         </StackPanel>
