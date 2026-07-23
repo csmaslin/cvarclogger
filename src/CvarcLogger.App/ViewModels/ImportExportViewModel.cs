@@ -82,7 +82,11 @@ public partial class ImportExportViewModel : ObservableObject
     [RelayCommand]
     private async Task ExportAsync()
     {
-        var path = _filePicker.PickAdifFileToSave($"cvarclogger-export-{DateTime.Now:yyyyMMdd}.adi");
+        // Default the export filename to the active log's database name plus a date/time stamp, e.g.
+        // "FieldDay2026_20260722_153045.adi", so exports from different logs (and repeated exports of the
+        // same one) are self-identifying and don't overwrite each other.
+        string dbName = Path.GetFileNameWithoutExtension(SettingsService.ResolveActiveDatabasePath());
+        var path = _filePicker.PickAdifFileToSave($"{dbName}_{DateTime.Now:yyyyMMdd_HHmmss}.adi");
         if (path is null) return;
 
         IsBusy = true;
