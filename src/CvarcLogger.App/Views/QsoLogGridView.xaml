@@ -52,6 +52,16 @@
                     <Setter Property="TextAlignment" Value="Center"/>
                     <Setter Property="HorizontalAlignment" Value="Stretch"/>
                 </Style>
+                <!-- Keep the selected row clearly highlighted even when keyboard focus is elsewhere (e.g.
+                     while typing the next QSO in the entry form). By default WPF fades an unfocused grid's
+                     selection to a faint gray that barely shows against the alternating-row shading, so the
+                     current row looked like it had no highlight at all. Overriding both the active and the
+                     inactive selection brushes keeps it the same clear blue with white text regardless of
+                     which control currently has focus. -->
+                <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#2E7DD1"/>
+                <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="White"/>
+                <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="#2E7DD1"/>
+                <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" Color="White"/>
             </DataGrid.Resources>
             <DataGrid.ColumnHeaderStyle>
                 <Style TargetType="DataGridColumnHeader">
