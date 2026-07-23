@@ -5,6 +5,21 @@ build meant to reach the user (see AppVersion.cs) -- before running publish.ps1.
 
 Versions before 1.17 predate this changelog and are not documented here.
 
+1.41
+----
+- QSO Entry form: Frequency now carries over to the next QSO (like Band and Mode) instead of clearing,
+  so a manually-entered frequency doesn't have to be re-typed for every contact when CAT isn't
+  connected. When CAT is connected the live poll still keeps it updated from the radio.
+- QSO Entry form: added a "Clear Database" button next to Log QSO that deletes every QSO from the
+  current log. It's a distinct dark-red button and asks a Yes/No confirmation first, so it can't be an
+  accidental one-click erase.
+- Clearer "where am I" indicators: the entry-form field the cursor is in now shows a bold blue border,
+  and the log grid keeps its selected row clearly highlighted (blue) even while you're typing in the
+  entry form, instead of fading to a hard-to-see gray.
+- ADIF export: the suggested filename now defaults to the current log's database name plus a date/time
+  stamp (e.g. FieldDay2026_20260722_153045.adi), so exports from different logs are self-identifying and
+  repeated exports don't overwrite each other.
+
 1.40
 ----
 - Internet Control (CAT): CvarcLogger can now read frequency, band, mode, sub-mode, and TX power from an
