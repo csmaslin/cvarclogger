@@ -5,6 +5,16 @@ build meant to reach the user (see AppVersion.cs) -- before running publish.ps1.
 
 Versions before 1.17 predate this changelog and are not documented here.
 
+1.42
+----
+- Fixed a serious bug where editing a QSO and saving could change its recorded date/time. The Edit QSO
+  window was recomputing the UTC time using a zero UTC offset before the QSO's real offset had loaded,
+  which shifted the saved time (and shifted it further on each subsequent edit). Times now stay exactly
+  as recorded unless you deliberately change them. Note: any QSO edited and saved on an earlier version
+  may already have a shifted time; check it against a backup if needed.
+- Log grid: the Name and Comment columns are now left-aligned instead of centered, which reads better
+  for names and free-text notes.
+
 1.41
 ----
 - QSO Entry form: Frequency now carries over to the next QSO (like Band and Mode) instead of clearing,

@@ -106,10 +106,26 @@ public partial class QsoEditViewModel : ObservableObject
     public void Load(Qso qso)
     {
         _qso = qso;
-        QsoDateTimeUtcText = qso.QsoDateTimeOnUtc.ToString(DateTimeFormat, CultureInfo.InvariantCulture);
-        // qso.LocalDateTimeOn already applies UtcOffsetHours/ObservesDaylightSavingTime for us, so this
-        // is correct regardless of the order those two properties get set below in this same method.
-        LocalDateTimeText = qso.LocalDateTimeOn.ToString(DateTimeFormat, CultureInfo.InvariantCulture);
+
+        // Seed the two date fields together with their offset/DST basis, with the UTC<->Local auto-sync
+        // (and the offset/DST resync) suppressed. All four come straight from the stored QSO and are
+        // already consistent. If a handler were allowed to fire mid-load it would recompute UTC from
+        // Local (or vice versa) before UtcOffsetHours is in place -- i.e. using a zero offset -- and
+        // clobber the authoritative UTC time. That was the cause of an edited QSO saving with a shifted
+        // time instead of the one originally recorded (and drifting further on each re-edit).
+        _isSyncingDateTime = true;
+        try
+        {
+            UtcOffsetHours = qso.UtcOffsetHours?.ToString(CultureInfo.InvariantCulture) ?? "0";
+            ObservesDaylightSavingTime = qso.ObservesDaylightSavingTime;
+            QsoDateTimeUtcText = qso.QsoDateTimeOnUtc.ToString(DateTimeFormat, CultureInfo.InvariantCulture);
+            LocalDateTimeText = qso.LocalDateTimeOn.ToString(DateTimeFormat, CultureInfo.InvariantCulture);
+        }
+        finally
+        {
+            _isSyncingDateTime = false;
+        }
+
         Callsign = qso.Callsign;
         Band = qso.Band;
         Mode = qso.Mode;
@@ -150,8 +166,6 @@ public partial class QsoEditViewModel : ObservableObject
         MyCounty = qso.MyCounty;
         Qth = qso.Qth;
         Op = qso.Op;
-        UtcOffsetHours = qso.UtcOffsetHours?.ToString(CultureInfo.InvariantCulture) ?? "0";
-        ObservesDaylightSavingTime = qso.ObservesDaylightSavingTime;
     }
 
     /// <summary>Hours to add to a UTC time to get local time, DST-adjusted -- same basis as
@@ -205,6 +219,9 @@ public partial class QsoEditViewModel : ObservableObject
 
     private void ResyncLocalFromUtc()
     {
+        // Respect the load-time suppression flag: while Load seeds the fields, the offset/DST setters must
+        // not recompute Local from a not-yet-fully-loaded UTC value.
+        if (_isSyncingDateTime) return;
         if (!DateTime.TryParseExact(QsoDateTimeUtcText, DateTimeFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out var utc)) return;
 
         _isSyncingDateTime = true;
