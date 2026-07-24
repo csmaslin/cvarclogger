@@ -19,7 +19,7 @@ from pathlib import Path
 from docx import Document
 from docx.table import _Row, Table
 
-DEFAULT_MANUAL_PATH = Path(r"C:\Users\user\Documents\Projects\CvarcLogger\CvarcLogger User Manual.docx")
+DEFAULT_MANUAL_PATH = Path(r"C:\Users\user\Documents\Projects\CvarcLogger\docs\CvarcLogger User Manual.docx")
 
 
 def find_and_replace_in_paragraph(paragraph, find_text: str, replace_text: str) -> bool:

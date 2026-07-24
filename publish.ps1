@@ -12,8 +12,8 @@ $project = Join-Path $root "src\CvarcLogger.App\CvarcLogger.App.csproj"
 $outDir = Join-Path $root "publish\CvarcLogger"
 $appVersionFile = Join-Path $root "src\CvarcLogger.App\AppVersion.cs"
 $changelogFile = Join-Path $root "src\CvarcLogger.App\CHANGELOG.txt"
-$manualFile = Join-Path $root "CvarcLogger User Manual.docx"
-$overviewFile = Join-Path $root "Program Overview and Data Flow.md"
+$manualFile = Join-Path $root "docs\CvarcLogger User Manual.docx"
+$overviewFile = Join-Path $root "docs\Program Overview and Data Flow.md"
 
 $versionMatch = Select-String -Path $appVersionFile -Pattern 'Current\s*=\s*"([\d.]+)"'
 if (-not $versionMatch) { throw "Could not read AppVersion.Current from $appVersionFile" }
