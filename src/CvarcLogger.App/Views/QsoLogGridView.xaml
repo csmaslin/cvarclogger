@@ -52,6 +52,13 @@
                     <Setter Property="TextAlignment" Value="Center"/>
                     <Setter Property="HorizontalAlignment" Value="Stretch"/>
                 </Style>
+                <!-- Left-aligned variant for the free-text columns (Name, Comment) where centering reads
+                     awkwardly. Small left padding keeps the text off the cell's grid line. -->
+                <Style x:Key="LeftCellText" TargetType="TextBlock">
+                    <Setter Property="TextAlignment" Value="Left"/>
+                    <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                    <Setter Property="Padding" Value="4,0,0,0"/>
+                </Style>
                 <!-- Keep the selected row clearly highlighted even when keyboard focus is elsewhere (e.g.
                      while typing the next QSO in the entry form). By default WPF fades an unfocused grid's
                      selection to a faint gray that barely shows against the alternating-row shading, so the
@@ -101,7 +108,7 @@
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
-                <DataGridTextColumn x:Name="NameColumn" local:ColumnKey.Key="Name" Header="Name" Binding="{Binding Name}" Width="110" MinWidth="45" ElementStyle="{StaticResource CenteredCellText}"/>
+                <DataGridTextColumn x:Name="NameColumn" local:ColumnKey.Key="Name" Header="Name" Binding="{Binding Name}" Width="110" MinWidth="45" ElementStyle="{StaticResource LeftCellText}"/>
                 <DataGridTextColumn x:Name="GridColumn" local:ColumnKey.Key="Grid" Header="Grid" Binding="{Binding GridSquare}" Width="65" MinWidth="45" ElementStyle="{StaticResource CenteredCellText}"/>
                 <DataGridTextColumn x:Name="CityColumn" local:ColumnKey.Key="City" Header="City" Binding="{Binding City}" Width="100" MinWidth="45" ElementStyle="{StaticResource CenteredCellText}"/>
                 <DataGridTextColumn x:Name="StateColumn" local:ColumnKey.Key="State" Header="State" Binding="{Binding State}" Width="45" MinWidth="40" ElementStyle="{StaticResource CenteredCellText}"/>
@@ -150,7 +157,7 @@
                      other column, so WPF silently refuses the resize instead of scrolling. A fixed width
                      avoids that failure mode entirely: widening any column just extends the grid's
                      total content width, triggering the horizontal scrollbar instead. -->
-                <DataGridTextColumn x:Name="CommentColumn" local:ColumnKey.Key="Comment" Header="Comment" Binding="{Binding Comment}" Width="200" MinWidth="70" ElementStyle="{StaticResource CenteredCellText}"/>
+                <DataGridTextColumn x:Name="CommentColumn" local:ColumnKey.Key="Comment" Header="Comment" Binding="{Binding Comment}" Width="200" MinWidth="70" ElementStyle="{StaticResource LeftCellText}"/>
             </DataGrid.Columns>
         </DataGrid>
     </Grid>
