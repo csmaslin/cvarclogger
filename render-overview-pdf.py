@@ -9,7 +9,7 @@ project_word_com_automation_environment memory for why the HTML->PDF leg reuses 
 LibreOffice-headless approach as the User Manual export rather than Word/another dependency.
 
 Usage:
-    python render-overview-pdf.py --md "Program Overview and Data Flow.md" --out publish\\CvarcLogger\\"Program Overview and Data Flow.pdf"
+    python render-overview-pdf.py --md "docs\\Program Overview and Data Flow.md" --out publish\\CvarcLogger\\"Program Overview and Data Flow.pdf"
 """
 import argparse
 import re
