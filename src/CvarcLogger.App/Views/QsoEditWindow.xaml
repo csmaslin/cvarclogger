@@ -8,6 +8,10 @@
         mc:Ignorable="d"
         Title="Edit QSO" Icon="/Assets/AppIcon.ico" Height="700" Width="700" MinHeight="500" MinWidth="660" WindowStartupLocation="CenterOwner"
         ResizeMode="CanResize">
+    <!-- Return saves the edited QSO, mirroring the main entry form where Return logs the QSO. -->
+    <Window.InputBindings>
+        <KeyBinding Key="Return" Command="{Binding SaveCommand}"/>
+    </Window.InputBindings>
     <Window.Resources>
         <converters:SubModeVisibilityConverter x:Key="SubModeVisibilityConverter"/>
         <!-- A fixed Height so every TextBox and every ComboBox in this window measures identically.

@@ -14,6 +14,8 @@ Versions before 1.17 predate this changelog and are not documented here.
   may already have a shifted time; check it against a backup if needed.
 - Log grid: the Name and Comment columns are now left-aligned instead of centered, which reads better
   for names and free-text notes.
+- Edit QSO window: pressing Return now saves the QSO, matching the Log QSO / Return behavior on the main
+  entry form.
 
 1.41
 ----
