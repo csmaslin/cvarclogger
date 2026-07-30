@@ -182,6 +182,12 @@ public partial class QsoLogGridView : UserControl
         SotaColumn.Visibility = ToVisibility(viewModel.IsColumnVisible("Sota"));
         MyPotaColumn.Visibility = ToVisibility(viewModel.IsColumnVisible("MyPota"));
         PotaColumn.Visibility = ToVisibility(viewModel.IsColumnVisible("Pota"));
+        PrecedenceColumn.Visibility = ToVisibility(viewModel.IsColumnVisible("Precedence"));
+        CheckColumn.Visibility = ToVisibility(viewModel.IsColumnVisible("Check"));
+        ClassColumn.Visibility = ToVisibility(viewModel.IsColumnVisible("Class"));
+        SkccColumn.Visibility = ToVisibility(viewModel.IsColumnVisible("Skcc"));
+        MySkccColumn.Visibility = ToVisibility(viewModel.IsColumnVisible("MySkcc"));
+        SequenceColumn.Visibility = ToVisibility(viewModel.IsColumnVisible("Sequence"));
         CommentColumn.Visibility = ToVisibility(viewModel.IsColumnVisible("Comment"));
     }
 

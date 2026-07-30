@@ -8,6 +8,7 @@
         Title="Awards Progress" Icon="/Assets/AppIcon.ico" Height="600" Width="700" Loaded="Window_Loaded">
     <Window.Resources>
         <conv:PointsDisplayConverter x:Key="PointsDisplayConverter"/>
+        <conv:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
     </Window.Resources>
     <Grid Margin="10">
         <Grid.RowDefinitions>
@@ -27,35 +28,122 @@
         <TabControl Grid.Row="2">
             <TabItem Header="DXCC">
                 <DockPanel Margin="6">
-                    <TextBlock DockPanel.Dock="Top" Margin="0,0,0,6" FontWeight="Bold">
+                    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                        <TextBlock Text="Band:" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <ComboBox DockPanel.Dock="Left" Width="100" HorizontalAlignment="Left"
+                                  ItemsSource="{Binding Dxcc.Bands}" SelectedItem="{Binding Dxcc.SelectedBand}"/>
+                    </DockPanel>
+
+                    <TextBlock DockPanel.Dock="Top" Margin="0,0,0,4" Foreground="#C0392B"
+                               Text="{Binding Dxcc.ErrorMessage}"
+                               Visibility="{Binding Dxcc.HasErrorMessage, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                    <TextBlock DockPanel.Dock="Top" Margin="0,0,0,10" FontWeight="Bold">
                         <Run Text="Worked: "/>
-                        <Run Text="{Binding DxccProgress.WorkedCount, Mode=OneWay}"/>
+                        <Run Text="{Binding Dxcc.Progress.WorkedCount, Mode=OneWay}"/>
                         <Run Text="   Confirmed: "/>
-                        <Run Text="{Binding DxccProgress.ConfirmedCount, Mode=OneWay}"/>
+                        <Run Text="{Binding Dxcc.Progress.ConfirmedCount, Mode=OneWay}"/>
                     </TextBlock>
-                    <DataGrid ItemsSource="{Binding DxccProgress.Entities}" AutoGenerateColumns="False" IsReadOnly="True">
+
+                    <TextBlock DockPanel.Dock="Top" Margin="0,0,0,4" FontSize="11" Foreground="Gray">
+                        <Run Text="QSOs per Band:"/>
+                    </TextBlock>
+                    <ItemsControl DockPanel.Dock="Top" Margin="0,0,0,10" ItemsSource="{Binding Dxcc.BandCounts}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Vertical" Margin="0,0,16,0" HorizontalAlignment="Center">
+                                    <TextBlock Text="{Binding Band}" FontWeight="Bold" FontSize="11" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="{Binding QsoCount}" FontSize="11" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <TextBlock DockPanel.Dock="Top" Margin="0,0,0,4" FontSize="11" Foreground="Gray">
+                        <Run Text="5-Band DXCC (100+ confirmed entities on each band):"/>
+                    </TextBlock>
+                    <ItemsControl DockPanel.Dock="Top" Margin="0,0,0,10" ItemsSource="{Binding Dxcc.FiveBandProgress}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Vertical" Margin="0,0,16,0" HorizontalAlignment="Center">
+                                    <TextBlock Text="{Binding Band}" FontWeight="Bold" FontSize="11" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="{Binding ConfirmedCount}" FontSize="11" HorizontalAlignment="Center">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Qualifies}" Value="True">
+                                                        <Setter Property="Foreground" Value="Green"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <DataGrid ItemsSource="{Binding Dxcc.EntityRows}" AutoGenerateColumns="False" IsReadOnly="True">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="Entity" Binding="{Binding EntityName}" Width="Auto"/>
-                            <DataGridCheckBoxColumn Header="Worked" Binding="{Binding Worked}" Width="Auto"/>
-                            <DataGridCheckBoxColumn Header="Confirmed" Binding="{Binding Confirmed}" Width="Auto"/>
+                            <DataGridTextColumn Header="Entity" Binding="{Binding EntityName}" Width="*"/>
+                            <DataGridCheckBoxColumn Header="Phone" Binding="{Binding Phone}" Width="Auto"/>
+                            <DataGridCheckBoxColumn Header="CW" Binding="{Binding Cw}" Width="Auto"/>
+                            <DataGridCheckBoxColumn Header="Digital" Binding="{Binding Digital}" Width="Auto"/>
                         </DataGrid.Columns>
                     </DataGrid>
                 </DockPanel>
             </TabItem>
             <TabItem Header="WAS (Worked All States)">
                 <DockPanel Margin="6">
-                    <TextBlock DockPanel.Dock="Top" Margin="0,0,0,6" FontWeight="Bold">
+                    <TextBlock DockPanel.Dock="Top" Margin="0,0,0,10" FontWeight="Bold">
                         <Run Text="Worked: "/>
                         <Run Text="{Binding WasProgress.WorkedCount, Mode=OneWay}"/>
                         <Run Text=" / 50   Confirmed: "/>
                         <Run Text="{Binding WasProgress.ConfirmedCount, Mode=OneWay}"/>
                         <Run Text=" / 50"/>
                     </TextBlock>
+
+                    <!-- Same all-QSO per-band totals as the DXCC tab's strip; reuses Dxcc.BandCounts
+                         directly (already loaded by AwardsViewModel.LoadAsync) rather than fetching it a
+                         second time, since it isn't filtered to WAS-eligible QSOs and so is identical
+                         data regardless of which tab shows it. -->
+                    <TextBlock DockPanel.Dock="Top" Margin="0,0,0,4" FontSize="11" Foreground="Gray">
+                        <Run Text="QSOs per Band:"/>
+                    </TextBlock>
+                    <ItemsControl DockPanel.Dock="Top" Margin="0,0,0,10" ItemsSource="{Binding Dxcc.BandCounts}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Vertical" Margin="0,0,16,0" HorizontalAlignment="Center">
+                                    <TextBlock Text="{Binding Band}" FontWeight="Bold" FontSize="11" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="{Binding QsoCount}" FontSize="11" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
                     <DataGrid ItemsSource="{Binding WasProgress.States}" AutoGenerateColumns="False" IsReadOnly="True">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="State" Binding="{Binding State}" Width="Auto"/>
+                            <DataGridTextColumn Header="State" Binding="{Binding State}" Width="*"/>
                             <DataGridCheckBoxColumn Header="Worked" Binding="{Binding Worked}" Width="Auto"/>
                             <DataGridCheckBoxColumn Header="Confirmed" Binding="{Binding Confirmed}" Width="Auto"/>
+                            <DataGridCheckBoxColumn Header="Phone" Binding="{Binding Phone}" Width="Auto"/>
+                            <DataGridCheckBoxColumn Header="CW" Binding="{Binding Cw}" Width="Auto"/>
+                            <DataGridCheckBoxColumn Header="Digital" Binding="{Binding Digital}" Width="Auto"/>
                         </DataGrid.Columns>
                     </DataGrid>
                 </DockPanel>

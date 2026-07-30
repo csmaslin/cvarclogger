@@ -33,28 +33,31 @@
         <Viewbox Grid.Column="1" Stretch="Uniform">
         <StackPanel Width="360">
             <TextBlock Text="Callsign *" FontSize="11" Foreground="Gray"/>
-            <TextBox Text="{Binding EditCallsign, UpdateSourceTrigger=PropertyChanged}" CharacterCasing="Upper" Margin="0,0,0,8"/>
+            <TextBox TextAlignment="Center" Text="{Binding EditCallsign, UpdateSourceTrigger=PropertyChanged}" CharacterCasing="Upper" Margin="0,0,0,8"/>
 
             <TextBlock Text="Operator Callsign (if different from station callsign)" FontSize="11" Foreground="Gray"/>
-            <TextBox Text="{Binding EditOperatorCallsign, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+            <TextBox TextAlignment="Center" Text="{Binding EditOperatorCallsign, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
 
             <TextBlock Text="My Grid Square" FontSize="11" Foreground="Gray"/>
-            <TextBox Text="{Binding EditMyGridSquare, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+            <TextBox TextAlignment="Center" Text="{Binding EditMyGridSquare, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
 
             <TextBlock Text="My State" FontSize="11" Foreground="Gray"/>
-            <TextBox Text="{Binding EditMyState, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+            <TextBox TextAlignment="Center" Text="{Binding EditMyState, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
 
             <TextBlock Text="My County" FontSize="11" Foreground="Gray"/>
-            <TextBox Text="{Binding EditMyCounty, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+            <TextBox TextAlignment="Center" Text="{Binding EditMyCounty, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
 
             <TextBlock Text="QTH" FontSize="11" Foreground="Gray"/>
-            <TextBox Text="{Binding EditQth, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+            <TextBox TextAlignment="Center" Text="{Binding EditQth, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
 
             <TextBlock Text="OP (Operator Name)" FontSize="11" Foreground="Gray"/>
-            <TextBox Text="{Binding EditOp, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+            <TextBox TextAlignment="Center" Text="{Binding EditOp, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+
+            <TextBlock Text="SKCC #" FontSize="11" Foreground="Gray"/>
+            <TextBox TextAlignment="Center" Text="{Binding EditSkccNr, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
 
             <TextBlock Text="UTC Offset (hours, e.g. -5 or +5.5) *" FontSize="11" Foreground="Gray"/>
-            <TextBox Text="{Binding EditUtcOffsetHours, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+            <TextBox TextAlignment="Center" Text="{Binding EditUtcOffsetHours, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
 
             <CheckBox Content="Observes Daylight Saving Time" IsChecked="{Binding EditObservesDaylightSavingTime}" Margin="0,0,0,8"/>
 

@@ -31,6 +31,12 @@ public class CvarcLoggerDbContext : DbContext
             entity.Property(q => q.LotwQslSent).HasConversion<string>().HasMaxLength(20);
             entity.Property(q => q.LotwQslRcvd).HasConversion<string>().HasMaxLength(20);
 
+            entity.Property(q => q.Precedence).HasMaxLength(1);
+            entity.Property(q => q.Check).HasMaxLength(2);
+            entity.Property(q => q.Class).HasMaxLength(4);
+            entity.Property(q => q.SkccNr).HasMaxLength(10);
+            entity.Property(q => q.MySkccNr).HasMaxLength(10);
+
             entity.HasOne(q => q.DxccEntity)
                 .WithMany()
                 .HasForeignKey(q => q.DxccEntityCode)
@@ -49,6 +55,7 @@ public class CvarcLoggerDbContext : DbContext
         {
             entity.HasKey(s => s.Id);
             entity.Property(s => s.Callsign).IsRequired().HasMaxLength(20);
+            entity.Property(s => s.SkccNr).HasMaxLength(10);
         });
 
         modelBuilder.Entity<DxccEntity>(entity =>

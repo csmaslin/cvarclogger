@@ -35,6 +35,28 @@ public partial class MainWindow : Window
 
     private void ExitMenuItem_Click(object sender, RoutedEventArgs e) => Close();
 
+    /// <summary>Quick "grab the current log" backup -- copies the active .db file next to the .exe as
+    /// backup-yyyyMMdd.db. Same one-shot intent as CvarcCellLog's Save Log button (writes backup.db to
+    /// Downloads), just dated instead of a fixed name since a desktop backup folder can accumulate
+    /// several without needing MediaStore-style overwrite-in-place handling -- running it twice in the
+    /// same day still overwrites that day's copy via File.Copy's overwrite flag.</summary>
+    private void SaveLogMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            string sourcePath = SettingsService.ResolveActiveDatabasePath();
+            string destPath = Path.Combine(AppContext.BaseDirectory, $"backup-{DateTime.Now:yyyyMMdd}.db");
+            File.Copy(sourcePath, destPath, overwrite: true);
+            MessageBox.Show(this, $"Saved a copy of the current log to {Path.GetFileName(destPath)}.",
+                "Save Log", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, $"Could not save the backup: {ex.Message}",
+                "Save Log", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
     private void AwardsMenuItem_Click(object sender, RoutedEventArgs e)
     {
         var window = App.Services.GetRequiredService<AwardsWindow>();

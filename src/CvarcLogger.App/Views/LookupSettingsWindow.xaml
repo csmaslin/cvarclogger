@@ -3,7 +3,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:services="clr-namespace:CvarcLogger.App.Services"
         mc:Ignorable="d"
         Title="Lookup" Icon="/Assets/AppIcon.ico" FontSize="14"
         Height="620" Width="900" MinHeight="500" MinWidth="700"
@@ -25,18 +24,8 @@
 
             <StackPanel Grid.Column="0">
                 <TextBlock Text="Callsign Lookup" FontWeight="Bold" Margin="0,0,0,6"/>
-                <TextBlock Text="Preferred service (the other two are tried automatically, in a fixed order, if the preferred one has no match or is missing a field):"
-                           TextWrapping="Wrap" Margin="0,0,0,4" Foreground="Gray"/>
-                <ComboBox Margin="0,0,0,14" HorizontalAlignment="Left" Width="200"
-                          SelectedItem="{Binding PreferredLookupService}">
-                    <ComboBox.ItemsSource>
-                        <x:Array Type="services:LookupServicePreference">
-                            <services:LookupServicePreference>Callook</services:LookupServicePreference>
-                            <services:LookupServicePreference>Qrz</services:LookupServicePreference>
-                            <services:LookupServicePreference>QrzCq</services:LookupServicePreference>
-                        </x:Array>
-                    </ComboBox.ItemsSource>
-                </ComboBox>
+                <TextBlock Text="Checked in order: QRZ.com, then QRZCQ.com, then Callook.info -- each is skipped automatically if it's not configured, or if the earlier results already have everything it could add."
+                           TextWrapping="Wrap" Margin="0,0,0,14" Foreground="Gray"/>
 
                 <Separator Margin="0,0,0,14"/>
 

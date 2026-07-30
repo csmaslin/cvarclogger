@@ -84,10 +84,21 @@ public class Qso
     public DateTime LocalDateTimeOn =>
         QsoDateTimeOnUtc.AddHours((double)(UtcOffsetHours ?? 0m) + (ObservesDaylightSavingTime ? 1 : 0));
 
-    // Reserved for future contest logging support — not exposed in the V1 UI.
+    // Contest logging. ContestId/StxSerial/SrxSerial were reserved ahead of time; Precedence/Check/Class
+    // are ARRL Sweepstakes and Field Day exchange fields, named after their exact ADIF tags.
     public string? ContestId { get; set; }
     public int? StxSerial { get; set; }
     public int? SrxSerial { get; set; }
+    public string? Precedence { get; set; }
+    public string? Check { get; set; }
+    public string? Class { get; set; }
+
+    // SKCC (Straight Key Century Club) membership numbers. SkccNr is the *contacted* station's number
+    // (per-QSO, typed in like SotaRef/SigInfo); MySkccNr is the operator's own number, denormalized from
+    // StationProfile.SkccNr at save time -- same rationale as MyGridSquare/MyState/MyCounty/Qth/Op below:
+    // editing a profile's SKCC number later must not retroactively change already-logged QSOs.
+    public string? SkccNr { get; set; }
+    public string? MySkccNr { get; set; }
 
     /// <summary>JSON dictionary of any ADIF field encountered on import with no first-class column, re-emitted verbatim on export.</summary>
     public string? AdifExtraFieldsJson { get; set; }

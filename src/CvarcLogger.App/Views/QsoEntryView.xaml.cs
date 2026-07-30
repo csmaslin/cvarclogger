@@ -25,36 +25,21 @@ public partial class QsoEntryView : UserControl
 
     private void OnFieldVisibilityChanged(object? sender, EventArgs e) => ApplyFieldVisibility();
 
-    /// <summary>Hides/shows the entry form's optional fields in step with the log grid's Choose
-    /// Columns picker. Callsign, Station, Date/Time (UTC), Local Time, Band, Mode, and Sub-Mode are
-    /// deliberately never touched here -- Band/Mode are required to log any QSO at all, and the rest
-    /// either have no matching column (Station) or already manage their own visibility (Sub-Mode, via
-    /// SubModeVisibilityConverter).</summary>
+    /// <summary>Hides/shows the entry form's few fields that have no Log-Mode-based visibility rule at
+    /// all (they're either always shown, or gated purely by the Choose Columns picker) in step with that
+    /// picker. Everything else -- every field whose visibility also depends on Log Mode -- used to be set
+    /// here too, but setting a WPF property directly in code clears any active data Binding on it, which
+    /// silently broke each of those panels' Log-Mode-based Show* binding the first time this ran (see the
+    /// comment above QsoEntryViewModel.ShowSkccField). Those are now folded into binding-driven *Field
+    /// properties in the ViewModel instead and must NOT be set here.</summary>
     private void ApplyFieldVisibility()
     {
         if (DataContext is not QsoEntryViewModel viewModel) return;
 
-        TimeOffPanel.Visibility = ToVisibility(viewModel.IsFieldVisible("TimeOff"));
         FreqPanel.Visibility = ToVisibility(viewModel.IsFieldVisible("Freq"));
         RstSentPanel.Visibility = ToVisibility(viewModel.IsFieldVisible("Rst"));
         RstRcvdPanel.Visibility = ToVisibility(viewModel.IsFieldVisible("Rst"));
         NamePanel.Visibility = ToVisibility(viewModel.IsFieldVisible("Name"));
-        GridPanel.Visibility = ToVisibility(viewModel.IsFieldVisible("Grid"));
-        CityPanel.Visibility = ToVisibility(viewModel.IsFieldVisible("City"));
-        StatePanel.Visibility = ToVisibility(viewModel.IsFieldVisible("State"));
-        CountyPanel.Visibility = ToVisibility(viewModel.IsFieldVisible("County"));
-        CountryPanel.Visibility = ToVisibility(viewModel.IsFieldVisible("Country"));
-        ArrlSectionPanel.Visibility = ToVisibility(viewModel.IsFieldVisible("ArrlSection"));
-        CqZonePanel.Visibility = ToVisibility(viewModel.IsFieldVisible("CqZone"));
-        ItuZonePanel.Visibility = ToVisibility(viewModel.IsFieldVisible("ItuZone"));
-        MySotaPanel.Visibility = ToVisibility(viewModel.IsFieldVisible("MySota"));
-        SotaPanel.Visibility = ToVisibility(viewModel.IsFieldVisible("Sota"));
-        MyPotaPanel.Visibility = ToVisibility(viewModel.IsFieldVisible("MyPota"));
-        PotaPanel.Visibility = ToVisibility(viewModel.IsFieldVisible("Pota"));
-        OpPanel.Visibility = ToVisibility(viewModel.IsFieldVisible("Op"));
-        QthPanel.Visibility = ToVisibility(viewModel.IsFieldVisible("Qth"));
-        TxPowerPanel.Visibility = ToVisibility(viewModel.IsFieldVisible("TxPower"));
-        CommentPanel.Visibility = ToVisibility(viewModel.IsFieldVisible("Comment"));
     }
 
     private static Visibility ToVisibility(bool visible) => visible ? Visibility.Visible : Visibility.Collapsed;

@@ -158,6 +158,12 @@
                      avoids that failure mode entirely: widening any column just extends the grid's
                      total content width, triggering the horizontal scrollbar instead. -->
                 <DataGridTextColumn x:Name="CommentColumn" local:ColumnKey.Key="Comment" Header="Comment" Binding="{Binding Comment}" Width="200" MinWidth="70" ElementStyle="{StaticResource LeftCellText}"/>
+                <DataGridTextColumn x:Name="PrecedenceColumn" local:ColumnKey.Key="Precedence" Header="Precedence" Binding="{Binding Precedence}" Width="70" MinWidth="55" ElementStyle="{StaticResource CenteredCellText}"/>
+                <DataGridTextColumn x:Name="CheckColumn" local:ColumnKey.Key="Check" Header="Check" Binding="{Binding Check}" Width="55" MinWidth="45" ElementStyle="{StaticResource CenteredCellText}"/>
+                <DataGridTextColumn x:Name="ClassColumn" local:ColumnKey.Key="Class" Header="Class" Binding="{Binding Class}" Width="55" MinWidth="45" ElementStyle="{StaticResource CenteredCellText}"/>
+                <DataGridTextColumn x:Name="SkccColumn" local:ColumnKey.Key="Skcc" Header="SKCC #" Binding="{Binding SkccNr}" Width="80" MinWidth="55" ElementStyle="{StaticResource CenteredCellText}"/>
+                <DataGridTextColumn x:Name="MySkccColumn" local:ColumnKey.Key="MySkcc" Header="My SKCC #" Binding="{Binding MySkccNr}" Width="90" MinWidth="60" ElementStyle="{StaticResource CenteredCellText}"/>
+                <DataGridTextColumn x:Name="SequenceColumn" local:ColumnKey.Key="Sequence" Header="Seq #" Binding="{Binding StxSerial}" Width="60" MinWidth="45" ElementStyle="{StaticResource CenteredCellText}"/>
             </DataGrid.Columns>
         </DataGrid>
     </Grid>

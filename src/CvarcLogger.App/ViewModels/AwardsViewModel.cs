@@ -8,16 +8,17 @@ public partial class AwardsViewModel : ObservableObject
 {
     private readonly IAwardsService _awardsService;
 
-    [ObservableProperty] private DxccProgress? dxccProgress;
     [ObservableProperty] private WasProgress? wasProgress;
     [ObservableProperty] private bool isLoading;
 
+    public DxccViewModel Dxcc { get; }
     public MountainGoatViewModel MountainGoat { get; }
     public ParksOnTheAirViewModel ParksOnTheAir { get; }
 
-    public AwardsViewModel(IAwardsService awardsService, MountainGoatViewModel mountainGoat, ParksOnTheAirViewModel parksOnTheAir)
+    public AwardsViewModel(IAwardsService awardsService, DxccViewModel dxcc, MountainGoatViewModel mountainGoat, ParksOnTheAirViewModel parksOnTheAir)
     {
         _awardsService = awardsService;
+        Dxcc = dxcc;
         MountainGoat = mountainGoat;
         ParksOnTheAir = parksOnTheAir;
     }
@@ -28,7 +29,7 @@ public partial class AwardsViewModel : ObservableObject
         IsLoading = true;
         try
         {
-            DxccProgress = await _awardsService.ComputeDxccProgressAsync();
+            await Dxcc.LoadAsync();
             WasProgress = await _awardsService.ComputeWasProgressAsync();
             await MountainGoat.LoadAsync();
             await ParksOnTheAir.LoadAsync();

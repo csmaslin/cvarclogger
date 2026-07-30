@@ -5,6 +5,33 @@ build meant to reach the user (see AppVersion.cs) -- before running publish.ps1.
 
 Versions before 1.17 predate this changelog and are not documented here.
 
+1.44
+----
+- QSO Entry form: new Log Mode picker (Normal/Contest/SOTA/POTA) collapses the form down to just the
+  fields that mode actually needs -- Normal still shows everything. Contest mode shows Precedence/Check/
+  Class alongside State; SOTA/POTA move their own summit/park fields up next to the top of the form and
+  hide fields that don't apply to an activation (Time Off, City/County/Country, Comment, SKCC).
+- QSO Entry form: added a Sequence # field (Contest mode only) with Start/Reset buttons -- Start begins
+  a running contact count at 1 and increments it after every logged QSO; Reset zeroes it and stops the
+  count until Start is pressed again. Saved as the ARRL contest exchange serial number sent (ADIF STX),
+  and added as a "Seq #" column in the log grid's column picker (hidden by default).
+- Log grid: column picker is confirmed alphabetical by display name (unchanged from 1.43, still the same
+  design as the rest of the picker).
+
+1.43
+----
+- Added support for logging ARRL Sweepstakes and Field Day contest exchanges (Precedence, Check, Class)
+  and SKCC (Straight Key Century Club) numbers -- your own SKCC number is set once in Station Profiles
+  and shown automatically; the contacted station's SKCC number is entered per QSO. Precedence is a
+  dropdown showing the full ARRL definition for each category; hover over Check for an explanation of
+  what it's for.
+- QSO Entry form: every field now centers its entered value, except Callsign, Station Callsign, Operator
+  Callsign, Freq (MHz), Freq Rx, and Comment.
+- Log grid: the column picker now includes Precedence, Check, Class, SKCC #, and My SKCC # (hidden by
+  default, same as other less-common columns).
+- Station Profiles: added an SKCC # field.
+- ADIF import/export now round-trips Precedence, Check, Class, and SKCC numbers.
+
 1.42
 ----
 - Fixed a serious bug where editing a QSO and saving could change its recorded date/time. The Edit QSO
