@@ -112,6 +112,7 @@ public partial class App : Application
                 services.AddScoped<QsoLogViewModel>();
                 services.AddScoped<ImportExportViewModel>();
                 services.AddTransient<AwardsViewModel>();
+                services.AddTransient<DxccViewModel>();
                 services.AddTransient<MountainGoatViewModel>();
                 services.AddTransient<ParksOnTheAirViewModel>();
                 services.AddTransient<SettingsViewModel>();

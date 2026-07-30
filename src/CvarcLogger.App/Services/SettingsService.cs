@@ -4,13 +4,6 @@ using CvarcLogger.Core.Rig;
 
 namespace CvarcLogger.App.Services;
 
-public enum LookupServicePreference
-{
-    Callook,
-    Qrz,
-    QrzCq
-}
-
 /// <summary>Which CAT backend the entry form's Connect CAT uses. Mutually exclusive by construction —
 /// stored as the two underlying CatEnabled/InternetRadioEnabled bools (which RigControlCoordinator and
 /// QsoEntryViewModel read directly), but surfaced as a single choice so the UI can't leave both on.</summary>
@@ -32,12 +25,6 @@ public class SettingsService
         _filePath = Path.Combine(App.DataDirectory, "settings.json");
         _data = Load();
         if (MigrateRadioProfiles(_data)) Save();
-    }
-
-    public LookupServicePreference PreferredLookupService
-    {
-        get => _data.PreferredLookupService;
-        set { _data.PreferredLookupService = value; Save(); }
     }
 
     public int? LastUsedStationProfileId
@@ -302,7 +289,6 @@ public class SettingsService
 
     private class AppSettingsData
     {
-        public LookupServicePreference PreferredLookupService { get; set; } = LookupServicePreference.Callook;
         public int? LastUsedStationProfileId { get; set; }
         public string ProgramOwnership { get; set; } = "Charles.S.Maslin";
         public string? CurrentDatabasePath { get; set; }

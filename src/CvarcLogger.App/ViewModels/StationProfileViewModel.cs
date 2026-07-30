@@ -23,6 +23,7 @@ public partial class StationProfileViewModel : ObservableObject
     [ObservableProperty] private string? editMyCounty;
     [ObservableProperty] private string? editQth;
     [ObservableProperty] private string? editOp;
+    [ObservableProperty] private string? editSkccNr;
     [ObservableProperty] private string editUtcOffsetHours = "0";
     [ObservableProperty] private bool editObservesDaylightSavingTime;
     [ObservableProperty] private bool editIsDefault;
@@ -59,6 +60,7 @@ public partial class StationProfileViewModel : ObservableObject
         EditMyCounty = null;
         EditQth = null;
         EditOp = null;
+        EditSkccNr = null;
         EditUtcOffsetHours = "0";
         EditObservesDaylightSavingTime = false;
         EditIsDefault = Profiles.Count == 0;
@@ -74,6 +76,7 @@ public partial class StationProfileViewModel : ObservableObject
         EditMyCounty = value.MyCounty;
         EditQth = value.Qth;
         EditOp = value.Op;
+        EditSkccNr = value.SkccNr;
         EditUtcOffsetHours = value.UtcOffsetHours.ToString(CultureInfo.InvariantCulture);
         EditObservesDaylightSavingTime = value.ObservesDaylightSavingTime;
         EditIsDefault = value.IsDefault;
@@ -105,6 +108,7 @@ public partial class StationProfileViewModel : ObservableObject
                 MyCounty = EditMyCounty,
                 Qth = EditQth,
                 Op = EditOp,
+                SkccNr = EditSkccNr,
                 UtcOffsetHours = utcOffsetHours,
                 ObservesDaylightSavingTime = EditObservesDaylightSavingTime,
                 IsDefault = EditIsDefault,
@@ -120,6 +124,7 @@ public partial class StationProfileViewModel : ObservableObject
             SelectedProfile.MyCounty = EditMyCounty;
             SelectedProfile.Qth = EditQth;
             SelectedProfile.Op = EditOp;
+            SelectedProfile.SkccNr = EditSkccNr;
             SelectedProfile.UtcOffsetHours = utcOffsetHours;
             SelectedProfile.ObservesDaylightSavingTime = EditObservesDaylightSavingTime;
             SelectedProfile.IsDefault = EditIsDefault;

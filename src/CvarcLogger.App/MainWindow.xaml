@@ -24,6 +24,8 @@
                 <MenuItem Header="_Import ADIF..." Command="{Binding ImportExport.ImportCommand}"/>
                 <MenuItem Header="_Export ADIF..." Command="{Binding ImportExport.ExportCommand}"/>
                 <Separator/>
+                <MenuItem Header="_Save Log..." Click="SaveLogMenuItem_Click"/>
+                <Separator/>
                 <MenuItem Header="E_xit" Click="ExitMenuItem_Click"/>
             </MenuItem>
             <MenuItem Header="_Stations">
@@ -62,7 +64,7 @@
 
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="4*" MinHeight="150"/>
+                <RowDefinition Height="5*" MinHeight="150"/>
                 <RowDefinition Height="7*"/>
             </Grid.RowDefinitions>
 

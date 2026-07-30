@@ -61,24 +61,29 @@ if ((Test-Path $overviewFile) -and (Test-Path $overviewRenderScript)) {
     Write-Warning "Program Overview and Data Flow.md not found at $overviewFile -- publishing without it."
 }
 
-# Export the User Manual (docx) to PDF and include it alongside the exe, so a copied install carries
-# its own documentation. Uses LibreOffice headless conversion rather than driving Word via COM --
-# Word automation proved unreliable here (hangs on a stuck print-spooler job or a zombie WINWORD
-# process, see project_word_com_automation_environment memory), while soffice --headless converts
-# directly with no dependency on the print pipeline or a running GUI app. Best-effort -- a machine
-# without LibreOffice installed still gets a usable publish, just without the manual. Guarded with a
-# timeout regardless, since any external process call in an unattended script should have one.
+# Export the User Manual (docx) to PDF -- into docs\ alongside the docx (same spot CvarcCellLog's
+# publish.ps1 regenerates its manual PDF, so docs\ always holds a current PDF, not just a current
+# docx) -- then copy that into the publish output so a copied install carries its own documentation.
+# Uses LibreOffice headless conversion rather than driving Word via COM -- Word automation proved
+# unreliable here (hangs on a stuck print-spooler job or a zombie WINWORD process, see
+# project_word_com_automation_environment memory), while soffice --headless converts directly with
+# no dependency on the print pipeline or a running GUI app. Best-effort -- a machine without
+# LibreOffice installed still gets a usable publish, just without the manual. Guarded with a timeout
+# regardless, since any external process call in an unattended script should have one.
 $sofficeExe = "C:\Program Files\LibreOffice\program\soffice.exe"
 if ((Test-Path $manualFile) -and (Test-Path $sofficeExe)) {
-    $manualPdf = Join-Path $outDir "CvarcLogger User Manual.pdf"
+    $manualDir = Split-Path $manualFile -Parent
+    $manualPdf = Join-Path $manualDir "CvarcLogger User Manual.pdf"
 
     $exportProcess = Start-Process -FilePath $sofficeExe `
-        -ArgumentList @("--headless", "--convert-to", "pdf", "--outdir", "`"$outDir`"", "`"$manualFile`"") `
+        -ArgumentList @("--headless", "--convert-to", "pdf", "--outdir", "`"$manualDir`"", "`"$manualFile`"") `
         -PassThru -WindowStyle Hidden
 
     $finished = $exportProcess.WaitForExit(60000)
     if ($finished -and (Test-Path $manualPdf)) {
-        Write-Host "Included manual PDF: $manualPdf"
+        Write-Host "Regenerated manual PDF: $manualPdf"
+        Copy-Item $manualPdf $outDir -Force
+        Write-Host "Included manual PDF: $(Join-Path $outDir 'CvarcLogger User Manual.pdf')"
     } else {
         Write-Warning "Could not export the User Manual to PDF within 60s -- publishing without it."
         if (-not $exportProcess.HasExited) { Stop-Process -Id $exportProcess.Id -Force -ErrorAction SilentlyContinue }

@@ -1,4 +1,4 @@
-<title>CVARC Logger Gets a Real Installer as CvarcCellLog Ships Its First Android Release</title>
+<title>A Compliance Screener for Winlink Wednesdays: How It Scores, and Why It Never Transmits</title>
 
 <style>
   :root {
@@ -79,8 +79,8 @@
   .eyebrow span:last-child { color: var(--ink-soft); letter-spacing: 0.08em; }
 
   h1.headline {
-    font-size: clamp(32px, 5vw, 46px);
-    line-height: 1.08;
+    font-size: clamp(30px, 4.6vw, 44px);
+    line-height: 1.1;
     font-weight: 700;
     margin: 0 0 14px;
     text-wrap: balance;
@@ -155,6 +155,8 @@
     color: var(--ink);
   }
 
+  .callout.signal-border { border-left-color: var(--signal); }
+
   .callout .tag {
     display: inline-block;
     font-family: var(--font-mono);
@@ -217,6 +219,42 @@
     .plate { float: none; width: 100%; margin: 0 0 24px; }
   }
 
+  /* ---------- Stat strip ---------- */
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--line-strong);
+    border: 1px solid var(--line-strong);
+    margin: 28px 0;
+  }
+
+  .stats div {
+    background: var(--panel-raised);
+    padding: 14px 10px;
+    text-align: center;
+  }
+
+  .stats .num {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--signal);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stats .lbl {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-top: 4px;
+  }
+
   /* ---------- Feature list ---------- */
 
   .features {
@@ -244,7 +282,7 @@
 
   .features .v { font-size: 16.5px; line-height: 1.5; }
 
-  /* ---------- Beta tester roster ---------- */
+  /* ---------- SME roster ---------- */
 
   .roster {
     list-style: none;
@@ -298,105 +336,80 @@
 
   <div class="eyebrow">
     <span>CVARC Club Bulletin</span>
-    <span>Software &amp; Station Notes</span>
+    <span>ACS/ARES &amp; Winlink Notes</span>
   </div>
 
-  <h1 class="headline">CVARC Logger Gets a Real Installer as CvarcCellLog Ships Its First Android Release</h1>
-  <p class="dek">CvarcLogger, the club's homegrown contact-logging program, climbs to version 1.37 with a proper Windows installer and sharper Settings screens — while its Android sibling, CvarcCellLog, clears its own first public version, putting logging, search, editing, and sortable columns in members' hands as a signed APK.</p>
+  <h1 class="headline">A Compliance Screener for Winlink Wednesdays: How It Scores, and Why It Never Transmits</h1>
+  <p class="dek">All ten ACS Area-2 exercises now have a defined rule set, and the pilot run has already drafted more than a dozen result letters — every one staged for human review, none of them sent.</p>
 
   <div class="byline-row">
     <span>By the CVARC Technical Desk</span>
     <span>Conejo Valley, CA</span>
-    <span>21 July 2026</span>
+    <span>24 July 2026</span>
   </div>
 
   <article>
     <div class="plate">
-      <div class="plate-header">At a Glance</div>
+      <div class="plate-header">Winlink Screener</div>
       <dl>
-        <dt>Program</dt><dd>CvarcLogger</dd>
-        <dt>Version</dt><dd class="hi">1.37</dd>
-        <dt>Install</dt><dd>Setup.exe or portable</dd>
+        <dt>Status</dt><dd class="hi">Piloting</dd>
+        <dt>Scope</dt><dd>ACS Area-2</dd>
+        <dt>Exercise Rules</dt><dd>10 of 10</dd>
+        <dt>Transmits</dt><dd>Never</dd>
+        <dt>Reads</dt><dd>Winlink Express</dd>
         <dt>Author</dt><dd>W6CSM</dd>
-        <dt>Club Callsign</dt><dd>AA6CV</dd>
-        <dt>Platform</dt><dd>Windows 10/11</dd>
-        <dt>Runtime</dt><dd>.NET 9 / WPF</dd>
-        <dt>Awards Tracked</dt><dd>DXCC, WAS, SOTA, POTA</dd>
-        <dt>Rig Control</dt><dd>Hamlib</dd>
-      </dl>
-      <div class="plate-header">CvarcCellLog</div>
-      <dl>
-        <dt>Version</dt><dd class="hi">1.02</dd>
-        <dt>Platform</dt><dd>Android</dd>
-        <dt>Runtime</dt><dd>.NET MAUI</dd>
-        <dt>Format</dt><dd>Signed APK</dd>
-        <dt>Manual</dt><dd>Included</dd>
+        <dt>Goal</dt><dd>County &rarr; Section &rarr; National</dd>
       </dl>
     </div>
 
-    <p class="lede">CvarcLogger is a new logging program, built from the ground up in-house rather than bought off the shelf — but "new" doesn't mean narrow, and it no longer means Windows-only, either. The same program that logs a routine ragchew on 20 meters also tracks a SOTA summit activation or a POTA park activation automatically, with no separate spreadsheet or website tab required. Version 1.37 adds a real Windows installer and a round of Settings-screen polish; alongside it, the club's Android companion app, CvarcCellLog, has quietly cleared its own first public version — the same log, the same lookups, now in a pocket instead of just on a desk.</p>
+    <p class="lede">Grading Winlink Wednesdays submissions by hand — checking each station's forms against the exercise requirements, confirming the right addresses were used, noting who was late — is exactly the kind of work that eats an exercise controller's whole evening. W6CSM, serving as exercise control for the ACS Area-2 series, has spent the past several sessions building an automated screener that does that first pass instead: it reads the message store, checks each submission against the published rules, and drafts a result letter. It does not decide what happens next. That's still a person's call, every time.</p>
 
-    <p>CvarcLogger was written by CVARC Technical Director Charles S. Maslin, W6CSM, who has been running his own day-to-day logging through it since early development. Station profiles, DXCC lookups, and the rest of CvarcLogger's feature set are designed around individual operation, and can be switched at any time to reflect operation under the club's shared callsign, <strong>AA6CV</strong>. Log a contact and the software does the busywork a paper logbook never could: it resolves the DXCC entity, CQ zone, and ITU zone straight from the callsign and grid square, keeps UTC and local time in sync for late or backdated entries, and — when a radio is connected over Hamlib — pulls frequency, band, and mode straight off the rig as you tune.</p>
+    <h2>What the Screener Actually Checks</h2>
+    <p>The rule set is deliberately literal rather than lenient-by-default. The deadline is 23:59 Tuesday Pacific time with no grace period — a submission one minute late is late, full stop. But lateness is only ever <em>noted</em>, never a downgrade on its own; an otherwise-complete submission that arrives late is still deemed complete. A partial submission is accepted with the missing pieces itemized in the letter, not rejected outright. Duplicate submissions are all logged, with the best of them (fewest defects) scored and lateness judged on the earliest attempt, so correcting a mistake with a resend can't retroactively make a station look late.</p>
 
-    <h2>What CvarcLogger Does</h2>
-    <p>At its core, CvarcLogger is built for fast, in-the-chair logging: type a callsign, click Lookup (or just log the contact — the lookup runs automatically either way), and the operator's name, grid square, city, state, county, and country fill in from Callook.info, QRZ.com, or QRZCQ.com, whichever the station has configured. ARRL Section is derived automatically from state and county rather than looked up separately, and CQ/ITU zone resolve from the grid square itself, which matters for split-zone countries like the United States. Every field on the entry form — RST, name, grid, location, ARRL Section, zones, SOTA/POTA references, operator, QTH, transmit power, and a free-text comment — can be shown or hidden to match how an operator actually works, and the choice is remembered between sessions.</p>
+    <p>One rule has no exceptions: reaching both required addresses — the exercise's main list and the required copy — is mandatory regardless of everything else being perfect, and missing either one is an automatic reject. Traffic that reaches neither required address is still scored as a rejection rather than waved off as unrelated noise, a distinction that came up and was settled during the pilot itself.</p>
+
+    <h2>Ten Exercises, Ten Rule Sets</h2>
+    <p>Every one of the series' ten exercises now has its own documented content check, not just a form-type match. A few examples: Exercise 1's capability report has to show at least one entry each for band, mode, station type, and power, checked across the whole form rather than row by row. Exercise 6 pairs a FEMA resource request with a USGS "Did You Feel It" report — and includes a negative check, since the DYFI form auto-fills a USGS reply address that participants are supposed to delete before sending; leaving it in is treated as a real compliance miss, not a technicality. Exercise 10 requires a separate completion notice, sent to a specific Winlink address, on top of its communications log.</p>
 
     <ul class="features">
-      <li><span class="k">Zones</span><span class="v">DXCC, CQ, and ITU zones auto-resolve from callsign and grid square — no lookup tables to consult by hand.</span></li>
-      <li><span class="k">Rig link</span><span class="v">Live CAT control over Hamlib keeps frequency, band, and mode following the radio automatically.</span></li>
-      <li><span class="k">Digital modes</span><span class="v">WSJT-X can hand logged QSOs straight to CvarcLogger over UDP, no manual ADIF import required.</span></li>
-      <li><span class="k">Live map</span><span class="v">Optional GridTracker2 broadcast puts every new contact on the map the moment it's logged.</span></li>
-      <li><span class="k">Records</span><span class="v">Full ADIF import/export keeps the log portable and compatible with everything else in the shack.</span></li>
+      <li><span class="k">Deadline</span><span class="v">23:59 Tuesday Pacific, no grace period — resolved to UTC per run to account for PDT/PST.</span></li>
+      <li><span class="k">Partial</span><span class="v">Accepted with a plain-language list of what's missing, not an automatic rejection.</span></li>
+      <li><span class="k">Duplicates</span><span class="v">All logged; the best attempt is scored, lateness judged on the first try.</span></li>
+      <li><span class="k">Unknowns</span><span class="v">Anything unparseable or off a form the screener doesn't recognize goes to a human hold — never auto-rejected.</span></li>
     </ul>
 
-    <h2>Now Tracking Four Awards, Not Two</h2>
-    <p>Awards Progress — one window, opened from the View menu — has quietly become the most feature-dense corner of the program. DXCC and Worked All States were there from early on, each entity or state checked off automatically as contacts land in the log, worked and confirmed counted separately. A recent update added two more tabs built around the same idea: no separate spreadsheet, no manual tally, just whatever is already in the log.</p>
+    <h2>Four Possible Verdicts, Never Sent Automatically</h2>
+    <p>Every submission lands in one of four buckets: Accept, Accept with a noted gap, Reject, or Hold for a human to look at directly. A rejection letter always states the field, the value that was received, and what was expected — never a bare "non-compliant." Creativity and content quality are explicitly out of scope for the automated pass; every letter notes that a human content review follows separately, and nothing about the screener's verdict speaks to it.</p>
 
-    <p>The new <strong>Mountain Goat (SOTA)</strong> tab tracks progress toward SOTA's 1,000-point activator award. Add a summit code and its point value and official name are looked up automatically; log a contact with the summit entered in the entry form's My SOTA field and the tracker picks it up on its own. SOTA's real rule — that an activation only counts once at least four contacts are logged from the summit on the same UTC date — is enforced automatically, with an unqualified summit's points shown in parentheses, like <code>(4)</code>, so an operator can see at a glance what a summit would be worth once the fourth contact comes in.</p>
-
-    <p>The new <strong>Parks on the Air (POTA)</strong> tab works the same way for park activations, tracking progress toward POTA's tiered activator awards — Bronze at 10 parks, climbing through Silver, Gold, Platinum, Diamond, Ruby, and Emerald at 125 — plus the separate Kilo award for 1,000 cumulative contacts logged at a single park. A park counts as activated once ten different stations have been worked from it on the same UTC date. Park names resolve live from POTA's own public API where a connection is available, falling back to a bundled offline park directory of more than 93,000 locations worldwide when it isn't.</p>
-
-    <div class="callout">
-      <span class="tag">Calling all activators</span>
-      CvarcLogger's SOTA and POTA tracking is brand new, and the club is looking for a few more members who actually get out and activate — summits, parks, or both — to put it through its paces before a wider release. If that's you, the Technical Desk wants to hear from you.
+    <div class="callout signal-border">
+      <span class="tag">The boundary that matters</span>
+      The screener does not transmit. Every letter it drafts is staged in the Winlink Outbox, and a person reviews and releases each one individually before it reaches anyone. That's not a placeholder for a future automation step — it's the design. It's also what makes running this at all defensible beyond one exercise controller's own inbox.
     </div>
 
-    <h2>When Two Programs Want the Same Port</h2>
-    <p>Version 1.34's fix started with a familiar troubleshooting moment: WSJT-X was logging contacts, CvarcLogger's WSJT-X receiver was enabled, and nothing was showing up. No error, no warning — just silence. The cause turned out to be a real-world collision rather than a bug in the usual sense: GridTracker2 was already listening on the same network port WSJT-X broadcasts to, and Windows will only ever deliver a given UDP packet to one of two programs sharing a port, never both. CvarcLogger's receiver was bound, healthy, and simply never handed a single packet.</p>
+    <h2>Piloting County-Wide First</h2>
+    <p>The first real runs, against Exercise 2 and Exercise 3 submissions already sitting in the message store, produced results across both:</p>
 
-    <p>The fix leans on a feature GridTracker2 already had: its own "Forward UDP messages" relay. WSJT-X still broadcasts to GridTracker2 exactly as before; GridTracker2 logs the contact for its own map, then forwards the same message on to CvarcLogger on a separate port. CvarcLogger's own outbound broadcast to GridTracker2 (for QSOs typed in directly) got a dedicated port too, matching GridTracker2's "Receive ADIF UDP (Broadcasts for Logging)" setting. Both directions are now confirmed working with real WSJT-X traffic, not just a hand-built test packet.</p>
-
-    <h2>An Actual Installer, and a Tidier First Run</h2>
-    <p>Three point releases since 1.34 have been quieter but no less real. WSJT-X-relayed contacts now get the same automatic online lookup as anything typed in by hand, filling Name, Grid, Country, State, County, City, and ARRL Section without overwriting whatever the over-the-air exchange already supplied. CAT-connected radios now report transmit power alongside frequency, band, and mode, converted from the raw fraction Hamlib reports into real watts using a per-radio "Max Power" setting. Log row numbers now count chronologically — the oldest QSO is always row 1 — regardless of how the grid is currently sorted or searched.</p>
-
-    <p>Version 1.37 turns its attention to the parts of the program a new member sees first. CvarcLogger now installs like any other Windows program: a proper <code>CvarcLogger-Setup-1.37.exe</code> puts it in the Windows "Apps &amp; Features" list with a real uninstall entry, alongside the existing no-install portable zip for anyone who'd rather just run it from a folder. Settings got a pass for clarity — QRZ.com and QRZCQ.com credential status now reads "Configured" or "Not Configured" instead of a bare <code>True</code>/<code>False</code>, each password field has a show/hide toggle, and every Radio Control slot's Hamlib dropdown gained a "-none-" entry to explicitly clear a slot instead of leaving a stale model ID behind. Station Profiles now marks its two required fields, Callsign and UTC Offset, with an asterisk. And a fresh install now starts with CAT, automatic rigctld launch, GridTracker2 broadcast, and WSJT-X log receiving all switched off by default, rather than quietly assuming a new user has already wired up a shack full of other software.</p>
-
-    <h2>CvarcCellLog Ships Its First Release</h2>
-    <p>The Android companion app mentioned as "early builds" just a couple of releases ago is no longer early. CvarcCellLog reached its Milestone 1 goal in full — boot, database migration, and logging, viewing, searching, editing, and deleting a QSO, all built on the exact same Core and Data code CvarcLogger runs on the desktop — and then kept going. Version 1.02 is out now as a signed APK, with its own user manual, and a changelog of its own to match: a Show/Hide toggle on the QRZ.com and QRZCQ.com password fields, a Lookup button added to the Edit QSO screen (previously only on the entry form), a fix for four fields (UTC Offset, Frequency, CQ Zone, ITU Zone) that were silently suppressing Android's on-screen keyboard, and a redesigned QSO Log — one line per record, a header row that stays put while the list scrolls, and a new Columns screen to choose which fields show and in what order. As of 1.02, tapping a column header sorts the log by it, with a second tap reversing the direction, mirroring how a desktop spreadsheet behaves.</p>
-
-    <div class="callout">
-      <span class="tag">Stress-tested, not just tapped a few times</span>
-      Before shipping, CvarcCellLog's log screen was pointed at a real 5,676-QSO ADIF export and confirmed to import, scroll, and search without choking — not just a handful of test rows. Verification so far has all been on an Android emulator; testing on a real phone (a Samsung Galaxy S24) is the next item on the list before a wider release.
+    <div class="stats">
+      <div><span class="num">22</span><span class="lbl">Submittals Screened</span></div>
+      <div><span class="num">14</span><span class="lbl">Letters Drafted</span></div>
+      <div><span class="num">0</span><span class="lbl">Sent Automatically</span></div>
     </div>
 
-    <h2>Meet the Beta Team</h2>
-    <p>CvarcLogger continues to ship first to a small in-house testing group rather than the full club roster, the same stress-testing approach that's caught real bugs before every release so far. The current roster:</p>
+    <p>Across the two exercises, roughly a dozen participating stations were represented, with more submittals than stations owing to duplicates. Every single letter is still sitting in the Outbox awaiting review — the number sent by the screener itself is, and will stay, zero. The plan from here is explicitly incremental: prove it out across the county first, then extend to section-wide use, then national, if the pilot holds up under real exercise traffic. The distribution list for this pilot — the subject matter experts who see every compliance report alongside W6CSM as exercise control:</p>
 
     <ul class="roster">
-      <li><span>Norm</span><span class="call">AB6ET</span></li>
-      <li><span>Greg</span><span class="call">K7SDW</span></li>
-      <li><span>Keith Elliot</span><span class="call">W6KME</span></li>
-      <li><span>Rob</span><span class="call">W6RH</span></li>
-      <li><span>John</span><span class="call">NS6X</span></li>
-      <li><span>Martin</span><span class="call">AJ6CL</span></li>
+      <li><span>Chuck (Exercise Control)</span><span class="call">W6CSM</span></li>
+      <li><span>Stu</span><span class="call">AG6AG</span></li>
+      <li><span>Garry</span><span class="call">K6GPS</span></li>
+      <li><span>Andy</span><span class="call">K6AGL</span></li>
+      <li><span>Keith</span><span class="call">W6KME</span></li>
+      <li><span>Jeff</span><span class="call">W6KCX</span></li>
+      <li><span>Doc</span><span class="call">NF6D</span></li>
     </ul>
 
-    <p>Members who regularly chase summits or parks, and would be willing to log a few activations through CvarcLogger and report back what does and doesn't work, should reach out to the Technical Desk to join the group.</p>
-
-    <h2>What's Still Ahead for the Log in Your Pocket</h2>
-    <p>CAT control, GridTracker broadcast, and full ADIF import/export polish are the next milestones on CvarcCellLog's list — QRZ.com/QRZCQ.com lookup, editable Station Profiles, and a Settings screen already made it in ahead of schedule. The Android app shares CvarcLogger's Core and Data code outright, so a contact logged in one program is a contact the other can see the moment the two are pointed at the same database file — the field-to-desk workflow the whole effort was started for.</p>
-
-    <p>CvarcLogger 1.37 is available both ways: run <code>CvarcLogger-Setup-1.37.exe</code> for a normal Windows install, or grab the portable zip and run it from anywhere with no install step at all. CvarcCellLog 1.02 ships as a signed APK with its manual alongside it. Both changelogs, as always, ship in the box.</p>
+    <h2>What's Still Ahead</h2>
+    <p>A handful of the content-field checks described above — the band/mode/power detail on the capability report, the quantity/description check on the resource request, the weather-advisory reference on the severe weather report — are documented but not yet wired into the screener itself; the rule set is ahead of the implementation in a few spots. Letter templates for each of the four verdicts are still being refined based on pilot feedback. And there's deliberately no roster of who's expected to submit yet, so for now the screener only ever reports on stations that actually sent something — a station that submits nothing simply isn't mentioned, rather than being flagged as missing.</p>
   </article>
 
   <svg class="signal-wave" viewBox="0 0 700 28" preserveAspectRatio="none" aria-hidden="true">
@@ -405,8 +418,8 @@
 
   <footer>
     <div class="grid">
-      <span>CvarcLogger v1.37 &middot; CvarcCellLog v1.02 &middot; AA6CV &middot; Conejo Valley Amateur Radio Club</span>
-      <span>Program by Charles S. Maslin, W6CSM &mdash; CVARC Technical Director</span>
+      <span>Winlink Exercise Screener &middot; Pilot &middot; ACS Area-2, Conejo Valley</span>
+      <span>Built by Charles S. Maslin, W6CSM &mdash; CVARC Technical Director / Exercise Control</span>
     </div>
   </footer>
 

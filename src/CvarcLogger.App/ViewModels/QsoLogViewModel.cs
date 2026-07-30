@@ -74,6 +74,9 @@ public partial class QsoLogViewModel : ObservableObject
             ("Qth", "QTH", false), ("Op", "OP", false),
             ("MySota", "My SOTA", false), ("Sota", "SOTA", false),
             ("MyPota", "My POTA", false), ("Pota", "POTA", false),
+            ("Precedence", "Precedence", false), ("Check", "Check", false), ("Class", "Class", false),
+            ("Skcc", "SKCC #", false), ("MySkcc", "My SKCC #", false),
+            ("Sequence", "Seq #", false),
         };
 
         foreach (var (key, displayName, defaultVisible) in columnDefinitions.OrderBy(c => c.Item2, StringComparer.OrdinalIgnoreCase))

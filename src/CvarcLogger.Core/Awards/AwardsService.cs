@@ -50,28 +50,74 @@ public class AwardsService : IAwardsService
             Entities: statuses);
     }
 
+    private static readonly string[] PhoneModes = { "SSB", "FM", "AM" };
+    private static readonly string[] CwModes = { "CW" };
+    private static readonly string[] DigitalModes = { "FT8", "FT4", "RTTY", "PSK", "DIGITALVOICE" };
+
     public async Task<WasProgress> ComputeWasProgressAsync(AwardsFilter? filter = null, CancellationToken ct = default)
     {
         var qsos = await GetFilteredQsosAsync(filter, ct).ConfigureAwait(false);
 
-        var byState = qsos
+        var eligible = qsos
             .Where(q => q.DxccEntityCode.HasValue
                         && WasEligibleEntityCodes.Contains(q.DxccEntityCode.Value)
                         && !string.IsNullOrWhiteSpace(q.State))
+            .ToList();
+
+        var byState = eligible
             .GroupBy(q => q.State!.Trim().ToUpperInvariant())
             .ToDictionary(g => g.Key, g => g.Any(IsConfirmed));
+
+        var phoneStates = StatesWorkedIn(eligible, PhoneModes);
+        var cwStates = StatesWorkedIn(eligible, CwModes);
+        var digitalStates = StatesWorkedIn(eligible, DigitalModes);
 
         var statuses = UsStates
             .Select(state => new WasStateStatus(
                 state,
                 Worked: byState.ContainsKey(state),
-                Confirmed: byState.TryGetValue(state, out var confirmed) && confirmed))
+                Confirmed: byState.TryGetValue(state, out var confirmed) && confirmed,
+                Phone: phoneStates.Contains(state),
+                Cw: cwStates.Contains(state),
+                Digital: digitalStates.Contains(state)))
             .ToList();
 
         return new WasProgress(
             WorkedCount: statuses.Count(s => s.Worked),
             ConfirmedCount: statuses.Count(s => s.Confirmed),
             States: statuses);
+    }
+
+    private static HashSet<string> StatesWorkedIn(IEnumerable<Qso> eligibleQsos, string[] modes) =>
+        eligibleQsos
+            .Where(q => modes.Contains(q.Mode, StringComparer.OrdinalIgnoreCase))
+            .Select(q => q.State!.Trim().ToUpperInvariant())
+            .ToHashSet();
+
+    /// <summary>Plain per-band QSO volume -- every logged QSO on that band, regardless of DXCC entity
+    /// resolution or confirmation, unlike ComputeDxccProgressAsync's entity-based counts. Ordered by
+    /// QsoFieldOptions.Bands' canonical band order (ADIF band list, low to high frequency); any Band value
+    /// not in that list (a typo, or a band ADIF doesn't define) sorts alphabetically after the known ones
+    /// rather than being dropped. Bands with zero QSOs are omitted.</summary>
+    public async Task<IReadOnlyList<BandQsoCount>> ComputeQsoCountsByBandAsync(AwardsFilter? filter = null, CancellationToken ct = default)
+    {
+        var qsos = await GetFilteredQsosAsync(filter, ct).ConfigureAwait(false);
+
+        var counts = qsos
+            .Where(q => !string.IsNullOrWhiteSpace(q.Band))
+            .GroupBy(q => q.Band!, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(g => g.Key, g => g.Count(), StringComparer.OrdinalIgnoreCase);
+
+        var known = QsoFieldOptions.Bands
+            .Where(counts.ContainsKey)
+            .Select(band => new BandQsoCount(band, counts[band]));
+
+        var unknown = counts.Keys
+            .Where(band => !QsoFieldOptions.Bands.Contains(band, StringComparer.OrdinalIgnoreCase))
+            .OrderBy(band => band, StringComparer.OrdinalIgnoreCase)
+            .Select(band => new BandQsoCount(band, counts[band]));
+
+        return known.Concat(unknown).ToList();
     }
 
     private async Task<List<Qso>> GetFilteredQsosAsync(AwardsFilter? filter, CancellationToken ct)

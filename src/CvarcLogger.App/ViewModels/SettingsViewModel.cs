@@ -20,7 +20,6 @@ public partial class SettingsViewModel : ObservableObject
     private readonly GridTrackerBroadcastService _gridTrackerBroadcast;
     private readonly WsjtxUdpListenerService _wsjtxListener;
 
-    [ObservableProperty] private LookupServicePreference preferredLookupService;
     [ObservableProperty] private string qrzUsername = string.Empty;
     [ObservableProperty] private string qrzPassword = string.Empty;
     [ObservableProperty]
@@ -83,7 +82,6 @@ public partial class SettingsViewModel : ObservableObject
         _rigCatalog = rigCatalog;
         _gridTrackerBroadcast = gridTrackerBroadcast;
         _wsjtxListener = wsjtxListener;
-        preferredLookupService = _settings.PreferredLookupService;
 
         catSource = _settings.CatSource;
         launchRigctldAutomatically = _settings.LaunchRigctldAutomatically;
@@ -210,11 +208,6 @@ public partial class SettingsViewModel : ObservableObject
         QrzCqUsername = string.Empty;
         QrzCqPassword = string.Empty;
         IsQrzCqConfigured = false;
-    }
-
-    partial void OnPreferredLookupServiceChanged(LookupServicePreference value)
-    {
-        _settings.PreferredLookupService = value;
     }
 
     partial void OnCatSourceChanged(CatSource value) => _settings.CatSource = value;

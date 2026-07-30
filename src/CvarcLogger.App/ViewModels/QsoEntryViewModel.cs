@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
+using System.Windows;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -9,6 +10,7 @@ using CvarcLogger.Core.Awards;
 using CvarcLogger.Core.Geo;
 using CvarcLogger.Core.Models;
 using CvarcLogger.Core.Rig;
+using CvarcLogger.Core.UiStandards;
 using Serilog;
 
 namespace CvarcLogger.App.ViewModels;
@@ -88,7 +90,35 @@ public partial class QsoEntryViewModel : ObservableObject
     /// this view model depending on its sibling directly.</summary>
     public event EventHandler? FieldVisibilityChanged;
 
-    public void NotifyFieldVisibilityChanged() => FieldVisibilityChanged?.Invoke(this, EventArgs.Empty);
+    public void NotifyFieldVisibilityChanged()
+    {
+        FieldVisibilityChanged?.Invoke(this, EventArgs.Empty);
+        // Every column-gated *Field property is binding-driven now (see the comment above ShowSkccField),
+        // so each one has to be re-evaluated here when a column is toggled in the Choose Columns picker --
+        // there's no more code-behind fallback doing this for any of them.
+        OnPropertyChanged(nameof(ShowSkccField));
+        OnPropertyChanged(nameof(ShowMySkccField));
+        OnPropertyChanged(nameof(ShowPrecedenceField));
+        OnPropertyChanged(nameof(ShowCheckField));
+        OnPropertyChanged(nameof(ShowClassField));
+        OnPropertyChanged(nameof(ShowTimeOffField));
+        OnPropertyChanged(nameof(ShowGridField));
+        OnPropertyChanged(nameof(ShowCityField));
+        OnPropertyChanged(nameof(ShowStateField));
+        OnPropertyChanged(nameof(ShowCountyField));
+        OnPropertyChanged(nameof(ShowCountryField));
+        OnPropertyChanged(nameof(ShowArrlSectionField));
+        OnPropertyChanged(nameof(ShowCqZoneField));
+        OnPropertyChanged(nameof(ShowItuZoneField));
+        OnPropertyChanged(nameof(ShowMySotaField));
+        OnPropertyChanged(nameof(ShowSotaField));
+        OnPropertyChanged(nameof(ShowMyPotaField));
+        OnPropertyChanged(nameof(ShowPotaField));
+        OnPropertyChanged(nameof(ShowOpField));
+        OnPropertyChanged(nameof(ShowQthField));
+        OnPropertyChanged(nameof(ShowTxPowerField));
+        OnPropertyChanged(nameof(ShowCommentField));
+    }
 
     /// <summary>Whether the entry-form field for this column key should be shown, mirroring
     /// QsoLogViewModel.IsColumnVisible's own logic against the same underlying setting. Only ever
@@ -118,10 +148,189 @@ public partial class QsoEntryViewModel : ObservableObject
     // MySotaRef/MySigInfo are sticky (not cleared in ResetForNextQso), same rationale as Band/Mode/
     // RstSent/RstRcvd -- the operator's own summit/park stays constant across a whole activation
     // session. SotaRef/SigInfo describe the *contacted* station, so they reset per QSO like Name/Grid.
-    [ObservableProperty] private string? mySotaRef;
-    [ObservableProperty] private string? sotaRef;
-    [ObservableProperty] private string? mySigInfo;
-    [ObservableProperty] private string? sigInfo;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsMySotaRefValid))]
+    [NotifyPropertyChangedFor(nameof(ShowMySotaRefWarning))]
+    private string? mySotaRef;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsSotaRefValid))]
+    [NotifyPropertyChangedFor(nameof(ShowSotaRefWarning))]
+    private string? sotaRef;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsMySigInfoValid))]
+    [NotifyPropertyChangedFor(nameof(ShowMySigInfoWarning))]
+    private string? mySigInfo;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsSigInfoValid))]
+    [NotifyPropertyChangedFor(nameof(ShowSigInfoWarning))]
+    private string? sigInfo;
+
+    // Soft validation only -- a mismatch shows a warning label but never blocks Log QSO, since the regex
+    // can't anticipate every real-world reference. The "Show...Warning" properties exist purely so XAML
+    // doesn't need an inverse-bool-to-visibility converter.
+    public bool IsMySotaRefValid => ReferenceFormatStandards.IsValidSotaRef(MySotaRef);
+    public bool IsSotaRefValid => ReferenceFormatStandards.IsValidSotaRef(SotaRef);
+    public bool IsMySigInfoValid => ReferenceFormatStandards.IsValidPotaRef(MySigInfo);
+    public bool IsSigInfoValid => ReferenceFormatStandards.IsValidPotaRef(SigInfo);
+    public Visibility ShowMySotaRefWarning => IsMySotaRefValid ? Visibility.Collapsed : Visibility.Visible;
+    public Visibility ShowSotaRefWarning => IsSotaRefValid ? Visibility.Collapsed : Visibility.Visible;
+    public Visibility ShowMySigInfoWarning => IsMySigInfoValid ? Visibility.Collapsed : Visibility.Visible;
+    public Visibility ShowSigInfoWarning => IsSigInfoValid ? Visibility.Collapsed : Visibility.Visible;
+
+    // Contest/SKCC fields. These describe the *contacted* station (what they sent), so -- like SotaRef/
+    // SigInfo above -- they reset per QSO, not sticky. MySkccNr has no observable property; it's set
+    // straight from SelectedStationProfile.SkccNr at save time, same as MyGridSquare/MyState/MyCounty.
+    [ObservableProperty] private string? skccNr;
+    [ObservableProperty] private string? precedence;
+    [ObservableProperty] private string? check;
+    [ObservableProperty] private string? qsoClass;
+
+    // SelectedPrecedenceOption drives the ComboBox (shows the full ARRL definition while choosing, see
+    // ArrlPrecedenceOption); OnSelectedPrecedenceOptionChanged below keeps the plain Precedence string
+    // (what actually gets saved to Qso.Precedence) in sync with it.
+    [ObservableProperty] private ArrlPrecedenceOption? selectedPrecedenceOption;
+
+    public ObservableCollection<ArrlPrecedenceOption> PrecedenceOptions { get; } = new(ArrlPrecedenceOptions.All);
+
+    partial void OnSelectedPrecedenceOptionChanged(ArrlPrecedenceOption? value) => Precedence = value?.Value;
+
+    // Preset field layout for the form below (Normal/Contest/SOTA/POTA) -- see QsoEntryModeFields for the
+    // per-field visibility rules. Not persisted between visits: each contest/activation is a deliberate,
+    // one-time choice at the start of a session, so the form always starts on Normal (everything shown).
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowDateTimeUtc))]
+    [NotifyPropertyChangedFor(nameof(ShowTimeOff))]
+    [NotifyPropertyChangedFor(nameof(ShowBand))]
+    [NotifyPropertyChangedFor(nameof(ShowSubMode))]
+    [NotifyPropertyChangedFor(nameof(ShowTxPower))]
+    [NotifyPropertyChangedFor(nameof(ShowGridSquare))]
+    [NotifyPropertyChangedFor(nameof(ShowState))]
+    [NotifyPropertyChangedFor(nameof(ShowSotaFields))]
+    [NotifyPropertyChangedFor(nameof(ShowPotaFields))]
+    [NotifyPropertyChangedFor(nameof(ShowSkccFields))]
+    [NotifyPropertyChangedFor(nameof(ShowContestExchangeFields))]
+    [NotifyPropertyChangedFor(nameof(ShowCityCounty))]
+    [NotifyPropertyChangedFor(nameof(ShowCountry))]
+    [NotifyPropertyChangedFor(nameof(ShowArrlSection))]
+    [NotifyPropertyChangedFor(nameof(ShowCqItuZone))]
+    [NotifyPropertyChangedFor(nameof(ShowComment))]
+    [NotifyPropertyChangedFor(nameof(ShowStationFields))]
+    [NotifyPropertyChangedFor(nameof(ShowSequenceFields))]
+    [NotifyPropertyChangedFor(nameof(ShowSkccField))]
+    [NotifyPropertyChangedFor(nameof(ShowMySkccField))]
+    [NotifyPropertyChangedFor(nameof(ShowPrecedenceField))]
+    [NotifyPropertyChangedFor(nameof(ShowCheckField))]
+    [NotifyPropertyChangedFor(nameof(ShowClassField))]
+    [NotifyPropertyChangedFor(nameof(ShowTimeOffField))]
+    [NotifyPropertyChangedFor(nameof(ShowGridField))]
+    [NotifyPropertyChangedFor(nameof(ShowCityField))]
+    [NotifyPropertyChangedFor(nameof(ShowStateField))]
+    [NotifyPropertyChangedFor(nameof(ShowCountyField))]
+    [NotifyPropertyChangedFor(nameof(ShowCountryField))]
+    [NotifyPropertyChangedFor(nameof(ShowArrlSectionField))]
+    [NotifyPropertyChangedFor(nameof(ShowCqZoneField))]
+    [NotifyPropertyChangedFor(nameof(ShowItuZoneField))]
+    [NotifyPropertyChangedFor(nameof(ShowMySotaField))]
+    [NotifyPropertyChangedFor(nameof(ShowSotaField))]
+    [NotifyPropertyChangedFor(nameof(ShowMyPotaField))]
+    [NotifyPropertyChangedFor(nameof(ShowPotaField))]
+    [NotifyPropertyChangedFor(nameof(ShowOpField))]
+    [NotifyPropertyChangedFor(nameof(ShowQthField))]
+    [NotifyPropertyChangedFor(nameof(ShowTxPowerField))]
+    [NotifyPropertyChangedFor(nameof(ShowCommentField))]
+    private QsoEntryModeOption selectedEntryModeOption = QsoEntryModeOptions.For(QsoEntryMode.Normal);
+
+    public ObservableCollection<QsoEntryModeOption> EntryModeOptions { get; } = new(QsoEntryModeOptions.All);
+
+    public bool ShowDateTimeUtc => QsoEntryModeFields.ShowDateTimeUtc(SelectedEntryModeOption.Value);
+    public bool ShowTimeOff => QsoEntryModeFields.ShowTimeOff(SelectedEntryModeOption.Value);
+    public bool ShowBand => QsoEntryModeFields.ShowBand(SelectedEntryModeOption.Value);
+    public bool ShowSubMode => QsoEntryModeFields.ShowSubMode(SelectedEntryModeOption.Value);
+    public bool ShowTxPower => QsoEntryModeFields.ShowTxPower(SelectedEntryModeOption.Value);
+    public bool ShowGridSquare => QsoEntryModeFields.ShowGridSquare(SelectedEntryModeOption.Value);
+    public bool ShowState => QsoEntryModeFields.ShowState(SelectedEntryModeOption.Value);
+    public bool ShowSotaFields => QsoEntryModeFields.ShowSotaFields(SelectedEntryModeOption.Value);
+    public bool ShowPotaFields => QsoEntryModeFields.ShowPotaFields(SelectedEntryModeOption.Value);
+    public bool ShowSkccFields => QsoEntryModeFields.ShowSkccFields(SelectedEntryModeOption.Value);
+    public bool ShowContestExchangeFields => QsoEntryModeFields.ShowContestExchangeFields(SelectedEntryModeOption.Value);
+    public bool ShowCityCounty => QsoEntryModeFields.ShowCityCounty(SelectedEntryModeOption.Value);
+    public bool ShowCountry => QsoEntryModeFields.ShowCountry(SelectedEntryModeOption.Value);
+    public bool ShowArrlSection => QsoEntryModeFields.ShowArrlSection(SelectedEntryModeOption.Value);
+    public bool ShowCqItuZone => QsoEntryModeFields.ShowCqItuZone(SelectedEntryModeOption.Value);
+    public bool ShowComment => QsoEntryModeFields.ShowComment(SelectedEntryModeOption.Value);
+
+    // Op/Qth aren't part of any preset's requested field list (unlike CvarcCellLog, this form has no
+    // separate read-only "Your Station" section -- Op/Qth are editable fields right here), so they're
+    // Normal-only like Comment/City/County/Country above. WPF-specific (CvarcCellLog never toggles these),
+    // so this isn't in the shared QsoEntryModeFields table.
+    public bool ShowStationFields => SelectedEntryModeOption.Value == QsoEntryMode.Normal;
+
+    // Contest-only, matching CvarcCellLog's identical Sequence # feature (see SequenceNumber below).
+    public bool ShowSequenceFields => SelectedEntryModeOption.Value == QsoEntryMode.Contest;
+
+    // Every optional entry-form field honors the Choose Columns checkboxes on top of the Log Mode: even
+    // when the current mode would show a field, an unchecked column hides that field's box (in every
+    // mode), the same as it hides the grid column. Each is gated independently by its own column key.
+    // These *Field properties are the only thing the XAML binds to for these panels -- previously several
+    // of them were instead pushed via QsoEntryView.xaml.cs's ApplyFieldVisibility, which set .Visibility
+    // directly in code. That silently tore out the panel's XAML data binding (WPF clears an active Binding
+    // the moment code assigns the property directly), so once ApplyFieldVisibility ran once at startup,
+    // those panels stopped responding to Log Mode entirely -- e.g. Grid/State/ArrlSection/CQ+ITU Zone/TX
+    // Power/Comment/City/County/Country/SOTA/POTA/Op/QTH/Time Off never actually hid in Contest/SOTA/POTA
+    // mode like CvarcCellLog correctly does, regardless of what the mode-based Show* binding said. Folding
+    // the column check into the property itself (as Skcc/Precedence/Check/Class already did) keeps a
+    // single binding-driven source of truth per panel.
+    public bool ShowSkccField => ShowSkccFields && IsFieldVisible("Skcc");
+    public bool ShowMySkccField => ShowSkccFields && IsFieldVisible("MySkcc");
+    public bool ShowPrecedenceField => ShowContestExchangeFields && IsFieldVisible("Precedence");
+    public bool ShowCheckField => ShowContestExchangeFields && IsFieldVisible("Check");
+    public bool ShowClassField => ShowContestExchangeFields && IsFieldVisible("Class");
+    public bool ShowTimeOffField => ShowTimeOff && IsFieldVisible("TimeOff");
+    public bool ShowGridField => ShowGridSquare && IsFieldVisible("Grid");
+    public bool ShowCityField => ShowCityCounty && IsFieldVisible("City");
+    public bool ShowStateField => ShowState && IsFieldVisible("State");
+    public bool ShowCountyField => ShowCityCounty && IsFieldVisible("County");
+    public bool ShowCountryField => ShowCountry && IsFieldVisible("Country");
+    public bool ShowArrlSectionField => ShowArrlSection && IsFieldVisible("ArrlSection");
+    public bool ShowCqZoneField => ShowCqItuZone && IsFieldVisible("CqZone");
+    public bool ShowItuZoneField => ShowCqItuZone && IsFieldVisible("ItuZone");
+    public bool ShowMySotaField => ShowSotaFields && IsFieldVisible("MySota");
+    public bool ShowSotaField => ShowSotaFields && IsFieldVisible("Sota");
+    public bool ShowMyPotaField => ShowPotaFields && IsFieldVisible("MyPota");
+    public bool ShowPotaField => ShowPotaFields && IsFieldVisible("Pota");
+    public bool ShowOpField => ShowStationFields && IsFieldVisible("Op");
+    public bool ShowQthField => ShowStationFields && IsFieldVisible("Qth");
+    public bool ShowTxPowerField => ShowTxPower && IsFieldVisible("TxPower");
+    public bool ShowCommentField => ShowComment && IsFieldVisible("Comment");
+
+    // Contest-style running sequence number, saved into Qso.StxSerial (reserved for exactly this since
+    // the contest logging work, never wired to a UI until now). Sticky across QSOs (not cleared in
+    // ResetForNextQso) -- Start sets it to 1 and arms auto-increment; each successful Log QSO afterward
+    // bumps it by 1 so the next contact gets the next number. Reset zeroes it and disarms auto-increment
+    // until Start is pressed again, so StxSerial goes back to being omitted (null) from saved QSOs.
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SequenceNumberText))]
+    private int sequenceNumber;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SequenceNumberText))]
+    private bool isSequenceActive;
+
+    public string SequenceNumberText => IsSequenceActive ? SequenceNumber.ToString(CultureInfo.InvariantCulture) : "—";
+
+    [RelayCommand]
+    private void StartSequence()
+    {
+        SequenceNumber = 1;
+        IsSequenceActive = true;
+    }
+
+    [RelayCommand]
+    private void ResetSequence()
+    {
+        SequenceNumber = 0;
+        IsSequenceActive = false;
+    }
+
     // Op/Qth describe the operator's own setup, so -- like Band/Mode/RstSent/RstRcvd -- they're sticky
     // rather than reset in ResetForNextQso; TxPowerWatts is the same, since a station typically runs at
     // one consistent power for a whole operating session rather than changing it contact to contact.
@@ -198,6 +407,26 @@ public partial class QsoEntryViewModel : ObservableObject
             _isLiveClockUpdate = false;
         }
     }
+
+    /// <summary>"Start Time" button next to Date/Time (UTC): freezes that field at the current instant by
+    /// setting _dateTimeManuallyEdited, same as typing a time by hand -- can't just re-stamp the value via
+    /// OnLiveClockTick's own side effect, since the live clock already keeps this field showing "now" to
+    /// the second, so the string this produces is often identical to what's already displayed, and the
+    /// generated property setter skips the change notification (and thus the partial method) entirely
+    /// when the value doesn't change. Relying on that side effect meant the freeze silently failed most of
+    /// the time.</summary>
+    [RelayCommand]
+    private void SetStartTime()
+    {
+        _dateTimeManuallyEdited = true;
+        QsoDateTimeUtcText = _clock.UtcNow.ToString(DateTimeFormat, CultureInfo.InvariantCulture);
+    }
+
+    /// <summary>"End Time" button next to Time Off (UTC): records the current instant into that field,
+    /// one shot -- unlike Start Time, there's no live clock on this field to freeze.</summary>
+    [RelayCommand]
+    private void SetEndTime() =>
+        QsoDateTimeOffUtcText = _clock.UtcNow.ToString(DateTimeFormat, CultureInfo.InvariantCulture);
 
     /// <summary>Lets MainViewModel drive the log grid's search filter from this field, so the operator
     /// sees prior contacts with a station (duplicate check, history) as they type — mirrors how
@@ -543,6 +772,12 @@ public partial class QsoEntryViewModel : ObservableObject
             SotaRef = SotaRef,
             MySigInfo = MySigInfo,
             SigInfo = SigInfo,
+            SkccNr = SkccNr,
+            Precedence = Precedence,
+            Check = Check,
+            Class = QsoClass,
+            StxSerial = IsSequenceActive ? SequenceNumber : null,
+            MySkccNr = SelectedStationProfile.SkccNr,
             TxPowerWatts = decimal.TryParse(TxPowerWatts, out var txPower) ? txPower : null,
             Comment = Comment,
             StationProfileId = SelectedStationProfile.Id,
@@ -600,6 +835,7 @@ public partial class QsoEntryViewModel : ObservableObject
     {
         _lastLookedUpCallsign = null;
         Callsign = string.Empty;
+        if (IsSequenceActive) SequenceNumber++;
 
         _dateTimeManuallyEdited = false;
         _isLiveClockUpdate = true;
@@ -627,6 +863,10 @@ public partial class QsoEntryViewModel : ObservableObject
         ItuZone = null;
         SotaRef = null;
         SigInfo = null;
+        SkccNr = null;
+        SelectedPrecedenceOption = null;
+        Check = null;
+        QsoClass = null;
         Comment = null;
     }
 }

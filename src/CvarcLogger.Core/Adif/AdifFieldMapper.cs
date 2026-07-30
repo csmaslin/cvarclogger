@@ -15,6 +15,11 @@ public static class AdifFieldMapper
     private const string QthFieldName = "APP_CVARCLOGGER_QTH";
     private const string OpFieldName = "APP_CVARCLOGGER_OP";
 
+    // ADIF has no standard SKCC field (MY_SIG_INFO/SIG_INFO are already claimed by POTA above) --
+    // these follow the same APP_CVARCLOGGER_* convention as City/Qth/Op.
+    private const string SkccNrFieldName = "APP_CVARCLOGGER_SKCCNR";
+    private const string MySkccNrFieldName = "APP_CVARCLOGGER_MYSKCCNR";
+
     private static readonly string[] MappedFieldNames =
     {
         "CALL", "QSO_DATE", "QSO_DATE_OFF", "TIME_ON", "TIME_OFF", "BAND", "MODE", "SUBMODE",
@@ -24,7 +29,8 @@ public static class AdifFieldMapper
         "STATION_CALLSIGN", "OPERATOR", "MY_GRIDSQUARE", "MY_STATE", "MY_CNTY",
         "CONTEST_ID", "STX", "SRX", CityFieldName, QthFieldName, OpFieldName,
         "APP_QRZLOG_STATUS", "APP_QRZLOG_QSLDATE",
-        "MY_SOTA_REF", "SOTA_REF", "MY_SIG_INFO", "SIG_INFO"
+        "MY_SOTA_REF", "SOTA_REF", "MY_SIG_INFO", "SIG_INFO",
+        "PRECEDENCE", "CHECK", "CLASS", SkccNrFieldName, MySkccNrFieldName
     };
 
     private static readonly HashSet<string> MappedFieldNameSet = new(MappedFieldNames, StringComparer.OrdinalIgnoreCase);
@@ -62,6 +68,11 @@ public static class AdifFieldMapper
             SotaRef = record.Get("SOTA_REF"),
             MySigInfo = record.Get("MY_SIG_INFO"),
             SigInfo = record.Get("SIG_INFO"),
+            Precedence = record.Get("PRECEDENCE"),
+            Check = record.Get("CHECK"),
+            Class = record.Get("CLASS"),
+            SkccNr = record.Get(SkccNrFieldName),
+            MySkccNr = record.Get(MySkccNrFieldName),
         };
 
         var qsoDateTime = ParseAdifDateTime(record.Get("QSO_DATE"), record.Get("TIME_ON"));
@@ -166,6 +177,11 @@ public static class AdifFieldMapper
         record.Set("SOTA_REF", qso.SotaRef);
         record.Set("MY_SIG_INFO", qso.MySigInfo);
         record.Set("SIG_INFO", qso.SigInfo);
+        record.Set("PRECEDENCE", qso.Precedence);
+        record.Set("CHECK", qso.Check);
+        record.Set("CLASS", qso.Class);
+        record.Set(SkccNrFieldName, qso.SkccNr);
+        record.Set(MySkccNrFieldName, qso.MySkccNr);
 
         if (!string.IsNullOrEmpty(qso.AdifExtraFieldsJson))
         {

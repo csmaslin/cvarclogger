@@ -58,12 +58,12 @@
         <WrapPanel>
             <StackPanel Margin="0,0,10,8" Width="150">
                 <TextBlock Text="Date/Time On (UTC)" FontSize="11" Foreground="Gray"/>
-                <TextBox Text="{Binding QsoDateTimeUtcText, UpdateSourceTrigger=PropertyChanged}"
+                <TextBox TextAlignment="Center" Text="{Binding QsoDateTimeUtcText, UpdateSourceTrigger=PropertyChanged}"
                          behaviors:DateInputMask.Format="yyyy-MM-dd HH:mm"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="150">
                 <TextBlock Text="Local Date/Time" FontSize="11" Foreground="Gray"/>
-                <TextBox Text="{Binding LocalDateTimeText, UpdateSourceTrigger=PropertyChanged}"
+                <TextBox TextAlignment="Center" Text="{Binding LocalDateTimeText, UpdateSourceTrigger=PropertyChanged}"
                          behaviors:DateInputMask.Format="yyyy-MM-dd HH:mm"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="100">
@@ -97,58 +97,58 @@
         <WrapPanel>
             <StackPanel Margin="0,0,10,8" Width="50">
                 <TextBlock Text="RST Sent" FontSize="11" Foreground="Gray" TextWrapping="Wrap"/>
-                <TextBox Text="{Binding RstSent, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBox TextAlignment="Center" Text="{Binding RstSent, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="50">
                 <TextBlock Text="RST Rcvd" FontSize="11" Foreground="Gray" TextWrapping="Wrap"/>
-                <TextBox Text="{Binding RstRcvd, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBox TextAlignment="Center" Text="{Binding RstRcvd, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="160">
                 <TextBlock Text="Name" FontSize="11" Foreground="Gray"/>
-                <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBox TextAlignment="Center" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="70">
                 <TextBlock Text="Grid" FontSize="11" Foreground="Gray"/>
-                <TextBox Text="{Binding GridSquare, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBox TextAlignment="Center" Text="{Binding GridSquare, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="120">
                 <TextBlock Text="City" FontSize="11" Foreground="Gray"/>
-                <TextBox Text="{Binding City, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBox TextAlignment="Center" Text="{Binding City, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="45">
                 <TextBlock Text="State" FontSize="11" Foreground="Gray" TextWrapping="Wrap"/>
-                <TextBox Text="{Binding State, UpdateSourceTrigger=PropertyChanged}" CharacterCasing="Upper"/>
+                <TextBox TextAlignment="Center" Text="{Binding State, UpdateSourceTrigger=PropertyChanged}" CharacterCasing="Upper"/>
             </StackPanel>
             <StackPanel Margin="0,0,0,8" Width="100">
                 <TextBlock Text="County" FontSize="11" Foreground="Gray"/>
-                <TextBox Text="{Binding County, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBox TextAlignment="Center" Text="{Binding County, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
         </WrapPanel>
 
         <WrapPanel>
             <StackPanel Margin="0,0,10,8" Width="180">
                 <TextBlock Text="Country" FontSize="11" Foreground="Gray"/>
-                <TextBox Text="{Binding Country, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBox TextAlignment="Center" Text="{Binding Country, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="60">
                 <TextBlock Text="ARRL Section" FontSize="11" Foreground="Gray" TextWrapping="Wrap"/>
-                <TextBox Text="{Binding ArrlSection, UpdateSourceTrigger=PropertyChanged}" CharacterCasing="Upper"/>
+                <TextBox TextAlignment="Center" Text="{Binding ArrlSection, UpdateSourceTrigger=PropertyChanged}" CharacterCasing="Upper"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="80">
                 <TextBlock Text="Continent" FontSize="11" Foreground="Gray"/>
-                <TextBox Text="{Binding Continent, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBox TextAlignment="Center" Text="{Binding Continent, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="50">
                 <TextBlock Text="CQ Zone" FontSize="11" Foreground="Gray" TextWrapping="Wrap"/>
-                <TextBox Text="{Binding CqZone, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBox TextAlignment="Center" Text="{Binding CqZone, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="50">
                 <TextBlock Text="ITU Zone" FontSize="11" Foreground="Gray" TextWrapping="Wrap"/>
-                <TextBox Text="{Binding ItuZone, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBox TextAlignment="Center" Text="{Binding ItuZone, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
             <StackPanel Margin="0,0,0,8" Width="80">
                 <TextBlock Text="TX Power (W)" FontSize="11" Foreground="Gray"/>
-                <TextBox Text="{Binding TxPowerWatts, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBox TextAlignment="Center" Text="{Binding TxPowerWatts, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
         </WrapPanel>
 
@@ -163,27 +163,27 @@
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="70">
                 <TextBlock Text="My Grid" FontSize="11" Foreground="Gray"/>
-                <TextBox Text="{Binding MyGridSquare, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBox TextAlignment="Center" Text="{Binding MyGridSquare, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="45">
                 <TextBlock Text="My State" FontSize="11" Foreground="Gray" TextWrapping="Wrap"/>
-                <TextBox Text="{Binding MyState, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBox TextAlignment="Center" Text="{Binding MyState, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="100">
                 <TextBlock Text="My County" FontSize="11" Foreground="Gray"/>
-                <TextBox Text="{Binding MyCounty, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBox TextAlignment="Center" Text="{Binding MyCounty, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="100">
                 <TextBlock Text="QTH" FontSize="11" Foreground="Gray"/>
-                <TextBox Text="{Binding Qth, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBox TextAlignment="Center" Text="{Binding Qth, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="90">
                 <TextBlock Text="OP" FontSize="11" Foreground="Gray"/>
-                <TextBox Text="{Binding Op, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBox TextAlignment="Center" Text="{Binding Op, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="90">
                 <TextBlock Text="UTC Offset (h)" FontSize="11" Foreground="Gray"/>
-                <TextBox Text="{Binding UtcOffsetHours, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBox TextAlignment="Center" Text="{Binding UtcOffsetHours, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
             <StackPanel Margin="0,0,0,8" Width="110" VerticalAlignment="Bottom">
                 <CheckBox Content="Observes DST" IsChecked="{Binding ObservesDaylightSavingTime}"/>
@@ -203,19 +203,19 @@
         <WrapPanel>
             <StackPanel Margin="0,0,10,8" Width="100">
                 <TextBlock Text="My SOTA" FontSize="11" Foreground="Gray"/>
-                <TextBox Text="{Binding MySotaRef, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBox TextAlignment="Center" Text="{Binding MySotaRef, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="100">
                 <TextBlock Text="SOTA" FontSize="11" Foreground="Gray"/>
-                <TextBox Text="{Binding SotaRef, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBox TextAlignment="Center" Text="{Binding SotaRef, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="160">
                 <TextBlock Text="My POTA" FontSize="11" Foreground="Gray"/>
-                <TextBox Text="{Binding MySigInfo, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBox TextAlignment="Center" Text="{Binding MySigInfo, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
             <StackPanel Margin="0,0,0,8" Width="160">
                 <TextBlock Text="POTA" FontSize="11" Foreground="Gray"/>
-                <TextBox Text="{Binding SigInfo, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBox TextAlignment="Center" Text="{Binding SigInfo, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
         </WrapPanel>
 
@@ -229,7 +229,7 @@
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="110">
                 <TextBlock Text="QSL Sent Date" FontSize="11" Foreground="Gray"/>
-                <TextBox Text="{Binding QslSentDateText, UpdateSourceTrigger=PropertyChanged}"
+                <TextBox TextAlignment="Center" Text="{Binding QslSentDateText, UpdateSourceTrigger=PropertyChanged}"
                          behaviors:DateInputMask.Format="yyyy-MM-dd"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="130">
@@ -238,12 +238,12 @@
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="110">
                 <TextBlock Text="QSL Rcvd Date" FontSize="11" Foreground="Gray"/>
-                <TextBox Text="{Binding QslRcvdDateText, UpdateSourceTrigger=PropertyChanged}"
+                <TextBox TextAlignment="Center" Text="{Binding QslRcvdDateText, UpdateSourceTrigger=PropertyChanged}"
                          behaviors:DateInputMask.Format="yyyy-MM-dd"/>
             </StackPanel>
             <StackPanel Margin="0,0,0,8" Width="110">
                 <TextBlock Text="QSL Via" FontSize="11" Foreground="Gray"/>
-                <TextBox Text="{Binding QslViaCallsign, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBox TextAlignment="Center" Text="{Binding QslViaCallsign, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
         </WrapPanel>
         <WrapPanel>
@@ -253,7 +253,7 @@
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="110">
                 <TextBlock Text="LoTW Sent Date" FontSize="11" Foreground="Gray"/>
-                <TextBox Text="{Binding LotwQslSentDateText, UpdateSourceTrigger=PropertyChanged}"
+                <TextBox TextAlignment="Center" Text="{Binding LotwQslSentDateText, UpdateSourceTrigger=PropertyChanged}"
                          behaviors:DateInputMask.Format="yyyy-MM-dd"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="130">
@@ -262,7 +262,7 @@
             </StackPanel>
             <StackPanel Margin="0,0,0,8" Width="110">
                 <TextBlock Text="LoTW Rcvd Date" FontSize="11" Foreground="Gray"/>
-                <TextBox Text="{Binding LotwQslRcvdDateText, UpdateSourceTrigger=PropertyChanged}"
+                <TextBox TextAlignment="Center" Text="{Binding LotwQslRcvdDateText, UpdateSourceTrigger=PropertyChanged}"
                          behaviors:DateInputMask.Format="yyyy-MM-dd"/>
             </StackPanel>
         </WrapPanel>

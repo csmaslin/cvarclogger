@@ -26,4 +26,9 @@ public class StationProfile
 
     public bool IsDefault { get; set; }
     public string? Notes { get; set; }
+
+    /// <summary>The operator's own SKCC (Straight Key Century Club) membership number -- fixed per
+    /// operator, set once here rather than re-typed per QSO. Denormalized onto each Qso.MySkccNr at save
+    /// time, same as the other station-identity fields above.</summary>
+    public string? SkccNr { get; set; }
 }
