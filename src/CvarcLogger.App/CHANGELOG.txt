@@ -5,6 +5,11 @@ build meant to reach the user (see AppVersion.cs) -- before running publish.ps1.
 
 Versions before 1.17 predate this changelog and are not documented here.
 
+1.45
+----
+- DXCC seed expanded from 72 hand-curated entities to complete 520-entity ADIF official list; resolves
+  ADIF import failures when external logs (QRZ, LoTW, etc.) reference DXCC codes outside the old seed.
+
 1.44
 ----
 - QSO Entry form: new Log Mode picker (Normal/Contest/SOTA/POTA) collapses the form down to just the
