@@ -5,6 +5,15 @@ build meant to reach the user (see AppVersion.cs) -- before running publish.ps1.
 
 Versions before 1.17 predate this changelog and are not documented here.
 
+1.46
+----
+- Fixed a crash seeding the DXCC entity table on a brand-new database ("no such column" / entity-code
+  identity-conflict errors during first launch or a fresh install). Root cause: the DXCC entity code is
+  a natural, app-assigned ID, but EF Core's default convention treated the placeholder "None" entity's
+  code (0) as unassigned and let SQLite auto-generate a replacement, which collided with another real
+  entity's code in the same batch. The entity code column is now explicitly marked as never
+  database-generated.
+
 1.45
 ----
 - DXCC seed expanded from 72 hand-curated entities to complete 520-entity ADIF official list; resolves
