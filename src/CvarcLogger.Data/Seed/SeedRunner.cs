@@ -16,6 +16,11 @@ public static class SeedRunner
         if (await db.DxccEntities.AnyAsync(ct).ConfigureAwait(false))
             return;
 
+        // Some prefixes (e.g. "VP8", "FR") are legitimately claimed by more than one entity in the
+        // source list. PrefixMapping.Prefix has a unique index, so the first entity to claim a prefix
+        // wins and later claims are dropped -- otherwise the initial seed insert violates that index.
+        var claimedPrefixes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
         foreach (var dto in LoadSeedEntities())
         {
             var entity = new DxccEntity
@@ -26,6 +31,7 @@ public static class SeedRunner
             };
             foreach (var prefix in dto.Prefixes)
             {
+                if (!claimedPrefixes.Add(prefix)) continue;
                 entity.Prefixes.Add(new PrefixMapping { Prefix = prefix, DxccEntityCode = dto.EntityCode });
             }
             db.DxccEntities.Add(entity);

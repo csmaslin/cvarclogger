@@ -61,6 +61,7 @@ public class CvarcLoggerDbContext : DbContext
         modelBuilder.Entity<DxccEntity>(entity =>
         {
             entity.HasKey(d => d.EntityCode);
+            entity.Property(d => d.EntityCode).ValueGeneratedNever();
             entity.Property(d => d.EntityName).IsRequired().HasMaxLength(100);
 
             entity.HasMany(d => d.Prefixes)
