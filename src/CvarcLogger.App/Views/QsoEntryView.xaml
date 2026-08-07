@@ -376,6 +376,35 @@
                         <TextBlock Text="{Binding CatStatusMessage}" FontSize="26" Foreground="Gray"/>
                     </StackPanel>
                 </StackPanel>
+                <!-- Row 4: Operator and sticky fields (between CAT controls and action buttons) -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="24,0,24,0">
+                    <StackPanel Margin="0,0,8,0" VerticalAlignment="Center" Visibility="{Binding ShowOpField, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <TextBlock Text="OP" FontSize="20" FontWeight="Bold" Foreground="Black" TextAlignment="Center"/>
+                        <TextBox Text="{Binding Op, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource StickyTextBox}" Height="40" Width="80" FontSize="20"/>
+                    </StackPanel>
+                    <StackPanel Margin="0,0,8,0" VerticalAlignment="Center" Visibility="{Binding ShowQthField, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <TextBlock Text="QTH" FontSize="20" FontWeight="Bold" Foreground="Black" TextAlignment="Center"/>
+                        <TextBox Text="{Binding Qth, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource StickyTextBox}" Height="40" Width="100" FontSize="20"/>
+                    </StackPanel>
+                    <StackPanel Margin="0,0,8,0" VerticalAlignment="Center" Visibility="{Binding ShowMySkccField, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <TextBlock Text="My SKCC" FontSize="20" FontWeight="Bold" Foreground="Black" TextAlignment="Center"/>
+                        <Border Background="#FFF6D9" Padding="1" CornerRadius="2">
+                            <TextBox Text="{Binding SelectedStationProfile.SkccNr, Mode=OneWay}" IsReadOnly="True" Style="{StaticResource StickyTextBox}" Height="40" Width="100" FontSize="20"/>
+                        </Border>
+                    </StackPanel>
+                    <StackPanel Margin="0,0,8,0" VerticalAlignment="Center" Visibility="{Binding ShowMySotaField, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <TextBlock Text="My SOTA" FontSize="20" FontWeight="Bold" Foreground="Black" TextAlignment="Center"/>
+                        <TextBox Text="{Binding MySotaRef, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource StickyTextBox}" Height="40" Width="100" FontSize="20" CharacterCasing="Upper"/>
+                    </StackPanel>
+                    <StackPanel Margin="0,0,8,0" VerticalAlignment="Center" Visibility="{Binding ShowMyPotaField, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <TextBlock Text="My POTA" FontSize="20" FontWeight="Bold" Foreground="Black" TextAlignment="Center"/>
+                        <TextBox Text="{Binding MySigInfo, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource StickyTextBox}" Height="40" Width="120" FontSize="20" CharacterCasing="Upper"/>
+                    </StackPanel>
+                    <StackPanel Margin="0,0,8,0" VerticalAlignment="Center" Visibility="{Binding ShowTxPowerField, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <TextBlock Text="TX(W)" FontSize="20" FontWeight="Bold" Foreground="Black" TextAlignment="Center"/>
+                        <TextBox Text="{Binding TxPowerWatts, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource StickyTextBox}" Height="40" Width="90" FontSize="20"/>
+                    </StackPanel>
+                </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                     <StackPanel Margin="0,0,24,0" VerticalAlignment="Center">
                         <Button Content="Lookup" Command="{Binding LookupCommand}" Padding="20,8" FontSize="28"/>

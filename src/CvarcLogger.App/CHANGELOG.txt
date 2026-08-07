@@ -5,6 +5,10 @@ build meant to reach the user (see AppVersion.cs) -- before running publish.ps1.
 
 Versions before 1.17 predate this changelog and are not documented here.
 
+1.47
+----
+- QSO Entry form: reorganized the action row (CAT/Lookup/Log QSO/Clear Database row at the bottom) to isolate operator and sticky fields (OP, QTH, My SKCC #, My SOTA, My POTA, TX Power) into Row 4 as a distinct section between CAT controls (left) and action buttons (right). Fields in Row 4 are the same size as action buttons for visual consistency. This is the "Row 4" restructuring that was planned earlier but not committed.
+
 1.46
 ----
 - Fixed a crash seeding the DXCC entity table on a brand-new database ("no such column" / entity-code
