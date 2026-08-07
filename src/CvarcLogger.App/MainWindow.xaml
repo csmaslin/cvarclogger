@@ -69,7 +69,7 @@
             </Grid.RowDefinitions>
 
             <Border Grid.Row="0" Background="AliceBlue">
-                <Viewbox Stretch="Uniform">
+                <Viewbox Stretch="Uniform" HorizontalAlignment="Left">
                     <views:QsoEntryView DataContext="{Binding QsoEntry}"/>
                 </Viewbox>
             </Border>
