@@ -118,6 +118,25 @@ public partial class QsoEntryViewModel : ObservableObject
         OnPropertyChanged(nameof(ShowQthField));
         OnPropertyChanged(nameof(ShowTxPowerField));
         OnPropertyChanged(nameof(ShowCommentField));
+        OnPropertyChanged(nameof(ShowFreqRxField));
+        OnPropertyChanged(nameof(ShowQslField));
+        OnPropertyChanged(nameof(ShowLotwField));
+        OnPropertyChanged(nameof(ShowMyCountyField));
+        OnPropertyChanged(nameof(ShowContinentField));
+        OnPropertyChanged(nameof(ShowMyGridField));
+        OnPropertyChanged(nameof(ShowMyStateField));
+        OnPropertyChanged(nameof(ShowSequenceField));
+        OnPropertyChanged(nameof(ShowModeField));
+        OnPropertyChanged(nameof(ShowSubModeField));
+        OnPropertyChanged(nameof(ShowUtcTimeField));
+        OnPropertyChanged(nameof(ShowStartTimeField));
+        OnPropertyChanged(nameof(ShowEndTimeField));
+        OnPropertyChanged(nameof(ShowNameField));
+        OnPropertyChanged(nameof(ShowLocalTimeField));
+        OnPropertyChanged(nameof(ShowBandField));
+        OnPropertyChanged(nameof(ShowFreqField));
+        OnPropertyChanged(nameof(ShowRstField));
+        OnPropertyChanged(nameof(ShowRow3));
     }
 
     /// <summary>Whether the entry-form field for this column key should be shown, mirroring
@@ -238,6 +257,7 @@ public partial class QsoEntryViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(ShowQthField))]
     [NotifyPropertyChangedFor(nameof(ShowTxPowerField))]
     [NotifyPropertyChangedFor(nameof(ShowCommentField))]
+    [NotifyPropertyChangedFor(nameof(ShowRow3))]
     private QsoEntryModeOption selectedEntryModeOption = QsoEntryModeOptions.For(QsoEntryMode.Normal);
 
     public ObservableCollection<QsoEntryModeOption> EntryModeOptions { get; } = new(QsoEntryModeOptions.All);
@@ -259,6 +279,9 @@ public partial class QsoEntryViewModel : ObservableObject
     public bool ShowCqItuZone => QsoEntryModeFields.ShowCqItuZone(SelectedEntryModeOption.Value);
     public bool ShowComment => QsoEntryModeFields.ShowComment(SelectedEntryModeOption.Value);
 
+    // Row 3 should be visible in any mode except Normal
+    public bool ShowRow3 => SelectedEntryModeOption.Value != QsoEntryMode.Normal;
+
     // Op/Qth aren't part of any preset's requested field list (unlike CvarcCellLog, this form has no
     // separate read-only "Your Station" section -- Op/Qth are editable fields right here), so they're
     // Normal-only like Comment/City/County/Country above. WPF-specific (CvarcCellLog never toggles these),
@@ -266,7 +289,7 @@ public partial class QsoEntryViewModel : ObservableObject
     public bool ShowStationFields => SelectedEntryModeOption.Value == QsoEntryMode.Normal;
 
     // Contest-only, matching CvarcCellLog's identical Sequence # feature (see SequenceNumber below).
-    public bool ShowSequenceFields => SelectedEntryModeOption.Value == QsoEntryMode.Contest;
+    public bool ShowSequenceFields => SelectedEntryModeOption.Value is QsoEntryMode.Contest or QsoEntryMode.All;
 
     // Every optional entry-form field honors the Choose Columns checkboxes on top of the Log Mode: even
     // when the current mode would show a field, an unchecked column hides that field's box (in every
@@ -298,10 +321,28 @@ public partial class QsoEntryViewModel : ObservableObject
     public bool ShowSotaField => ShowSotaFields && IsFieldVisible("Sota");
     public bool ShowMyPotaField => ShowPotaFields && IsFieldVisible("MyPota");
     public bool ShowPotaField => ShowPotaFields && IsFieldVisible("Pota");
-    public bool ShowOpField => ShowStationFields && IsFieldVisible("Op");
-    public bool ShowQthField => ShowStationFields && IsFieldVisible("Qth");
+    public bool ShowOpField => (SelectedEntryModeOption.Value is QsoEntryMode.Normal or QsoEntryMode.All) && IsFieldVisible("Op");
+    public bool ShowQthField => (SelectedEntryModeOption.Value is QsoEntryMode.Normal or QsoEntryMode.All) && IsFieldVisible("Qth");
     public bool ShowTxPowerField => ShowTxPower && IsFieldVisible("TxPower");
     public bool ShowCommentField => ShowComment && IsFieldVisible("Comment");
+    public bool ShowFreqRxField => IsFieldVisible("FreqRx");
+    public bool ShowQslField => IsFieldVisible("Qsl");
+    public bool ShowLotwField => IsFieldVisible("Lotw");
+    public bool ShowMyCountyField => IsFieldVisible("MyCounty");
+    public bool ShowContinentField => IsFieldVisible("Continent");
+    public bool ShowMyGridField => IsFieldVisible("MyGrid");
+    public bool ShowMyStateField => IsFieldVisible("MyState");
+    public bool ShowSequenceField => ShowSequenceFields && IsFieldVisible("Sequence");
+    public bool ShowModeField => IsFieldVisible("Mode");
+    public bool ShowSubModeField => IsFieldVisible("SubMode");
+    public bool ShowUtcTimeField => IsFieldVisible("UtcTime");
+    public bool ShowStartTimeField => IsFieldVisible("UtcTime");
+    public bool ShowEndTimeField => IsFieldVisible("UtcTime");
+    public bool ShowNameField => IsFieldVisible("Name");
+    public bool ShowLocalTimeField => IsFieldVisible("LocalTime");
+    public bool ShowBandField => IsFieldVisible("Band");
+    public bool ShowFreqField => IsFieldVisible("Freq");
+    public bool ShowRstField => IsFieldVisible("Rst");
 
     // Contest-style running sequence number, saved into Qso.StxSerial (reserved for exactly this since
     // the contest logging work, never wired to a UI until now). Sticky across QSOs (not cleared in
@@ -636,6 +677,21 @@ public partial class QsoEntryViewModel : ObservableObject
         _connectedViaInternet = false;
         CatStatusMessage = success ? "CAT connected." : $"CAT connect failed: {error}";
         if (success) _catPollTimer.Start();
+    }
+
+    [RelayCommand]
+    private void ToggleCatAutoFillPause()
+    {
+        IsCatAutoFillPaused = !IsCatAutoFillPaused;
+    }
+
+    [RelayCommand]
+    private void CycleLogMode()
+    {
+        var allModes = EntryModeOptions.ToList();
+        var currentIndex = allModes.FindIndex(m => m.Value == SelectedEntryModeOption.Value);
+        var nextIndex = (currentIndex + 1) % allModes.Count;
+        SelectedEntryModeOption = allModes[nextIndex];
     }
 
     private async void OnCatPollTick(object? sender, EventArgs e)

@@ -10,6 +10,7 @@ public enum QsoEntryMode
     Contest,
     Sota,
     Pota,
+    All,
 }
 
 /// <summary>Callsign, Local Time, RST/S, RST/R, Freq (MHz), Mode, and Name are always shown regardless of
@@ -17,38 +18,38 @@ public enum QsoEntryMode
 /// that actually vary by mode get one.</summary>
 public static class QsoEntryModeFields
 {
-    public static bool ShowDateTimeUtc(QsoEntryMode mode) => mode is QsoEntryMode.Normal or QsoEntryMode.Sota or QsoEntryMode.Pota;
+    public static bool ShowDateTimeUtc(QsoEntryMode mode) => mode is QsoEntryMode.Normal or QsoEntryMode.Sota or QsoEntryMode.Pota or QsoEntryMode.All;
 
-    public static bool ShowTimeOff(QsoEntryMode mode) => mode == QsoEntryMode.Normal;
+    public static bool ShowTimeOff(QsoEntryMode mode) => mode is QsoEntryMode.Normal or QsoEntryMode.All;
 
-    public static bool ShowBand(QsoEntryMode mode) => mode is QsoEntryMode.Normal or QsoEntryMode.Sota or QsoEntryMode.Pota;
+    public static bool ShowBand(QsoEntryMode mode) => mode is QsoEntryMode.Normal or QsoEntryMode.Sota or QsoEntryMode.Pota or QsoEntryMode.All;
 
-    public static bool ShowSubMode(QsoEntryMode mode) => mode == QsoEntryMode.Normal;
+    public static bool ShowSubMode(QsoEntryMode mode) => mode is QsoEntryMode.Normal or QsoEntryMode.All;
 
-    public static bool ShowTxPower(QsoEntryMode mode) => mode is QsoEntryMode.Normal or QsoEntryMode.Contest;
+    public static bool ShowTxPower(QsoEntryMode mode) => mode is QsoEntryMode.Normal or QsoEntryMode.Contest or QsoEntryMode.All;
 
-    public static bool ShowGridSquare(QsoEntryMode mode) => mode is QsoEntryMode.Normal or QsoEntryMode.Contest;
+    public static bool ShowGridSquare(QsoEntryMode mode) => mode is QsoEntryMode.Normal or QsoEntryMode.Contest or QsoEntryMode.All;
 
-    public static bool ShowState(QsoEntryMode mode) => mode is QsoEntryMode.Normal or QsoEntryMode.Contest;
+    public static bool ShowState(QsoEntryMode mode) => mode is QsoEntryMode.Normal or QsoEntryMode.Contest or QsoEntryMode.All;
 
-    public static bool ShowSotaFields(QsoEntryMode mode) => mode is QsoEntryMode.Normal or QsoEntryMode.Sota;
+    public static bool ShowSotaFields(QsoEntryMode mode) => mode is QsoEntryMode.Normal or QsoEntryMode.Sota or QsoEntryMode.All;
 
-    public static bool ShowPotaFields(QsoEntryMode mode) => mode is QsoEntryMode.Normal or QsoEntryMode.Pota;
+    public static bool ShowPotaFields(QsoEntryMode mode) => mode is QsoEntryMode.Normal or QsoEntryMode.Pota or QsoEntryMode.All;
 
-    public static bool ShowSkccFields(QsoEntryMode mode) => mode == QsoEntryMode.Normal;
+    public static bool ShowSkccFields(QsoEntryMode mode) => mode is QsoEntryMode.Normal or QsoEntryMode.All;
 
     /// <summary>Precedence/Check/Class -- the ARRL contest exchange, distinct from ShowSkccFields.</summary>
-    public static bool ShowContestExchangeFields(QsoEntryMode mode) => mode is QsoEntryMode.Normal or QsoEntryMode.Contest;
+    public static bool ShowContestExchangeFields(QsoEntryMode mode) => mode is QsoEntryMode.Normal or QsoEntryMode.Contest or QsoEntryMode.All;
 
-    public static bool ShowCityCounty(QsoEntryMode mode) => mode == QsoEntryMode.Normal;
+    public static bool ShowCityCounty(QsoEntryMode mode) => mode is QsoEntryMode.Normal or QsoEntryMode.All;
 
-    public static bool ShowCountry(QsoEntryMode mode) => mode == QsoEntryMode.Normal;
+    public static bool ShowCountry(QsoEntryMode mode) => mode is QsoEntryMode.Normal or QsoEntryMode.All;
 
-    public static bool ShowArrlSection(QsoEntryMode mode) => mode is QsoEntryMode.Normal or QsoEntryMode.Contest;
+    public static bool ShowArrlSection(QsoEntryMode mode) => mode is QsoEntryMode.Normal or QsoEntryMode.Contest or QsoEntryMode.All;
 
-    public static bool ShowCqItuZone(QsoEntryMode mode) => mode is QsoEntryMode.Normal or QsoEntryMode.Contest;
+    public static bool ShowCqItuZone(QsoEntryMode mode) => mode is QsoEntryMode.Normal or QsoEntryMode.Contest or QsoEntryMode.All;
 
-    public static bool ShowComment(QsoEntryMode mode) => mode == QsoEntryMode.Normal;
+    public static bool ShowComment(QsoEntryMode mode) => mode is QsoEntryMode.Normal or QsoEntryMode.All;
 }
 
 /// <summary>Picker/ComboBox item wrapper, same ToString()-override pattern as ModeOption/ArrlPrecedenceOption
@@ -77,6 +78,7 @@ public static class QsoEntryModeOptions
         new QsoEntryModeOption(QsoEntryMode.Contest, "Contest"),
         new QsoEntryModeOption(QsoEntryMode.Sota, "SOTA"),
         new QsoEntryModeOption(QsoEntryMode.Pota, "POTA"),
+        new QsoEntryModeOption(QsoEntryMode.All, "All"),
     };
 
     public static QsoEntryModeOption For(QsoEntryMode value) => All.First(o => o.Value == value);
