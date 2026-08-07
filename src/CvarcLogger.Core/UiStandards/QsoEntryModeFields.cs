@@ -10,6 +10,7 @@ public enum QsoEntryMode
     Contest,
     Sota,
     Pota,
+    Net,
     All,
 }
 
@@ -78,6 +79,7 @@ public static class QsoEntryModeOptions
         new QsoEntryModeOption(QsoEntryMode.Contest, "Contest"),
         new QsoEntryModeOption(QsoEntryMode.Sota, "SOTA"),
         new QsoEntryModeOption(QsoEntryMode.Pota, "POTA"),
+        new QsoEntryModeOption(QsoEntryMode.Net, "Net"),
         new QsoEntryModeOption(QsoEntryMode.All, "All"),
     };
 
