@@ -87,7 +87,7 @@
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,50,0">
                 <StackPanel Margin="0,0,20,12" Width="120">
                     <TextBlock Text="Log Mode" FontSize="24" FontWeight="Bold" Foreground="Black"/>
-                    <ComboBox ItemsSource="{Binding EntryModeOptions}" SelectedItem="{Binding SelectedEntryModeOption}"/>
+                    <Button Content="{Binding SelectedEntryModeOption}" Command="{Binding CycleLogModeCommand}" Padding="20,8" FontSize="20" HorizontalContentAlignment="Center"/>
                 </StackPanel>
                 <StackPanel Margin="0,0,20,12" Width="180"
                             Visibility="{Binding ShowSequenceFields, Converter={StaticResource BoolToVisibilityConverter}}">
