@@ -6,7 +6,7 @@
         xmlns:converters="clr-namespace:CvarcLogger.App.Converters"
         xmlns:behaviors="clr-namespace:CvarcLogger.App.Behaviors"
         mc:Ignorable="d"
-        Title="Edit QSO" Icon="/Assets/AppIcon.ico" Height="700" Width="700" MinHeight="500" MinWidth="660" WindowStartupLocation="CenterOwner"
+        Title="Edit QSO" Icon="/Assets/AppIcon.ico" Height="900" Width="1000" MinHeight="500" MinWidth="660" WindowStartupLocation="CenterOwner"
         ResizeMode="CanResize">
     <!-- Return saves the edited QSO, mirroring the main entry form where Return logs the QSO. -->
     <Window.InputBindings>
@@ -20,10 +20,10 @@
              a Viewbox (see below), so this natural/unscaled height still scales proportionally with
              everything else at runtime. -->
         <Style TargetType="TextBox">
-            <Setter Property="Height" Value="24"/>
+            <Setter Property="Height" Value="32"/>
         </Style>
         <Style TargetType="ComboBox">
-            <Setter Property="Height" Value="24"/>
+            <Setter Property="Height" Value="32"/>
         </Style>
         <!-- Centers every field caption over its input control (each is the first child of its own
              StackPanel, directly above a TextBox/ComboBox), and reserves the same MinHeight for all of
@@ -37,7 +37,7 @@
         <Style TargetType="TextBlock">
             <Setter Property="TextAlignment" Value="Center"/>
             <Setter Property="TextWrapping" Value="Wrap"/>
-            <Setter Property="MinHeight" Value="28"/>
+            <Setter Property="MinHeight" Value="36"/>
         </Style>
     </Window.Resources>
     <DockPanel>
