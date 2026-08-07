@@ -5,6 +5,10 @@ build meant to reach the user (see AppVersion.cs) -- before running publish.ps1.
 
 Versions before 1.17 predate this changelog and are not documented here.
 
+2.0
+----
+- UI restructure to locked-in design rules: All Rows 1-3 now maintain same vertical height with consistent font sizes and button heights. Row 1 remains fixed in place through all Log Mode changes (Log Mode, Station, Callsign always visible) and collapses left as fields are hidden. Rows 2-3 collapse when all fields are hidden. All margins set to 50 pixels from window edges on both sides. Hidden items allow remaining row entities to shift left. Startup check for Hamlib with on-demand installation option via download page link.
+
 1.48
 ----
 - Startup check for Hamlib (radio control library): When the app starts, it now checks if Hamlib (rigctld) is installed. If not found, it offers to open the Hamlib download page (https://hamlib.github.io/) so users can install it on-demand. CAT control requires Hamlib; the app still functions normally for manual logging without it. Users can install Hamlib after the app is running -- the app will detect it on the next CAT connection attempt or after a restart.

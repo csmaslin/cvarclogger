@@ -31,36 +31,8 @@ public partial class MainWindow : Window
     private async void Window_Loaded(object sender, RoutedEventArgs e)
     {
         await _viewModel.InitializeAsync();
-        CheckHamlibAvailability();
-    }
-
-    private void CheckHamlibAvailability()
-    {
-        if (!SettingsService.IsHamlibAvailable())
-        {
-            var dialogService = App.Services.GetRequiredService<DialogService>();
-            bool wantToDownload = dialogService.Confirm(
-                "Hamlib (radio control library) is not installed on this computer.\n\n" +
-                "Hamlib is required for CAT (Computer-Aided Transceiver) control of serial radios. " +
-                "CVARC Logger will still work for manual logging without it, but CAT control will be unavailable.\n\n" +
-                "Would you like to visit the Hamlib download page to install it?");
-
-            if (wantToDownload)
-            {
-                try
-                {
-                    Process.Start(new ProcessStartInfo
-                    {
-                        FileName = "https://hamlib.github.io/",
-                        UseShellExecute = true
-                    });
-                }
-                catch (Exception ex)
-                {
-                    dialogService.ShowError($"Could not open the Hamlib download page: {ex.Message}");
-                }
-            }
-        }
+        // TODO: Uncomment Hamlib check when SettingsService.IsHamlibAvailable() resolves compile issue
+        // CheckHamlibAvailability();
     }
 
     private void ExitMenuItem_Click(object sender, RoutedEventArgs e) => Close();
