@@ -78,13 +78,13 @@
                  left and everything else stays on its own row. Every caption shares the same MinHeight, so
                  all boxes in a row line up no matter which fields are showing.
                  Row 1: Station, Callsign, Date/Time UTC, Local Time, Time Off, Band, Freq, Mode, Sub-Mode.
-                 Row 2: RST/S, RST/R, Name, Grid, City, State, County, Country, ARRL Sec, CQ/ITU Zone, My SOTA.
-                 Row 3: SOTA, My POTA, POTA, OP, QTH, TX(W), Comment.
+                 Row 2: RST/S, RST/R, Name, Grid, City, State, County, Country, ARRL Sec, CQ/ITU Zone.
+                 Row 3: SOTA, POTA, Comment, SKCC #. (Sticky fields OP, QTH, My SKCC #, My SOTA, My POTA, TX(W) are in Row 4 action row.)
                  The outer StackPanel has a fixed Width so the MainWindow Viewbox scales the form by a
                  constant amount however many fields are hidden; hidden fields leave empty space on the
                  right rather than enlarging everything. -->
-            <StackPanel Width="2030" HorizontalAlignment="Left" Margin="65,0,0,0">
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+            <StackPanel Width="2030" HorizontalAlignment="Left" Margin="50,0,0,0">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="50,0,50,0">
                 <StackPanel Margin="0,0,20,12" Width="120">
                     <TextBlock Text="Log Mode" FontSize="24" FontWeight="Bold" Foreground="Black"/>
                     <ComboBox ItemsSource="{Binding EntryModeOptions}" SelectedItem="{Binding SelectedEntryModeOption}"/>
@@ -185,7 +185,7 @@
                 </StackPanel>
                 </StackPanel>
                 <!-- Row 2 -->
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="50,0,50,0">
                 <StackPanel x:Name="RstSentPanel" Margin="0,0,20,12" Width="75">
                     <TextBlock TextWrapping="Wrap">
                         <Run Text="RST/S" FontSize="24" FontWeight="Bold" Foreground="Black"/>
@@ -244,62 +244,20 @@
                     <TextBlock Text="ITU Zone" FontSize="24" FontWeight="Bold" Foreground="Black" TextWrapping="Wrap"/>
                     <TextBox TextAlignment="Center" Text="{Binding ItuZone, UpdateSourceTrigger=PropertyChanged}"/>
                 </StackPanel>
-                <StackPanel x:Name="MySotaPanel" Margin="0,0,20,12" Width="110"
-                            Visibility="{Binding ShowMySotaField, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <TextBlock>
-                        <Run Text="My SOTA" FontSize="24" FontWeight="Bold" Foreground="Black"/>
-                        <Run Text=" static" FontSize="11" FontStyle="Italic" Foreground="#999999"/>
-                    </TextBlock>
-                    <TextBox TextAlignment="Center" Text="{Binding MySotaRef, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource StickyTextBox}" CharacterCasing="Upper"/>
-                    <TextBlock Text="Format: X[X][X]/AA-NNN" FontSize="10" Foreground="#C0392B" Visibility="{Binding ShowMySotaRefWarning}"/>
-                </StackPanel>
                 </StackPanel>
                 <!-- Row 3 -->
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="50,0,50,0">
                 <StackPanel x:Name="SotaPanel" Margin="0,0,20,12" Width="110"
                             Visibility="{Binding ShowSotaField, Converter={StaticResource BoolToVisibilityConverter}}">
                     <TextBlock Text="SOTA" FontSize="24" FontWeight="Bold" Foreground="Black"/>
                     <TextBox TextAlignment="Center" Text="{Binding SotaRef, UpdateSourceTrigger=PropertyChanged}" CharacterCasing="Upper"/>
                     <TextBlock Text="Format: X[X][X]/AA-NNN" FontSize="10" Foreground="#C0392B" Visibility="{Binding ShowSotaRefWarning}"/>
                 </StackPanel>
-                <StackPanel x:Name="MyPotaPanel" Margin="0,0,20,12" Width="175"
-                            Visibility="{Binding ShowMyPotaField, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <TextBlock>
-                        <Run Text="My POTA" FontSize="24" FontWeight="Bold" Foreground="Black"/>
-                        <Run Text=" static" FontSize="11" FontStyle="Italic" Foreground="#999999"/>
-                    </TextBlock>
-                    <TextBox TextAlignment="Center" Text="{Binding MySigInfo, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource StickyTextBox}" CharacterCasing="Upper"/>
-                    <TextBlock Text="Format: X[X][X]-NNNN[N]" FontSize="10" Foreground="#C0392B" Visibility="{Binding ShowMySigInfoWarning}"/>
-                </StackPanel>
                 <StackPanel x:Name="PotaPanel" Margin="0,0,20,12" Width="175"
                             Visibility="{Binding ShowPotaField, Converter={StaticResource BoolToVisibilityConverter}}">
                     <TextBlock Text="POTA" FontSize="24" FontWeight="Bold" Foreground="Black"/>
                     <TextBox TextAlignment="Center" Text="{Binding SigInfo, UpdateSourceTrigger=PropertyChanged}" CharacterCasing="Upper"/>
                     <TextBlock Text="Format: X[X][X]-NNNN[N]" FontSize="10" Foreground="#C0392B" Visibility="{Binding ShowSigInfoWarning}"/>
-                </StackPanel>
-                <StackPanel x:Name="OpPanel" Margin="0,0,20,12" Width="90"
-                            Visibility="{Binding ShowOpField, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <TextBlock>
-                        <Run Text="OP" FontSize="24" FontWeight="Bold" Foreground="Black"/>
-                        <Run Text=" static" FontSize="11" FontStyle="Italic" Foreground="#999999"/>
-                    </TextBlock>
-                    <TextBox TextAlignment="Center" Text="{Binding Op, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource StickyTextBox}"/>
-                </StackPanel>
-                <StackPanel x:Name="QthPanel" Margin="0,0,20,12" Width="110"
-                            Visibility="{Binding ShowQthField, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <TextBlock>
-                        <Run Text="QTH" FontSize="24" FontWeight="Bold" Foreground="Black"/>
-                        <Run Text=" static" FontSize="11" FontStyle="Italic" Foreground="#999999"/>
-                    </TextBlock>
-                    <TextBox TextAlignment="Center" Text="{Binding Qth, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource StickyTextBox}"/>
-                </StackPanel>
-                <StackPanel x:Name="TxPowerPanel" Margin="0,0,20,12" Width="130"
-                            Visibility="{Binding ShowTxPowerField, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <TextBlock>
-                        <Run Text="TX(W)" FontSize="24" FontWeight="Bold" Foreground="Black"/>
-                        <Run Text=" static" FontSize="11" FontStyle="Italic" Foreground="#999999"/>
-                    </TextBlock>
-                    <TextBox TextAlignment="Center" Text="{Binding TxPowerWatts, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource StickyTextBox}"/>
                 </StackPanel>
                 <StackPanel x:Name="CommentPanel" Margin="0,0,20,12" Width="360"
                             Visibility="{Binding ShowCommentField, Converter={StaticResource BoolToVisibilityConverter}}">
@@ -310,16 +268,6 @@
                             Visibility="{Binding ShowSkccField, Converter={StaticResource BoolToVisibilityConverter}}">
                     <TextBlock Text="SKCC #" FontSize="24" FontWeight="Bold" Foreground="Black"/>
                     <TextBox Text="{Binding SkccNr, UpdateSourceTrigger=PropertyChanged}"/>
-                </StackPanel>
-                <StackPanel x:Name="MySkccPanel" Margin="0,0,20,12" Width="110"
-                            Visibility="{Binding ShowMySkccField, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <TextBlock>
-                        <Run Text="My SKCC #" FontSize="24" FontWeight="Bold" Foreground="Black"/>
-                        <Run Text=" static" FontSize="11" FontStyle="Italic" Foreground="#999999"/>
-                    </TextBlock>
-                    <Border Background="#FFF6D9" Padding="1" CornerRadius="2">
-                        <TextBox Text="{Binding SelectedStationProfile.SkccNr, Mode=OneWay}" IsReadOnly="True" Style="{StaticResource StickyTextBox}"/>
-                    </Border>
                 </StackPanel>
                 <StackPanel x:Name="PrecedencePanel" Margin="0,0,20,12" Width="150"
                             Visibility="{Binding ShowPrecedenceField, Converter={StaticResource BoolToVisibilityConverter}}">
