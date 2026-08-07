@@ -69,7 +69,7 @@
     <UserControl.InputBindings>
         <KeyBinding Key="Return" Command="{Binding LogQsoCommand}"/>
     </UserControl.InputBindings>
-    <Border BorderBrush="#CCC" BorderThickness="0,0,0,1" Padding="8">
+    <Border BorderBrush="#CCC" BorderThickness="0,0,0,1" Padding="0,8,8,8">
         <StackPanel>
             <!-- Fields sit on THREE FIXED rows (not one reflowing WrapPanel), so a field never jumps to a
                  different row when others are hidden. Each row is a horizontal StackPanel: hiding a field
@@ -84,7 +84,7 @@
                  constant amount however many fields are hidden; hidden fields leave empty space on the
                  right rather than enlarging everything. -->
             <StackPanel Width="2030" HorizontalAlignment="Left" Margin="50,0,0,0">
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="50,0,50,0">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,50,0">
                 <StackPanel Margin="0,0,20,12" Width="120">
                     <TextBlock Text="Log Mode" FontSize="24" FontWeight="Bold" Foreground="Black"/>
                     <ComboBox ItemsSource="{Binding EntryModeOptions}" SelectedItem="{Binding SelectedEntryModeOption}"/>
@@ -99,8 +99,8 @@
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                         <TextBlock Text="{Binding SequenceNumberText}" FontSize="20" FontWeight="Bold" Foreground="Black"
                                    VerticalAlignment="Center" Margin="0,0,10,0"/>
-                        <Button Content="Start" Command="{Binding StartSequenceCommand}" Padding="8,2" Margin="0,0,4,0" FontSize="14"/>
-                        <Button Content="Reset" Command="{Binding ResetSequenceCommand}" Padding="8,2" FontSize="14"/>
+                        <Button Content="Start" Command="{Binding StartSequenceCommand}" Padding="20,8" Margin="0,0,4,0" FontSize="28"/>
+                        <Button Content="Reset" Command="{Binding ResetSequenceCommand}" Padding="20,8" FontSize="28"/>
                     </StackPanel>
                 </StackPanel>
                 <StackPanel Margin="0,0,20,12" Width="130">
@@ -131,7 +131,7 @@
                 <StackPanel Margin="0,0,20,12" Width="100" VerticalAlignment="Bottom"
                             Visibility="{Binding ShowTimeOff, Converter={StaticResource BoolToVisibilityConverter}}">
                     <TextBlock Text=" " FontSize="24" FontWeight="Bold"/>
-                    <Button Content="Start Time" Command="{Binding SetStartTimeCommand}" Padding="8,4" FontSize="16"/>
+                    <Button Content="Start Time" Command="{Binding SetStartTimeCommand}" Padding="20,8" FontSize="28"/>
                 </StackPanel>
                 <StackPanel Margin="0,0,20,12" Width="215" Visibility="{Binding ShowLocalTimeField, Converter={StaticResource BoolToVisibilityConverter}}">
                     <TextBlock Text="Local Time" FontSize="24" FontWeight="Bold" Foreground="Black"/>
@@ -147,7 +147,7 @@
                 <StackPanel Margin="0,0,20,12" Width="100" VerticalAlignment="Bottom"
                             Visibility="{Binding ShowTimeOff, Converter={StaticResource BoolToVisibilityConverter}}">
                     <TextBlock Text=" " FontSize="24" FontWeight="Bold"/>
-                    <Button Content="End Time" Command="{Binding SetEndTimeCommand}" Padding="8,4" FontSize="16"/>
+                    <Button Content="End Time" Command="{Binding SetEndTimeCommand}" Padding="20,8" FontSize="28"/>
                 </StackPanel>
                 <StackPanel Margin="0,0,20,12" Width="65" Visibility="{Binding ShowBandField, Converter={StaticResource BoolToVisibilityConverter}}">
                     <TextBlock>
@@ -185,7 +185,7 @@
                 </StackPanel>
                 </StackPanel>
                 <!-- Row 2 -->
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="50,0,50,0">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,50,0">
                 <StackPanel x:Name="RstSentPanel" Margin="0,0,20,12" Width="75">
                     <TextBlock TextWrapping="Wrap">
                         <Run Text="RST/S" FontSize="24" FontWeight="Bold" Foreground="Black"/>
@@ -246,7 +246,7 @@
                 </StackPanel>
                 </StackPanel>
                 <!-- Row 3 -->
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="50,0,50,0">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,50,0">
                 <StackPanel x:Name="SotaPanel" Margin="0,0,20,12" Width="110"
                             Visibility="{Binding ShowSotaField, Converter={StaticResource BoolToVisibilityConverter}}">
                     <TextBlock Text="SOTA" FontSize="24" FontWeight="Bold" Foreground="Black"/>
@@ -358,14 +358,14 @@
                         <Button Content="Lookup" Command="{Binding LookupCommand}" Padding="20,8" FontSize="28"/>
                     </StackPanel>
                     <StackPanel VerticalAlignment="Center">
-                        <Button Content="Log QSO" Command="{Binding LogQsoCommand}" Padding="32,8" FontSize="28"
+                        <Button Content="Log QSO" Command="{Binding LogQsoCommand}" Padding="20,8" FontSize="28"
                                 Background="#2E7D32" Foreground="White" FontWeight="Bold"/>
                     </StackPanel>
                     <!-- Destructive: wipes the whole log. Deliberately styled dark red (not the green Log
                          QSO) and smaller, and its command shows a Yes/No confirmation, so it can't be an
                          accidental one-click erase. -->
                     <StackPanel Margin="24,0,0,0" VerticalAlignment="Center">
-                        <Button Content="Clear Database" Command="{Binding ClearDatabaseCommand}" Padding="16,8" FontSize="18"
+                        <Button Content="Clear Database" Command="{Binding ClearDatabaseCommand}" Padding="20,8" FontSize="28"
                                 Background="#B23A3A" Foreground="White"/>
                     </StackPanel>
                 </StackPanel>
