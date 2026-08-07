@@ -83,25 +83,11 @@
                  The outer StackPanel has a fixed Width so the MainWindow Viewbox scales the form by a
                  constant amount however many fields are hidden; hidden fields leave empty space on the
                  right rather than enlarging everything. -->
-            <StackPanel Width="2030" HorizontalAlignment="Left" Margin="50,0,0,0">
+            <StackPanel Width="2500" HorizontalAlignment="Left" Margin="50,0,0,0">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,50,0">
                 <StackPanel Margin="0,0,20,12" Width="120">
                     <TextBlock Text="Log Mode" FontSize="24" FontWeight="Bold" Foreground="Black"/>
                     <Button Content="{Binding SelectedEntryModeOption}" Command="{Binding CycleLogModeCommand}" Padding="20,8" FontSize="20" HorizontalContentAlignment="Center"/>
-                </StackPanel>
-                <StackPanel Margin="0,0,20,12" Width="180"
-                            Visibility="{Binding ShowSequenceFields, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <TextBlock Text="Sequence #" FontSize="24" FontWeight="Bold" Foreground="Black"/>
-                    <!-- Value + buttons share one row (rather than stacking three rows total) so this
-                         panel is the same height as every other Row 1 field; previously it was taller,
-                         which inflated Row 1's height in Contest mode specifically and made the Viewbox
-                         scale (and thus every field's rendered font size) smaller only in that mode. -->
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                        <TextBlock Text="{Binding SequenceNumberText}" FontSize="20" FontWeight="Bold" Foreground="Black"
-                                   VerticalAlignment="Center" Margin="0,0,10,0"/>
-                        <Button Content="Start" Command="{Binding StartSequenceCommand}" Padding="20,8" Margin="0,0,4,0" FontSize="28"/>
-                        <Button Content="Reset" Command="{Binding ResetSequenceCommand}" Padding="20,8" FontSize="28"/>
-                    </StackPanel>
                 </StackPanel>
                 <StackPanel Margin="0,0,20,12" Width="130">
                     <TextBlock>
@@ -182,6 +168,16 @@
                         <ComboBox ItemsSource="{Binding SubModes}" SelectedItem="{Binding SubMode}" IsEditable="True" Style="{StaticResource StickyComboBox}"/>
                     </Border>
                 </StackPanel>
+                </StackPanel>
+                <StackPanel Margin="0,0,20,12" Width="220"
+                            Visibility="{Binding ShowSequenceFields, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <TextBlock Text="Sequence #" FontSize="24" FontWeight="Bold" Foreground="Black"/>
+                    <TextBlock Text="{Binding SequenceNumberText}" FontSize="20" FontWeight="Bold" Foreground="Black"
+                               HorizontalAlignment="Center" Margin="0,4,0,8"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Button Content="Start" Command="{Binding StartSequenceCommand}" Padding="20,8" Margin="0,0,4,0" FontSize="28"/>
+                        <Button Content="Reset" Command="{Binding ResetSequenceCommand}" Padding="20,8" FontSize="28"/>
+                    </StackPanel>
                 </StackPanel>
                 </StackPanel>
                 <!-- Row 2 -->
