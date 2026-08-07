@@ -5,6 +5,10 @@ build meant to reach the user (see AppVersion.cs) -- before running publish.ps1.
 
 Versions before 1.17 predate this changelog and are not documented here.
 
+1.48
+----
+- Startup check for Hamlib (radio control library): When the app starts, it now checks if Hamlib (rigctld) is installed. If not found, it offers to open the Hamlib download page (https://hamlib.github.io/) so users can install it on-demand. CAT control requires Hamlib; the app still functions normally for manual logging without it. Users can install Hamlib after the app is running -- the app will detect it on the next CAT connection attempt or after a restart.
+
 1.47
 ----
 - QSO Entry form: reorganized the action row (CAT/Lookup/Log QSO/Clear Database row at the bottom) to isolate operator and sticky fields (OP, QTH, My SKCC #, My SOTA, My POTA, TX Power) into Row 4 as a distinct section between CAT controls (left) and action buttons (right). Fields in Row 4 are the same size as action buttons for visual consistency. This is the "Row 4" restructuring that was planned earlier but not committed.

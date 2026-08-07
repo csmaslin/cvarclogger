@@ -330,5 +330,27 @@ public class SettingsService
             string bundled = Path.Combine(AppContext.BaseDirectory, "hamlib", "rigctld.exe");
             return File.Exists(bundled) ? bundled : "rigctld.exe";
         }
+
+        /// <summary>Checks if Hamlib (rigctld.exe) is available either bundled with the app or in system PATH.</summary>
+        public static bool IsHamlibAvailable()
+        {
+            string bundled = Path.Combine(AppContext.BaseDirectory, "hamlib", "rigctld.exe");
+            if (File.Exists(bundled)) return true;
+
+            string[] commonPaths = new[]
+            {
+                @"C:\Program Files\hamlib\bin\rigctld.exe",
+                @"C:\Program Files (x86)\hamlib\bin\rigctld.exe",
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "hamlib", "bin", "rigctld.exe"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "hamlib", "bin", "rigctld.exe")
+            };
+
+            foreach (var path in commonPaths)
+            {
+                if (File.Exists(path)) return true;
+            }
+
+            return false;
+        }
     }
 }
