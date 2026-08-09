@@ -4,143 +4,179 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:converters="clr-namespace:CvarcLogger.App.Converters"
+        xmlns:emoji="clr-namespace:Emoji.Wpf;assembly=Emoji.Wpf"
         mc:Ignorable="d"
         Title="CAT Control" Icon="/Assets/AppIcon.ico" FontSize="14"
-        Height="700" Width="900" MinHeight="500" MinWidth="700"
+        Height="980" Width="950" MinHeight="700" MinWidth="800"
+        Background="White"
         WindowStartupLocation="CenterOwner" ResizeMode="CanResize"
         Loaded="Window_Loaded">
     <Window.Resources>
         <converters:EnumToBoolConverter x:Key="EnumToBool"/>
+        <Style x:Key="SectionTitle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#000000"/>
+        </Style>
+        <Style x:Key="FieldLabel" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#000000"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
+        </Style>
     </Window.Resources>
-    <!-- This window used to be the right column of a combined Settings window (see LookupSettingsWindow
-         for the other half, split out the same day): Hamlib/rigctld radio control settings only.
-         Landscape two-column layout (left: intro/enable/active-radio/rigctld path+port/buttons, right:
-         the per-slot radio profile cards) rather than one long portrait column. Fixed Width so wrapping
-         is predictable; Viewbox measures its child at infinite available size otherwise. -->
-    <Viewbox Stretch="Uniform">
-        <Grid Margin="14" Width="872">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="410"/>
-                <ColumnDefinition Width="32"/>
-                <ColumnDefinition Width="410"/>
-            </Grid.ColumnDefinitions>
+    <Grid Margin="30">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
 
-            <StackPanel Grid.Column="0">
-                <TextBlock Text="CAT Source" FontWeight="Bold" Margin="0,0,0,6"/>
-                <TextBlock Margin="0,0,0,6" Foreground="Gray" TextWrapping="Wrap"
-                           Text="Choose how the entry form's Connect CAT reads the radio. Only one source is active at a time."/>
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
-                    <RadioButton Content="Off" GroupName="CatSource" Margin="0,0,20,0" VerticalContentAlignment="Center"
-                                 IsChecked="{Binding CatSource, Converter={StaticResource EnumToBool}, ConverterParameter=Off}"/>
-                    <RadioButton Content="USB (Hamlib)" GroupName="CatSource" Margin="0,0,20,0" VerticalContentAlignment="Center"
-                                 IsChecked="{Binding CatSource, Converter={StaticResource EnumToBool}, ConverterParameter=Usb}"/>
-                    <RadioButton Content="Internet" GroupName="CatSource" VerticalContentAlignment="Center"
-                                 IsChecked="{Binding CatSource, Converter={StaticResource EnumToBool}, ConverterParameter=Internet}"/>
+        <!-- Modal Title -->
+        <Border Grid.Row="0" BorderThickness="0,0,0,2" BorderBrush="#e0e0e0" Padding="0,0,0,10" Margin="0,0,0,20">
+            <emoji:TextBlock Text="📡 CAT Control" FontSize="18" FontWeight="Bold" Foreground="#000000"/>
+        </Border>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="30"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0">
+                    <Border BorderThickness="0,0,0,1" BorderBrush="#dddddd" Padding="0,0,0,8" Margin="0,0,0,10">
+                        <TextBlock Text="CAT SOURCE" Style="{StaticResource SectionTitle}"/>
+                    </Border>
+                    <TextBlock Margin="0,0,0,10" Foreground="#666666" TextWrapping="Wrap" FontSize="12"
+                               Text="Choose how the entry form's Connect CAT reads the radio. Only one source is active at a time."/>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                        <RadioButton Content="Off" GroupName="CatSource" Margin="0,0,20,0" VerticalContentAlignment="Center"
+                                     IsChecked="{Binding CatSource, Converter={StaticResource EnumToBool}, ConverterParameter=Off}"/>
+                        <RadioButton Content="USB (Hamlib)" GroupName="CatSource" Margin="0,0,20,0" VerticalContentAlignment="Center"
+                                     IsChecked="{Binding CatSource, Converter={StaticResource EnumToBool}, ConverterParameter=Usb}"/>
+                        <RadioButton Content="Internet" GroupName="CatSource" VerticalContentAlignment="Center"
+                                     IsChecked="{Binding CatSource, Converter={StaticResource EnumToBool}, ConverterParameter=Internet}"/>
+                    </StackPanel>
+
+                    <Border BorderThickness="0,0,0,1" BorderBrush="#dddddd" Padding="0,0,0,8" Margin="0,0,0,10">
+                        <TextBlock Text="USB / SERIAL (HAMLIB)" Style="{StaticResource SectionTitle}"/>
+                    </Border>
+                    <TextBlock Margin="0,0,0,12" Foreground="#666666" TextWrapping="Wrap" FontSize="12"
+                               Text="Uses Hamlib's rigctld as a TCP backend for USB radio control."/>
+
+                    <TextBlock Text="ACTIVE RADIO" Style="{StaticResource FieldLabel}"/>
+                    <ComboBox ItemsSource="{Binding RadioProfileEditors}" DisplayMemberPath="ActiveRadioDisplayName"
+                              SelectedIndex="{Binding ActiveRadioIndex}"
+                              HorizontalAlignment="Left" Width="220" Padding="8" FontSize="14" Margin="0,0,0,10"/>
+
+                    <Button Command="{Binding RefreshAvailableComPortsCommand}" Padding="10,8"
+                            Background="#3498db" Foreground="White" BorderThickness="0"
+                            HorizontalAlignment="Stretch" Margin="0,0,0,6">
+                        <emoji:TextBlock Text="🔄 Refresh Ports" FontSize="13" Foreground="White"/>
+                    </Button>
+                    <TextBlock Text="COM ports are re-scanned each time this window opens." Foreground="#999999"
+                               TextWrapping="Wrap" FontSize="11" Margin="0,0,0,14"/>
+
+                    <TextBlock Text="RIGCTLD PATH" Style="{StaticResource FieldLabel}"/>
+                    <TextBox Text="{Binding RigctldExecutablePath, UpdateSourceTrigger=PropertyChanged}"
+                             Padding="8" FontSize="14" Margin="0,0,0,10"/>
+
+                    <TextBlock Text="RIGCTLD TCP PORT" Style="{StaticResource FieldLabel}"/>
+                    <TextBox Text="{Binding RigctldTcpPort, UpdateSourceTrigger=PropertyChanged}"
+                             HorizontalAlignment="Left" Width="100" Padding="8" FontSize="14" Margin="0,0,0,10"/>
+
+                    <CheckBox Content="Launch rigctld automatically" IsChecked="{Binding LaunchRigctldAutomatically}"
+                              FontSize="13" Foreground="#000000" Margin="0,0,0,16"/>
+
+                    <Border BorderThickness="0,0,0,1" BorderBrush="#dddddd" Padding="0,0,0,8" Margin="0,0,0,10">
+                        <TextBlock Text="INTERNET CONTROL (CAT)" Style="{StaticResource SectionTitle}"/>
+                    </Border>
+                    <TextBlock Margin="0,0,0,12" Foreground="#666666" TextWrapping="Wrap" FontSize="12"
+                               Text="Reads from Elecraft K4 over network using native TCP protocol."/>
+
+                    <WrapPanel Margin="0,0,0,10">
+                        <StackPanel Margin="0,0,10,0" Width="220">
+                            <TextBlock Text="HOST / IP" Style="{StaticResource FieldLabel}"/>
+                            <TextBox Text="{Binding InternetRadioHost, UpdateSourceTrigger=PropertyChanged}" Padding="8" FontSize="14"/>
+                        </StackPanel>
+                        <StackPanel Width="100">
+                            <TextBlock Text="PORT" Style="{StaticResource FieldLabel}"/>
+                            <TextBox Text="{Binding InternetRadioPortText, UpdateSourceTrigger=PropertyChanged}" Padding="8" FontSize="14"/>
+                        </StackPanel>
+                    </WrapPanel>
+
+                    <TextBlock Text="PASSWORD (OPTIONAL)" Style="{StaticResource FieldLabel}"/>
+                    <PasswordBox x:Name="InternetPasswordBox" Padding="8" FontSize="14" Margin="0,0,0,4"/>
+                    <TextBox x:Name="InternetPasswordTextBox" Padding="8" FontSize="14" Margin="0,0,0,4" Visibility="Collapsed"/>
+                    <CheckBox x:Name="InternetShowPasswordCheckBox" Content="Show password" FontSize="13" Foreground="#000000"
+                              Margin="0,0,0,10"
+                              Checked="InternetShowPassword_Checked" Unchecked="InternetShowPassword_Unchecked"/>
+
+                    <Border Background="#f9f9f9" CornerRadius="3" Padding="8" Margin="0,0,0,16">
+                        <TextBlock FontStyle="Italic" Foreground="#666666" FontSize="12">
+                            <Run Text="Status: "/>
+                            <Run Text="{Binding InternetRadioStatusText, Mode=OneWay}"/>
+                        </TextBlock>
+                    </Border>
+
+                    <StackPanel Orientation="Horizontal">
+                        <Button Click="SaveCatSettings_Click" Padding="16,10"
+                                Background="#2E7D32" Foreground="White" BorderThickness="0" Margin="0,0,10,0">
+                            <emoji:TextBlock Text="💾 Save Settings" FontSize="14" Foreground="White"/>
+                        </Button>
+                        <Button Command="{Binding TestCatConnectionCommand}" Padding="16,10"
+                                Background="#3498db" Foreground="White" BorderThickness="0">
+                            <emoji:TextBlock Text="🧪 Test Connection" FontSize="14" Foreground="White"/>
+                        </Button>
+                    </StackPanel>
                 </StackPanel>
 
-                <TextBlock Text="USB / Serial (Hamlib)" FontWeight="Bold" Margin="0,0,0,6"/>
-                <TextBlock Margin="0,0,0,8" Foreground="Gray" TextWrapping="Wrap"
-                           Text="Uses Hamlib's rigctld as a TCP backend. CvarcLogger uses the copy of rigctld.exe bundled alongside it automatically — no separate Hamlib install is needed. To use a different copy instead (for example one already installed from WSJT-X or hamlib.org), set rigctld path below to its full location. Pick your radio from the dropdown below for each slot; if it isn't listed, look up its Model ID with 'rigctl --list' and enter that directly."/>
+                <StackPanel Grid.Column="2">
+                    <ItemsControl ItemsSource="{Binding RadioProfileEditors}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border BorderBrush="#dddddd" BorderThickness="1" CornerRadius="4" Padding="14" Margin="0,0,0,12">
+                                    <StackPanel>
+                                        <Border BorderThickness="0,0,0,1" BorderBrush="#dddddd" Padding="0,0,0,8" Margin="0,0,0,10">
+                                            <TextBlock Text="{Binding SlotLabel}" FontSize="13" FontWeight="Bold" Foreground="#000000"/>
+                                        </Border>
 
-                <TextBlock Text="Active radio" Foreground="Gray"/>
-                <ComboBox ItemsSource="{Binding RadioNames}" SelectedIndex="{Binding ActiveRadioIndex}"
-                          HorizontalAlignment="Left" Width="200" Margin="0,0,0,4"/>
-                <DockPanel Margin="0,0,0,10">
-                    <Button Content="Refresh Ports" Command="{Binding RefreshAvailableComPortsCommand}" Padding="8,2"
-                            DockPanel.Dock="Right" Margin="8,0,0,0" VerticalAlignment="Center"/>
-                    <TextBlock Text="COM ports are re-scanned each time this window opens." Foreground="Gray"
-                               TextWrapping="Wrap" VerticalAlignment="Center"/>
-                </DockPanel>
+                                        <TextBlock Text="RADIO (HAMLIB)" FontSize="12" FontWeight="Bold" Foreground="#000000" Margin="0,0,0,4"/>
+                                        <ComboBox ItemsSource="{Binding AvailableRigs}"
+                                                  SelectedItem="{Binding SelectedRig}"
+                                                  DisplayMemberPath="DisplayName"
+                                                  IsEditable="True" IsTextSearchEnabled="True"
+                                                  Padding="8" FontSize="14" Margin="0,0,0,10"/>
 
-                <TextBlock Text="rigctld path (assumed on PATH unless given a full path)" Foreground="Gray"/>
-                <TextBox Text="{Binding RigctldExecutablePath, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
-
-                <TextBlock Text="rigctld TCP port" Foreground="Gray"/>
-                <TextBox Text="{Binding RigctldTcpPort, UpdateSourceTrigger=PropertyChanged}"
-                         HorizontalAlignment="Left" Width="100" Margin="0,0,0,8"/>
-
-                <CheckBox Content="Launch rigctld automatically" IsChecked="{Binding LaunchRigctldAutomatically}" Margin="0,0,0,12"/>
-
-                <Separator Margin="0,14,0,14"/>
-
-                <TextBlock Text="Internet Control (CAT)" FontWeight="Bold" Margin="0,0,0,6"/>
-                <TextBlock Margin="0,0,0,8" Foreground="Gray" TextWrapping="Wrap"
-                           Text="Reads frequency and mode from an Elecraft K4 over the network using its native TCP command protocol (not Hamlib). Point Host at the radio's IP or hostname; to reach it over the internet, use your public IP or DDNS name with the port forwarded to the radio. Password is optional (the K4 needs none itself) — set one only if you reach the radio through an authenticated tunnel or gateway. Stored encrypted (Windows DPAPI) on this machine only."/>
-
-                <WrapPanel Margin="0,0,0,8">
-                    <StackPanel Margin="0,0,10,0" Width="200">
-                        <TextBlock Text="Host / IP" Foreground="Gray"/>
-                        <TextBox Text="{Binding InternetRadioHost, UpdateSourceTrigger=PropertyChanged}"/>
-                    </StackPanel>
-                    <StackPanel Width="90">
-                        <TextBlock Text="Port" Foreground="Gray"/>
-                        <TextBox Text="{Binding InternetRadioPortText, UpdateSourceTrigger=PropertyChanged}"/>
-                    </StackPanel>
-                </WrapPanel>
-
-                <TextBlock Text="Password (optional)" Foreground="Gray"/>
-                <PasswordBox x:Name="InternetPasswordBox" Margin="0,0,0,4"/>
-                <TextBox x:Name="InternetPasswordTextBox" Margin="0,0,0,4" Visibility="Collapsed"/>
-                <CheckBox x:Name="InternetShowPasswordCheckBox" Content="Show password" Margin="0,0,0,8"
-                          Checked="InternetShowPassword_Checked" Unchecked="InternetShowPassword_Unchecked"/>
-
-                <TextBlock Margin="0,0,0,8" FontStyle="Italic">
-                    <Run Text="Status: "/>
-                    <Run Text="{Binding InternetRadioStatusText, Mode=OneWay}"/>
-                </TextBlock>
-
-                <Separator Margin="0,6,0,12"/>
-
-                <!-- One Save + one Test for the whole window. Save persists both the Hamlib radio profiles/
-                     rigctld settings and the Internet host/port/password in one click; Test checks whichever
-                     CAT Source is currently selected above. -->
-                <StackPanel Orientation="Horizontal">
-                    <Button Content="Save Settings" Click="SaveCatSettings_Click" Padding="14,5" Margin="0,0,8,0"/>
-                    <Button Content="Test Connection" Command="{Binding TestCatConnectionCommand}" Padding="14,5"/>
+                                        <WrapPanel>
+                                            <StackPanel Margin="0,0,10,0" Width="130">
+                                                <TextBlock Text="HAMLIB MODEL ID" FontSize="12" FontWeight="Bold" Foreground="#000000" Margin="0,0,0,4"/>
+                                                <TextBox Text="{Binding HamlibModelId, UpdateSourceTrigger=PropertyChanged}" Padding="8" FontSize="14"/>
+                                            </StackPanel>
+                                            <StackPanel Margin="0,0,10,0" Width="110">
+                                                <TextBlock Text="COM PORT" FontSize="12" FontWeight="Bold" Foreground="#000000" Margin="0,0,0,4"/>
+                                                <ComboBox ItemsSource="{Binding AvailableComPorts}"
+                                                          SelectedItem="{Binding ComPort}"
+                                                          IsEditable="True" IsTextSearchEnabled="True"
+                                                          Padding="8" FontSize="14"/>
+                                            </StackPanel>
+                                            <StackPanel Margin="0,0,10,0" Width="110">
+                                                <TextBlock Text="BAUD RATE" FontSize="12" FontWeight="Bold" Foreground="#000000" Margin="0,0,0,4"/>
+                                                <TextBox Text="{Binding BaudRate, UpdateSourceTrigger=PropertyChanged}" Padding="8" FontSize="14"/>
+                                            </StackPanel>
+                                            <StackPanel Width="110">
+                                                <TextBlock Text="MAX POWER (W)" FontSize="12" FontWeight="Bold" Foreground="#000000" Margin="0,0,0,4"/>
+                                                <TextBox Text="{Binding MaxPowerWatts, UpdateSourceTrigger=PropertyChanged}" Padding="8" FontSize="14"/>
+                                            </StackPanel>
+                                        </WrapPanel>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </StackPanel>
-            </StackPanel>
-
-            <StackPanel Grid.Column="2">
-                <ItemsControl ItemsSource="{Binding RadioProfileEditors}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Border BorderBrush="#DDD" BorderThickness="1" Padding="8" Margin="0,0,0,8">
-                                <StackPanel>
-                                    <TextBlock Text="{Binding SlotLabel}" FontWeight="Bold" Margin="0,0,0,4"/>
-
-                                    <TextBlock Text="Radio (Hamlib)" Foreground="Gray"/>
-                                    <ComboBox ItemsSource="{Binding AvailableRigs}"
-                                              SelectedItem="{Binding SelectedRig}"
-                                              DisplayMemberPath="DisplayName"
-                                              IsEditable="True" IsTextSearchEnabled="True"
-                                              Margin="0,0,0,6"/>
-
-                                    <WrapPanel>
-                                        <StackPanel Margin="0,0,10,0" Width="120">
-                                            <TextBlock Text="Hamlib Model ID" Foreground="Gray"/>
-                                            <TextBox Text="{Binding HamlibModelId, UpdateSourceTrigger=PropertyChanged}"/>
-                                        </StackPanel>
-                                        <StackPanel Margin="0,0,10,0" Width="100">
-                                            <TextBlock Text="COM Port" Foreground="Gray"/>
-                                            <ComboBox ItemsSource="{Binding AvailableComPorts}"
-                                                      SelectedItem="{Binding ComPort}"
-                                                      IsEditable="True" IsTextSearchEnabled="True"/>
-                                        </StackPanel>
-                                        <StackPanel Margin="0,0,10,0" Width="100">
-                                            <TextBlock Text="Baud Rate" Foreground="Gray"/>
-                                            <TextBox Text="{Binding BaudRate, UpdateSourceTrigger=PropertyChanged}"/>
-                                        </StackPanel>
-                                        <StackPanel Width="100">
-                                            <TextBlock Text="Max Power (W)" Foreground="Gray"/>
-                                            <TextBox Text="{Binding MaxPowerWatts, UpdateSourceTrigger=PropertyChanged}"/>
-                                        </StackPanel>
-                                    </WrapPanel>
-                                </StackPanel>
-                            </Border>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </StackPanel>
-        </Grid>
-    </Viewbox>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
 </Window>

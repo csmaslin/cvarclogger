@@ -38,6 +38,18 @@ public class FilePickerService
         return dialog.ShowDialog() == true ? dialog.FileName : null;
     }
 
+    public string? PickBackupDatabaseFileToSave(string suggestedFileName)
+    {
+        var dialog = new SaveFileDialog
+        {
+            Filter = "CVARC Logger database (*.db)|*.db|All files (*.*)|*.*",
+            FileName = suggestedFileName,
+            InitialDirectory = AppContext.BaseDirectory,
+            Title = "Save Log As"
+        };
+        return dialog.ShowDialog() == true ? dialog.FileName : null;
+    }
+
     public string? PickExistingDatabaseFileToOpen()
     {
         var dialog = new OpenFileDialog

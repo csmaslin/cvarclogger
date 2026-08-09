@@ -1,16 +1,150 @@
 <Application x:Class="CvarcLogger.App.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:CvarcLogger.App">
+             xmlns:local="clr-namespace:CvarcLogger.App"
+             xmlns:converters="clr-namespace:CvarcLogger.App.Converters"
+             xmlns:behaviors="clr-namespace:CvarcLogger.App.Behaviors">
     <Application.Resources>
+        <!-- Converters -->
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+
+        <!-- Color Definitions -->
+        <Color x:Key="DoveGreyColor">#404040</Color>
+        <Color x:Key="LightBlueColor">#34495e</Color>
+        <Color x:Key="BlueAccentColor">#3498db</Color>
+        <Color x:Key="StickyBgColor">#ecf0f1</Color>
+        <Color x:Key="BorderColorValue">#555555</Color>
+        <Color x:Key="BackgroundColorValue">#f5f5f5</Color>
+
+        <!-- Brushes -->
+        <SolidColorBrush x:Key="DoveGreyBrush" Color="#404040"/>
+        <SolidColorBrush x:Key="LightBlueBrush" Color="#34495e"/>
+        <SolidColorBrush x:Key="BlueAccentBrush" Color="#3498db"/>
+        <SolidColorBrush x:Key="StickyBgBrush" Color="#ecf0f1"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="#555555"/>
+        <SolidColorBrush x:Key="BackgroundBrush" Color="#f5f5f5"/>
+
+        <!-- Global Styles -->
         <Style TargetType="Window">
-            <Setter Property="Background" Value="Gray"/>
+            <Setter Property="Background" Value="#f5f5f5"/>
+            <Setter Property="FontFamily" Value="Segoe UI, Roboto, sans-serif"/>
         </Style>
+
+        <!-- Tag doubles as placeholder/hint text (e.g. Tag="Your QRZ username"), shown greyed-out
+             whenever Text is empty. TextBox has no built-in placeholder concept, so this is done via a
+             custom template with an overlay TextBlock bound to Tag. -->
         <Style TargetType="TextBox">
             <Setter Property="Background" Value="White"/>
+            <Setter Property="Foreground" Value="#000000"/>
+            <Setter Property="BorderBrush" Value="#555555"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="FontFamily" Value="Segoe UI, Roboto, sans-serif"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <Grid>
+                                <TextBlock Text="{TemplateBinding Tag}"
+                                           Foreground="#999999" FontStyle="Italic"
+                                           Margin="{TemplateBinding Padding}"
+                                           VerticalAlignment="Center"
+                                           IsHitTestVisible="False"
+                                           x:Name="PlaceholderText" Visibility="Collapsed"/>
+                                <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="Text" Value="">
+                                <Setter TargetName="PlaceholderText" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
+
+        <!-- PasswordBox equivalent of the TextBox placeholder above. Password isn't a dependency
+             property (by design), so it can't drive a template trigger directly; PasswordBoxHelper
+             mirrors it into an attached HasText dependency property via PasswordChanged, which this
+             template's trigger watches instead. Set behaviors:PasswordBoxHelper.Placeholder="..." on
+             any PasswordBox to use it. -->
+        <Style TargetType="PasswordBox">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Foreground" Value="#000000"/>
+            <Setter Property="BorderBrush" Value="#555555"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="FontFamily" Value="Segoe UI, Roboto, sans-serif"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="PasswordBox">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <Grid>
+                                <TextBlock Text="{Binding Path=(behaviors:PasswordBoxHelper.Placeholder), RelativeSource={RelativeSource TemplatedParent}}"
+                                           Foreground="#999999" FontStyle="Italic"
+                                           Margin="{TemplateBinding Padding}"
+                                           VerticalAlignment="Center"
+                                           IsHitTestVisible="False"
+                                           x:Name="PlaceholderText" Visibility="Collapsed"/>
+                                <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="behaviors:PasswordBoxHelper.HasText" Value="False">
+                                <Setter TargetName="PlaceholderText" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <Style TargetType="ComboBox">
             <Setter Property="Background" Value="White"/>
+            <Setter Property="Foreground" Value="#000000"/>
+            <Setter Property="BorderBrush" Value="#555555"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="FontFamily" Value="Segoe UI, Roboto, sans-serif"/>
+        </Style>
+
+        <Style TargetType="Label">
+            <Setter Property="Foreground" Value="#555555"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontFamily" Value="Segoe UI, Roboto, sans-serif"/>
+        </Style>
+
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="#3498db"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontFamily" Value="Segoe UI, Roboto, sans-serif"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
+        <Style TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Segoe UI, Roboto, sans-serif"/>
+        </Style>
+
+        <Style TargetType="DataGrid">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Foreground" Value="#404040"/>
+            <Setter Property="BorderBrush" Value="#cccccc"/>
+            <Setter Property="BorderThickness" Value="1"/>
         </Style>
     </Application.Resources>
 </Application>

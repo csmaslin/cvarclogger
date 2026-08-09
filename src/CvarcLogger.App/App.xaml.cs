@@ -125,6 +125,7 @@ public partial class App : Application
                 services.AddTransient<Views.CatControlWindow>();
                 services.AddTransient<Views.StationProfileEditorWindow>();
                 services.AddTransient<Views.QsoEditWindow>();
+                services.AddTransient<Views.FileOperationsWindow>();
             })
             .Build();
 

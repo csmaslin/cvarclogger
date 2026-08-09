@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CvarcLogger.App.Services;
+using CvarcLogger.Core.UiStandards;
 
 namespace CvarcLogger.App.ViewModels;
 
@@ -30,5 +31,20 @@ public partial class MainViewModel : ObservableObject
         await QsoEntry.InitializeAsync();
         await QsoLog.RefreshAsync();
         _wsjtxListener.ApplyEnabledState();
+    }
+
+    public void SwitchMode(string modeName)
+    {
+        var mode = modeName switch
+        {
+            "Normal" => QsoEntryMode.Normal,
+            "Contest" => QsoEntryMode.Contest,
+            "SOTA" => QsoEntryMode.Sota,
+            "POTA" => QsoEntryMode.Pota,
+            "All" => QsoEntryMode.All,
+            _ => QsoEntryMode.Normal
+        };
+
+        QsoEntry.SelectedEntryModeOption = QsoEntryModeOptions.For(mode);
     }
 }

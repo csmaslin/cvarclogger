@@ -33,8 +33,6 @@ public partial class CatControlWindow : Window
             ? InternetPasswordTextBox.Text
             : InternetPasswordBox.Password;
         await _viewModel.SaveCatSettingsCommand.ExecuteAsync(null);
-        InternetPasswordBox.Clear();
-        InternetPasswordTextBox.Clear();
     }
 
     // PasswordBox.Password can't be data-bound (by design), so revealing it means swapping in a plain
