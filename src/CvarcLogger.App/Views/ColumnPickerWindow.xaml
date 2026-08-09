@@ -5,9 +5,10 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         mc:Ignorable="d"
         Title="Column Visibility" Icon="/Assets/AppIcon.ico" Height="650" Width="900" WindowStartupLocation="CenterOwner"
-        Background="White">
+        ShowInTaskbar="False" Background="White">
     <Grid Margin="30">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -21,11 +22,61 @@
         </Border>
 
         <!-- Info note -->
-        <TextBlock Grid.Row="1" Text="Callsign and Station Callsign are always shown."
+        <TextBlock Grid.Row="1" Text="Callsign and Station Callsign are always shown. Each tab below is its own independent set of choices, shared by the log grid and the entry form for that Log Entry Mode."
                    FontSize="11" Foreground="Gray" TextWrapping="Wrap" Margin="0,0,0,10"/>
 
-        <!-- All / None buttons -->
+        <!-- Mode tabs: each tab edits its own mode's hidden-columns set. "All" is a static catch-all,
+             not renameable (see ColumnPickerModeTab.IsRenameable), so the Rename button disables for it. -->
         <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,15">
+            <ListBox ItemsSource="{Binding PickerModeTabs}" SelectedItem="{Binding SelectedPickerModeTab, Mode=TwoWay}"
+                     BorderThickness="0" Background="Transparent" Margin="0,0,15,0"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled">
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="ListBoxItem">
+                        <Setter Property="Padding" Value="16,8"/>
+                        <Setter Property="Margin" Value="0,0,8,0"/>
+                        <Setter Property="Background" Value="#ecf0f1"/>
+                        <Setter Property="Foreground" Value="#000000"/>
+                        <Setter Property="FontSize" Value="13"/>
+                        <Setter Property="FontWeight" Value="SemiBold"/>
+                        <Setter Property="Cursor" Value="Hand"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListBoxItem">
+                                    <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" CornerRadius="4">
+                                        <ContentPresenter/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Background" Value="#3498db"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </ListBox.ItemContainerStyle>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Label}"/>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <Button Content="Rename Tab..." Click="RenameTab_Click"
+                    IsEnabled="{Binding SelectedPickerModeTab.IsRenameable}"
+                    Background="#7f8c8d" Foreground="White" BorderThickness="0"
+                    Padding="12,8" FontSize="12" FontWeight="SemiBold"/>
+        </StackPanel>
+
+        <!-- All / None buttons -->
+        <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,0,0,15">
             <Button Content="All" Command="{Binding SelectAllColumnsCommand}"
                     Background="#3498db" Foreground="White" BorderThickness="0"
                     Padding="16" FontSize="14" FontWeight="SemiBold" Width="150" Margin="0,0,10,0"/>
@@ -34,19 +85,27 @@
                     Padding="16" FontSize="14" FontWeight="SemiBold" Width="150"/>
         </StackPanel>
 
-        <!-- Column checkbox grid -->
-        <Border Grid.Row="3" BorderBrush="#e0e0e0" BorderThickness="1" CornerRadius="4" Padding="15">
-            <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <!-- Column checkbox grid: was a UniformGrid, which always fills row-major (left-to-right, then
+             down) regardless of its Columns setting, there's no built-in "fill top-to-bottom, then next
+             column" mode for it. A vertical WrapPanel gives that instead, but only wraps into new columns
+             if its Height is actually constrained (an unconstrained/auto height, like inside a vertically
+             scrolling ScrollViewer, just grows one infinitely tall column and never wraps), so the
+             ScrollViewer here scrolls horizontally, and the WrapPanel's Height is bound to the
+             ScrollViewer's own rendered height so it knows where to wrap, staying correct if the window
+             is resized. -->
+        <Border Grid.Row="4" BorderBrush="#e0e0e0" BorderThickness="1" CornerRadius="4" Padding="15">
+            <ScrollViewer x:Name="ColumnsScrollViewer" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled"
+                          PreviewMouseWheel="ColumnsScrollViewer_PreviewMouseWheel">
                 <ItemsControl ItemsSource="{Binding ColumnOptions}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <UniformGrid Columns="4"/>
+                            <WrapPanel Orientation="Vertical" Height="{Binding ActualHeight, ElementName=ColumnsScrollViewer}"/>
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <CheckBox Content="{Binding DisplayName}" IsChecked="{Binding IsVisible}"
-                                      Foreground="#000000" FontSize="13" Margin="0,0,10,12"
+                                      Foreground="#000000" FontSize="13" Width="180" Margin="0,0,10,12"
                                       VerticalContentAlignment="Center"/>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
@@ -55,7 +114,7 @@
         </Border>
 
         <!-- Done button -->
-        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
+        <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
             <Button Content="Done" Click="Close_Click"
                     Background="#2E7D32" Foreground="White" BorderThickness="0"
                     Padding="20,10" FontSize="13" FontWeight="SemiBold"/>

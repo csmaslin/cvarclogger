@@ -11,6 +11,11 @@ public partial class MainWindow : Window
 {
     private readonly MainViewModel _viewModel;
 
+    // Non-modal (see ColumnsButton_Click) so the operator can leave it open, switch back to the entry
+    // form to drag fields around, then return to it without closing/reopening. Tracked here so a second
+    // click while it's already open activates the existing window instead of spawning a duplicate.
+    private ColumnPickerWindow? _columnPickerWindow;
+
     public MainWindow(MainViewModel viewModel)
     {
         InitializeComponent();
@@ -76,8 +81,15 @@ public partial class MainWindow : Window
 
     private void ColumnsButton_Click(object sender, RoutedEventArgs e)
     {
-        var window = new ColumnPickerWindow(_viewModel.QsoLog) { Owner = this };
-        window.ShowDialog();
+        if (_columnPickerWindow is not null)
+        {
+            _columnPickerWindow.Activate();
+            return;
+        }
+
+        _columnPickerWindow = new ColumnPickerWindow(_viewModel.QsoLog) { Owner = this };
+        _columnPickerWindow.Closed += (_, _) => _columnPickerWindow = null;
+        _columnPickerWindow.Show();
     }
 
     private void NormalMode_Click(object sender, RoutedEventArgs e) => SwitchMode("Normal");
@@ -104,9 +116,4 @@ public partial class MainWindow : Window
     }
 
     private void GridColumnsButton_Click(object sender, RoutedEventArgs e) => ColumnsButton_Click(sender, e);
-
-    private void CatConnect_Click(object sender, RoutedEventArgs e)
-    {
-        MessageBox.Show("CAT Connection would be initiated here", "CAT Connect");
-    }
 }

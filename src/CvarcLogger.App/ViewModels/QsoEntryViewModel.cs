@@ -47,10 +47,17 @@ public partial class QsoEntryViewModel : ObservableObject
     /// the live clock.</summary>
     private bool _isLiveClockUpdate;
 
-    /// <summary>True once the operator has typed into either date/time field for the QSO currently being
-    /// entered. Stops _liveClockTimer from overwriting a manually-entered (e.g. backdated) time; reset
-    /// back to false in InitializeAsync/ResetForNextQso so the next QSO starts live-ticking again.</summary>
+    /// <summary>True once the operator has typed into the UTC date/time field, or pressed "Start Time"
+    /// (see SetStartTime), for the QSO currently being entered. Stops _liveClockTimer from overwriting a
+    /// manually-entered/frozen UTC time; reset back to false in InitializeAsync/ResetForNextQso so the
+    /// next QSO starts live-ticking again.</summary>
     private bool _dateTimeManuallyEdited;
+
+    /// <summary>Same idea as _dateTimeManuallyEdited but for Local Time specifically. Kept separate so
+    /// "Start Time" freezing the UTC field doesn't also freeze Local -- once UTC stops advancing,
+    /// OnLiveClockTick switches to ticking Local directly (see there) until the operator types into it
+    /// by hand.</summary>
+    private bool _localTimeManuallyEdited;
 
     // Includes seconds (unlike QsoEditViewModel's minute-only format) so the live clock's ticking is
     // visibly obvious at a glance, rather than requiring up to a full minute's wait to see it move.
@@ -136,6 +143,7 @@ public partial class QsoEntryViewModel : ObservableObject
         OnPropertyChanged(nameof(ShowBandField));
         OnPropertyChanged(nameof(ShowFreqField));
         OnPropertyChanged(nameof(ShowRstField));
+        OnPropertyChanged(nameof(ShowQslViaField));
         OnPropertyChanged(nameof(ShowRow3));
     }
 
@@ -144,7 +152,25 @@ public partial class QsoEntryViewModel : ObservableObject
     /// consulted for optional/supplementary fields (see QsoEntryView.xaml.cs) -- Callsign, Station,
     /// Date/Time, Local Time, Band, and Mode are always shown regardless, since those are needed to
     /// log any QSO at all.</summary>
-    public bool IsFieldVisible(string key) => !_settings.HiddenLogColumns.Contains(key);
+    public bool IsFieldVisible(string key) => !_settings.GetHiddenColumns(SelectedEntryModeOption.Value.ToString()).Contains(key);
+
+    /// <summary>Saved field row/position layout for the currently selected Log Entry Mode -- read by
+    /// QsoEntryView's code-behind to place each field's Grid.Row/Grid.Column (see
+    /// EntryFormFieldPosition, SettingsService.GetEntryFormFieldPositions). Independent per mode; a
+    /// field missing from the returned map hasn't been dragged yet, so the View falls back to its own
+    /// hardcoded default position for it.</summary>
+    public IReadOnlyDictionary<string, EntryFormFieldPosition> GetEntryFormFieldPositions() =>
+        _settings.GetEntryFormFieldPositions(SelectedEntryModeOption.Value.ToString());
+
+    /// <summary>Persists a field's new row/position for the currently selected mode -- called by
+    /// QsoEntryView's drag-and-drop drop handler once the operator releases a dragged field over its
+    /// new slot. Overwrites any existing saved position for the same key.</summary>
+    public void SetEntryFormFieldPosition(string key, int row, int position)
+    {
+        var positions = _settings.GetEntryFormFieldPositions(SelectedEntryModeOption.Value.ToString());
+        positions[key] = new EntryFormFieldPosition(row, position);
+        _settings.SaveEntryFormFieldPositions();
+    }
 
     [ObservableProperty] private string callsign = string.Empty;
     [ObservableProperty] private string qsoDateTimeUtcText = string.Empty;
@@ -197,12 +223,22 @@ public partial class QsoEntryViewModel : ObservableObject
     public Visibility ShowSigInfoWarning => IsSigInfoValid ? Visibility.Collapsed : Visibility.Visible;
 
     // Contest/SKCC fields. These describe the *contacted* station (what they sent), so -- like SotaRef/
-    // SigInfo above -- they reset per QSO, not sticky. MySkccNr has no observable property; it's set
-    // straight from SelectedStationProfile.SkccNr at save time, same as MyGridSquare/MyState/MyCounty.
+    // SigInfo above -- they reset per QSO, not sticky.
     [ObservableProperty] private string? skccNr;
     [ObservableProperty] private string? precedence;
     [ObservableProperty] private string? check;
     [ObservableProperty] private string? qsoClass;
+
+    // MySkccNr describes the operator's own setup, same sticky rationale (and profile-seed/override
+    // pattern) as MyGridSquare/MyState/MyCounty -- see SeedStationDefaults.
+    [ObservableProperty] private string? mySkccNr;
+
+    // QSL Via callsign (routing through a manager) -- genuinely per-QSO like SkccNr/Check/Class above,
+    // no prior observable property or ShowXxxField gate at all (unlike the rest of this file's Stage 5
+    // additions, which already had a gate and just needed XAML).
+    [ObservableProperty] private string? qslViaCallsign;
+
+    public bool ShowQslViaField => IsFieldVisible("QslVia");
 
     // SelectedPrecedenceOption drives the ComboBox (shows the full ARRL definition while choosing, see
     // ArrlPrecedenceOption); OnSelectedPrecedenceOptionChanged below keeps the plain Precedence string
@@ -258,9 +294,34 @@ public partial class QsoEntryViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(ShowTxPowerField))]
     [NotifyPropertyChangedFor(nameof(ShowCommentField))]
     [NotifyPropertyChangedFor(nameof(ShowRow3))]
+    [NotifyPropertyChangedFor(nameof(EntryFormTitle))]
     private QsoEntryModeOption selectedEntryModeOption = QsoEntryModeOptions.For(QsoEntryMode.Normal);
 
     public ObservableCollection<QsoEntryModeOption> EntryModeOptions { get; } = new(QsoEntryModeOptions.All);
+
+    /// <summary>IsFieldVisible now reads a per-mode hidden-columns set (SettingsService.GetHiddenColumns),
+    /// so switching mode changes which optional fields show up even though no column was actually
+    /// toggled -- NotifyFieldVisibilityChanged re-evaluates every IsFieldVisible-driven *Field property to
+    /// pick that up (the attributes above SelectedEntryModeOption only cover the mode-category gates,
+    /// e.g. ShowSotaFields, not the leaf column-gated properties).</summary>
+    partial void OnSelectedEntryModeOptionChanged(QsoEntryModeOption value) => NotifyFieldVisibilityChanged();
+
+    /// <summary>Entry form's header text, e.g. "Entry Form - Net Control Mode (...)" -- reflects whatever
+    /// display name the operator gave this mode in the Column Visibility picker's Rename Tab feature (see
+    /// SettingsService.GetModeTabLabel), falling back to the mode's own name. Refreshes on mode switch (see
+    /// the attribute above) and on rename (see NotifyModeLabelsChanged, bridged from QsoLogViewModel.
+    /// ModeLabelsChanged via MainViewModel, same pattern as NotifyFieldVisibilityChanged).</summary>
+    public string EntryFormTitle =>
+        $"Entry Form - {_settings.GetModeTabLabel(SelectedEntryModeOption.Value.ToString(), DefaultModeLabel(SelectedEntryModeOption.Value))} Mode (Fields are movable within tabs)";
+
+    private static string DefaultModeLabel(QsoEntryMode mode) => mode switch
+    {
+        QsoEntryMode.Sota => "SOTA",
+        QsoEntryMode.Pota => "POTA",
+        _ => mode.ToString(),
+    };
+
+    public void NotifyModeLabelsChanged() => OnPropertyChanged(nameof(EntryFormTitle));
 
     public bool ShowDateTimeUtc => QsoEntryModeFields.ShowDateTimeUtc(SelectedEntryModeOption.Value);
     public bool ShowTimeOff => QsoEntryModeFields.ShowTimeOff(SelectedEntryModeOption.Value);
@@ -291,40 +352,39 @@ public partial class QsoEntryViewModel : ObservableObject
     // Contest-only, matching CvarcCellLog's identical Sequence # feature (see SequenceNumber below).
     public bool ShowSequenceFields => SelectedEntryModeOption.Value is QsoEntryMode.Contest or QsoEntryMode.All;
 
-    // Every optional entry-form field honors the Choose Columns checkboxes on top of the Log Mode: even
-    // when the current mode would show a field, an unchecked column hides that field's box (in every
-    // mode), the same as it hides the grid column. Each is gated independently by its own column key.
-    // These *Field properties are the only thing the XAML binds to for these panels -- previously several
-    // of them were instead pushed via QsoEntryView.xaml.cs's ApplyFieldVisibility, which set .Visibility
-    // directly in code. That silently tore out the panel's XAML data binding (WPF clears an active Binding
-    // the moment code assigns the property directly), so once ApplyFieldVisibility ran once at startup,
-    // those panels stopped responding to Log Mode entirely -- e.g. Grid/State/ArrlSection/CQ+ITU Zone/TX
-    // Power/Comment/City/County/Country/SOTA/POTA/Op/QTH/Time Off never actually hid in Contest/SOTA/POTA
-    // mode like CvarcCellLog correctly does, regardless of what the mode-based Show* binding said. Folding
-    // the column check into the property itself (as Skcc/Precedence/Check/Class already did) keeps a
-    // single binding-driven source of truth per panel.
-    public bool ShowSkccField => ShowSkccFields && IsFieldVisible("Skcc");
-    public bool ShowMySkccField => ShowSkccFields && IsFieldVisible("MySkcc");
-    public bool ShowPrecedenceField => ShowContestExchangeFields && IsFieldVisible("Precedence");
-    public bool ShowCheckField => ShowContestExchangeFields && IsFieldVisible("Check");
-    public bool ShowClassField => ShowContestExchangeFields && IsFieldVisible("Class");
-    public bool ShowTimeOffField => ShowTimeOff && IsFieldVisible("TimeOff");
-    public bool ShowGridField => ShowGridSquare && IsFieldVisible("Grid");
-    public bool ShowCityField => ShowCityCounty && IsFieldVisible("City");
-    public bool ShowStateField => ShowState && IsFieldVisible("State");
-    public bool ShowCountyField => ShowCityCounty && IsFieldVisible("County");
-    public bool ShowCountryField => ShowCountry && IsFieldVisible("Country");
-    public bool ShowArrlSectionField => ShowArrlSection && IsFieldVisible("ArrlSection");
-    public bool ShowCqZoneField => ShowCqItuZone && IsFieldVisible("CqZone");
-    public bool ShowItuZoneField => ShowCqItuZone && IsFieldVisible("ItuZone");
-    public bool ShowMySotaField => ShowSotaFields && IsFieldVisible("MySota");
-    public bool ShowSotaField => ShowSotaFields && IsFieldVisible("Sota");
-    public bool ShowMyPotaField => ShowPotaFields && IsFieldVisible("MyPota");
-    public bool ShowPotaField => ShowPotaFields && IsFieldVisible("Pota");
-    public bool ShowOpField => (SelectedEntryModeOption.Value is QsoEntryMode.Normal or QsoEntryMode.All) && IsFieldVisible("Op");
-    public bool ShowQthField => (SelectedEntryModeOption.Value is QsoEntryMode.Normal or QsoEntryMode.All) && IsFieldVisible("Qth");
-    public bool ShowTxPowerField => ShowTxPower && IsFieldVisible("TxPower");
-    public bool ShowCommentField => ShowComment && IsFieldVisible("Comment");
+    // Every optional entry-form field's visibility is decided *solely* by the per-mode Columns picker
+    // checkbox (IsFieldVisible, see SettingsService.GetHiddenColumns) -- these properties used to also
+    // AND in one of the QsoEntryModeFields.ShowXxx/ShowXxxFields category gates above (a fixed preset of
+    // which fields exist per mode, predating the drag-and-drop customizable-per-mode feature), but that
+    // meant checking a field on in, say, Contest's picker tab did nothing for fields the old Normal-only
+    // preset never allowed there -- e.g. Comment (ShowComment was Normal/All only), TimeOff, Grid, City,
+    // County, Op, Qth, and others. The whole point of the per-mode picker is that the operator decides
+    // per mode now, so the hardcoded category gate can only ever take away a choice the picker already
+    // made, never grant one. QsoEntryModeFields itself is untouched (still used by CvarcCellLog, which
+    // doesn't have this per-mode customization feature) -- only these *Field leaf properties stopped
+    // consulting it.
+    public bool ShowSkccField => IsFieldVisible("Skcc");
+    public bool ShowMySkccField => IsFieldVisible("MySkcc");
+    public bool ShowPrecedenceField => IsFieldVisible("Precedence");
+    public bool ShowCheckField => IsFieldVisible("Check");
+    public bool ShowClassField => IsFieldVisible("Class");
+    public bool ShowTimeOffField => IsFieldVisible("TimeOff");
+    public bool ShowGridField => IsFieldVisible("Grid");
+    public bool ShowCityField => IsFieldVisible("City");
+    public bool ShowStateField => IsFieldVisible("State");
+    public bool ShowCountyField => IsFieldVisible("County");
+    public bool ShowCountryField => IsFieldVisible("Country");
+    public bool ShowArrlSectionField => IsFieldVisible("ArrlSection");
+    public bool ShowCqZoneField => IsFieldVisible("CqZone");
+    public bool ShowItuZoneField => IsFieldVisible("ItuZone");
+    public bool ShowMySotaField => IsFieldVisible("MySota");
+    public bool ShowSotaField => IsFieldVisible("Sota");
+    public bool ShowMyPotaField => IsFieldVisible("MyPota");
+    public bool ShowPotaField => IsFieldVisible("Pota");
+    public bool ShowOpField => IsFieldVisible("Op");
+    public bool ShowQthField => IsFieldVisible("Qth");
+    public bool ShowTxPowerField => IsFieldVisible("TxPower");
+    public bool ShowCommentField => IsFieldVisible("Comment");
     public bool ShowFreqRxField => IsFieldVisible("FreqRx");
     public bool ShowQslField => IsFieldVisible("Qsl");
     public bool ShowLotwField => IsFieldVisible("Lotw");
@@ -332,7 +392,7 @@ public partial class QsoEntryViewModel : ObservableObject
     public bool ShowContinentField => IsFieldVisible("Continent");
     public bool ShowMyGridField => IsFieldVisible("MyGrid");
     public bool ShowMyStateField => IsFieldVisible("MyState");
-    public bool ShowSequenceField => ShowSequenceFields && IsFieldVisible("Sequence");
+    public bool ShowSequenceField => IsFieldVisible("Sequence");
     public bool ShowModeField => IsFieldVisible("Mode");
     public bool ShowSubModeField => IsFieldVisible("SubMode");
     public bool ShowUtcTimeField => IsFieldVisible("UtcTime");
@@ -378,12 +438,45 @@ public partial class QsoEntryViewModel : ObservableObject
     [ObservableProperty] private string? op;
     [ObservableProperty] private string? qth;
     [ObservableProperty] private string? txPowerWatts;
+
+    // MyGridSquare/MyState/MyCounty describe the operator's own location, same sticky rationale as Qth/Op
+    // above -- seeded from the station profile (see SeedStationDefaults) but editable per-session (e.g.
+    // a portable operation temporarily away from the profile's usual location), not reset in
+    // ResetForNextQso, and only re-seeded when the station profile selection changes.
+    [ObservableProperty] private string? myGridSquare;
+    [ObservableProperty] private string? myState;
+    [ObservableProperty] private string? myCounty;
+
+    // FrequencyRxMhz (split operation) and Continent/QslSent/QslRcvd/LotwQslSent/LotwQslRcvd are
+    // genuinely per-QSO, so unlike the sticky group above they do get cleared in ResetForNextQso.
+    // Continent is also auto-filled from the callsign lookup at save time if left blank (see LogQsoAsync),
+    // same fallback pattern QsoEditViewModel already uses for a previously-logged QSO.
+    [ObservableProperty] private string? frequencyRxMhz;
+    [ObservableProperty] private string? continent;
+    [ObservableProperty] private QslStatus qslSent;
+    [ObservableProperty] private QslStatus qslRcvd;
+    [ObservableProperty] private QslStatus lotwQslSent;
+    [ObservableProperty] private QslStatus lotwQslRcvd;
+
+    /// <summary>QSL/LoTW status ComboBox choices, same enum-array pattern as QsoEditViewModel.QslStatuses.</summary>
+    public Array QslStatuses { get; } = Enum.GetValues(typeof(QslStatus));
     [ObservableProperty] private string? comment;
     [ObservableProperty] private bool isLookingUp;
     [ObservableProperty] private StationProfile? selectedStationProfile;
-    [ObservableProperty] private bool isCatConnected;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CatStatusText))]
+    [NotifyPropertyChangedFor(nameof(CatIndicatorColor))]
+    [NotifyPropertyChangedFor(nameof(CatConnectButtonLabel))]
+    private bool isCatConnected;
     [ObservableProperty] private bool isCatAutoFillPaused;
     [ObservableProperty] private string? catStatusMessage;
+
+    // Drive the middle bar's CAT status indicator/button (see MainWindow.xaml) off the real
+    // IsCatConnected state set by ToggleCatConnectionAsync -- both were previously hardcoded and never
+    // reflected an actual connection either way.
+    public string CatStatusText => IsCatConnected ? "CAT: Connected" : "CAT: Disconnected";
+    public string CatIndicatorColor => IsCatConnected ? "#2ECC71" : "#999999";
+    public string CatConnectButtonLabel => IsCatConnected ? "📡 Disconnect CAT" : "📡 Connect CAT";
     [ObservableProperty] private string? subMode;
 
     public ObservableCollection<string> Bands { get; } = new(QsoFieldOptions.Bands);
@@ -432,16 +525,32 @@ public partial class QsoEntryViewModel : ObservableObject
     /// <summary>Keeps QsoDateTimeUtcText (and, via the existing sync, QsoDateTimeLocalText) advancing to
     /// the actual current time while the entry form sits idle -- runs continuously rather than only at
     /// InitializeAsync/ResetForNextQso, matching how ham radio loggers conventionally show a live clock.
-    /// Stops touching the field the moment the operator types a manual/backdated time (see
-    /// _dateTimeManuallyEdited) so a deliberate edit is never clobbered.</summary>
+    /// Stops touching the UTC field the moment the operator types a manual/backdated time or presses
+    /// "Start Time" (see _dateTimeManuallyEdited) so a deliberate edit/freeze is never clobbered. Once UTC
+    /// is frozen, Local Time switches to ticking independently (its own _localTimeManuallyEdited guard)
+    /// instead of riding UTC's sync, so "Start Time" freezes only the UTC field as intended.</summary>
     private void OnLiveClockTick(object? sender, EventArgs e)
     {
-        if (_dateTimeManuallyEdited) return;
+        if (!_dateTimeManuallyEdited)
+        {
+            _isLiveClockUpdate = true;
+            try
+            {
+                QsoDateTimeUtcText = _clock.UtcNow.ToString(DateTimeFormat, CultureInfo.InvariantCulture);
+            }
+            finally
+            {
+                _isLiveClockUpdate = false;
+            }
+            return;
+        }
+
+        if (_localTimeManuallyEdited) return;
 
         _isLiveClockUpdate = true;
         try
         {
-            QsoDateTimeUtcText = _clock.UtcNow.ToString(DateTimeFormat, CultureInfo.InvariantCulture);
+            QsoDateTimeLocalText = _clock.UtcNow.AddHours(CurrentUtcOffsetHours).ToString(DateTimeFormat, CultureInfo.InvariantCulture);
         }
         finally
         {
@@ -500,19 +609,22 @@ public partial class QsoEntryViewModel : ObservableObject
     }
 
     /// <summary>Mirror of OnQsoDateTimeUtcTextChanged for the other direction -- typing Local Time
-    /// recomputes UTC.</summary>
+    /// recomputes UTC. Skipped entirely for OnLiveClockTick's own post-freeze Local writes (see
+    /// _isLiveClockUpdate there) -- those must not re-derive and overwrite the now-frozen UTC field.</summary>
     partial void OnQsoDateTimeLocalTextChanged(string value)
     {
+        if (_isLiveClockUpdate) return;
         if (_isSyncingDateTime) return;
         _dateTimeManuallyEdited = true;
+        _localTimeManuallyEdited = true;
         if (!TryParseQsoDateTime(value, out var local)) return;
 
         _isSyncingDateTime = true;
         try
         {
             // Always the short form here: this handler only ever runs for a genuine manual edit of the
-            // Local field (sync-driven writes are caught by the _isSyncingDateTime guard above), and the
-            // live clock never drives this field directly -- see OnQsoDateTimeUtcTextChanged.
+            // Local field (sync-driven writes are caught by the _isSyncingDateTime guard above, and the
+            // live clock's own writes by the _isLiveClockUpdate guard above).
             QsoDateTimeUtcText = local.AddHours(-CurrentUtcOffsetHours).ToString(ShortDateTimeFormat, CultureInfo.InvariantCulture);
         }
         finally
@@ -549,6 +661,10 @@ public partial class QsoEntryViewModel : ObservableObject
     {
         Qth = profile?.Qth;
         Op = !string.IsNullOrWhiteSpace(profile?.OperatorCallsign) ? profile.OperatorCallsign : profile?.Op;
+        MyGridSquare = profile?.MyGridSquare;
+        MyState = profile?.MyState;
+        MyCounty = profile?.MyCounty;
+        MySkccNr = profile?.SkccNr;
     }
 
     /// <summary>Swaps the Sub-Mode picker's contents to match the newly-selected Mode, and clears any
@@ -579,6 +695,7 @@ public partial class QsoEntryViewModel : ObservableObject
             ?? StationProfiles.FirstOrDefault();
 
         _dateTimeManuallyEdited = false;
+        _localTimeManuallyEdited = false;
         _isLiveClockUpdate = true;
         try
         {
@@ -833,20 +950,27 @@ public partial class QsoEntryViewModel : ObservableObject
             Check = Check,
             Class = QsoClass,
             StxSerial = IsSequenceActive ? SequenceNumber : null,
-            MySkccNr = SelectedStationProfile.SkccNr,
             TxPowerWatts = decimal.TryParse(TxPowerWatts, out var txPower) ? txPower : null,
             Comment = Comment,
             StationProfileId = SelectedStationProfile.Id,
             StationCallsign = SelectedStationProfile.Callsign,
             OperatorCallsign = SelectedStationProfile.OperatorCallsign,
-            MyGridSquare = SelectedStationProfile.MyGridSquare,
-            MyState = SelectedStationProfile.MyState,
-            MyCounty = SelectedStationProfile.MyCounty,
-            // Qth/Op default from the station profile (see SeedStationDefaults) but are editable on the
-            // entry form, so this QSO gets whatever the operator left them as, not necessarily the
-            // profile's own value.
+            // Qth/Op/MyGridSquare/MyState/MyCounty/MySkccNr default from the station profile (see
+            // SeedStationDefaults) but are editable on the entry form, so this QSO gets whatever the
+            // operator left them as, not necessarily the profile's own value.
             Qth = Qth,
             Op = Op,
+            MyGridSquare = MyGridSquare,
+            MyState = MyState,
+            MyCounty = MyCounty,
+            MySkccNr = MySkccNr,
+            QslViaCallsign = QslViaCallsign,
+            FrequencyRxMhz = decimal.TryParse(FrequencyRxMhz, NumberStyles.Number, CultureInfo.InvariantCulture, out var freqRx) ? freqRx : null,
+            Continent = Continent,
+            QslSent = QslSent,
+            QslRcvd = QslRcvd,
+            LotwQslSent = LotwQslSent,
+            LotwQslRcvd = LotwQslRcvd,
             UtcOffsetHours = SelectedStationProfile.UtcOffsetHours,
             ObservesDaylightSavingTime = SelectedStationProfile.ObservesDaylightSavingTime,
         };
@@ -894,6 +1018,7 @@ public partial class QsoEntryViewModel : ObservableObject
         if (IsSequenceActive) SequenceNumber++;
 
         _dateTimeManuallyEdited = false;
+        _localTimeManuallyEdited = false;
         _isLiveClockUpdate = true;
         try
         {
@@ -924,5 +1049,12 @@ public partial class QsoEntryViewModel : ObservableObject
         Check = null;
         QsoClass = null;
         Comment = null;
+        FrequencyRxMhz = null;
+        Continent = null;
+        QslSent = QslStatus.NotSent;
+        QslRcvd = QslStatus.NotSent;
+        LotwQslSent = QslStatus.NotSent;
+        LotwQslRcvd = QslStatus.NotSent;
+        QslViaCallsign = null;
     }
 }

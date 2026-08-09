@@ -157,9 +157,12 @@ public class SettingsService
 
     public void SaveRadioProfiles() => Save();
 
-    /// <summary>Keys of QSO log grid columns the user has hidden via the "Columns..." picker (Callsign
-    /// and Date/Time UTC are always shown and never appear here). Mutate in place, then call
-    /// SaveHiddenLogColumns().</summary>
+    /// <summary>Legacy global hidden-columns set, from before column/field visibility became per-mode
+    /// (see GetHiddenColumns). No longer read directly by the grid or entry form -- kept for two things
+    /// only: EnsureLogColumnDefault below seeds new column keys into it, and GetHiddenColumns seeds a
+    /// mode's set from a copy of it the first time that mode is touched, so existing hidden-column
+    /// choices carry forward instead of resetting when this feature first runs. Callsign and Date/Time
+    /// UTC are always shown and never appear here.</summary>
     public HashSet<string> HiddenLogColumns => _data.HiddenLogColumns;
 
     public void SaveHiddenLogColumns() => Save();
@@ -187,22 +190,36 @@ public class SettingsService
         Save();
     }
 
-    /// <summary>Keys of entry-form fields hidden for one specific Log Entry Mode (Normal/Contest/Sota/
-    /// Pota/Net/All each get their own independent set, keyed by QsoEntryMode.ToString()) -- distinct
-    /// from HiddenLogColumns above, which controls the QSO log grid and is shared across every mode.
-    /// Auto-creates an empty set for a mode never touched before. Mutate in place, then call
-    /// SaveEntryFormHiddenFields().</summary>
-    public HashSet<string> GetEntryFormHiddenFields(string mode)
+    /// <summary>Keys of columns/fields hidden for one specific Log Entry Mode (Normal/Contest/Sota/Pota/
+    /// Net/All each get their own independent set, keyed by QsoEntryMode.ToString()) -- shared by both
+    /// the QSO log grid and the entry form, so switching mode changes what's visible in both places
+    /// together (see QsoLogViewModel.IsColumnVisible / QsoEntryViewModel.IsFieldVisible). A mode's set is
+    /// seeded from a copy of the legacy global HiddenLogColumns the first time that mode is ever touched,
+    /// so existing column choices carry forward identically before anyone customizes a specific mode;
+    /// after that the two are independent. Mutate in place, then call SaveHiddenColumns().</summary>
+    public HashSet<string> GetHiddenColumns(string mode)
     {
-        if (!_data.EntryFormHiddenFieldsByMode.TryGetValue(mode, out var set))
+        if (!_data.HiddenColumnsByMode.TryGetValue(mode, out var set))
         {
-            set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            _data.EntryFormHiddenFieldsByMode[mode] = set;
+            set = new HashSet<string>(_data.HiddenLogColumns, StringComparer.OrdinalIgnoreCase);
+            _data.HiddenColumnsByMode[mode] = set;
         }
         return set;
     }
 
-    public void SaveEntryFormHiddenFields() => Save();
+    public void SaveHiddenColumns() => Save();
+
+    /// <summary>User-customized display label for one Log Entry Mode's tab in the Column Visibility
+    /// picker (e.g. renaming "Contest" to "Field Day"); cosmetic only, doesn't affect the sidebar mode
+    /// buttons or anything else. Falls back to <paramref name="defaultLabel"/> when never renamed.</summary>
+    public string GetModeTabLabel(string mode, string defaultLabel) =>
+        _data.ModeTabLabels.TryGetValue(mode, out var label) ? label : defaultLabel;
+
+    public void SetModeTabLabel(string mode, string label)
+    {
+        _data.ModeTabLabels[mode] = label;
+        Save();
+    }
 
     /// <summary>Saved (Row, Position) for each entry-form field, independently per Log Entry Mode --
     /// what the click-and-drag layout editor writes to. A field missing from a mode's map (never
@@ -332,10 +349,11 @@ public class SettingsService
         public Dictionary<string, double> LogColumnWidths { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
         // Keyed by QsoEntryMode.ToString() ("Normal", "Contest", "Sota", "Pota", "Net", "All") so each
-        // Log Entry Mode's entry-form layout is fully independent -- see SettingsService.
-        // GetEntryFormHiddenFields/GetEntryFormFieldPositions.
-        public Dictionary<string, HashSet<string>> EntryFormHiddenFieldsByMode { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+        // Log Entry Mode's column/field visibility and entry-form layout are each fully independent --
+        // see SettingsService.GetHiddenColumns/GetEntryFormFieldPositions.
+        public Dictionary<string, HashSet<string>> HiddenColumnsByMode { get; set; } = new(StringComparer.OrdinalIgnoreCase);
         public Dictionary<string, Dictionary<string, EntryFormFieldPosition>> EntryFormFieldPositionsByMode { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, string> ModeTabLabels { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
         public bool CatEnabled { get; set; }
         public bool LaunchRigctldAutomatically { get; set; }

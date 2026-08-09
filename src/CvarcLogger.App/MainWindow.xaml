@@ -52,6 +52,19 @@
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
         </Style>
+
+        <!-- Shared sizing for every button on the LOG GRID RIBBON (see below) so they're all identical
+             regardless of label length. Only Background/Margin vary per button. -->
+        <Style x:Key="RibbonButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="150"/>
+            <Setter Property="Height" Value="42"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
     </Window.Resources>
 
     <DockPanel Background="#f5f5f5">
@@ -133,25 +146,28 @@
                         <!-- Divider -->
                         <Separator Height="2" Margin="0,20,0,20" Background="#666666"/>
 
-                        <!-- Mode Selection Buttons -->
+                        <!-- Mode Selection Buttons. Labels are bound (not hardcoded) so a rename from the
+                             Column Visibility picker's Rename Tab feature (see ColumnPickerWindow /
+                             QsoLogViewModel.PickerModeTabs) shows up here too. Indices 0-3 match how
+                             PickerModeTabs is built (Normal, Contest, Sota, Pota, then static "All"). -->
                         <Button Name="NormalModeButton" Click="NormalMode_Click"
                                 Style="{StaticResource SidebarButtonActiveStyle}">
-                            <emoji:TextBlock Text="📝 Normal"/>
+                            <emoji:TextBlock Text="{Binding QsoLog.PickerModeTabs[0].Label, StringFormat='📝 {0}'}"/>
                         </Button>
 
                         <Button Name="ContestModeButton" Click="ContestMode_Click"
                                 Style="{StaticResource SidebarButtonStyle}">
-                            <emoji:TextBlock Text="🏆 Contest"/>
+                            <emoji:TextBlock Text="{Binding QsoLog.PickerModeTabs[1].Label, StringFormat='🏆 {0}'}"/>
                         </Button>
 
                         <Button Name="SotaModeButton" Click="SotaMode_Click"
                                 Style="{StaticResource SidebarButtonStyle}">
-                            <emoji:TextBlock Text="⛰️ SOTA"/>
+                            <emoji:TextBlock Text="{Binding QsoLog.PickerModeTabs[2].Label, StringFormat='⛰️ {0}'}"/>
                         </Button>
 
                         <Button Name="PotaModeButton" Click="PotaMode_Click"
                                 Style="{StaticResource SidebarButtonStyle}">
-                            <emoji:TextBlock Text="🪑 POTA"/>
+                            <emoji:TextBlock Text="{Binding QsoLog.PickerModeTabs[3].Label, StringFormat='🪑 {0}'}"/>
                         </Button>
 
                         <Button Name="AllModeButton" Click="AllMode_Click"
@@ -180,38 +196,78 @@
                 </Grid.RowDefinitions>
 
                 <!-- ENTRY FORM -->
-                <Border Grid.Row="0" Background="White" BorderBrush="#cccccc" BorderThickness="2" CornerRadius="4" Margin="0,0,0,15">
+                <Border Grid.Row="0" Background="#E8F4FC" BorderBrush="#cccccc" BorderThickness="2" CornerRadius="4" Margin="0,0,0,15">
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
                         <views:QsoEntryView DataContext="{Binding QsoEntry}"/>
                     </ScrollViewer>
                 </Border>
 
-                <!-- LOG GRID RIBBON -->
+                <!-- LOG GRID RIBBON: 3 equal columns, one group per column, each group centered within
+                     its own column. Distributes all 3 groups evenly across the bar's full width instead
+                     of clustering them to one side. Every button shares RibbonButtonStyle (see
+                     Window.Resources) so they're all the same size regardless of label length. -->
                 <Border Grid.Row="1" Background="#404040" BorderBrush="#cccccc" BorderThickness="2"
                         CornerRadius="4" Padding="20,12" Margin="0,0,0,15">
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <!-- CAT Status Indicator -->
-                        <Border Background="#1AFFFFFF" CornerRadius="4" Padding="12,6" Margin="0,0,10,0">
-                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                <Ellipse Width="10" Height="10" Fill="#999999" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                                <TextBlock Foreground="#cccccc" FontSize="12" VerticalAlignment="Center" Text="CAT: Disconnected"/>
-                            </StackPanel>
-                        </Border>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
 
-                        <!-- Connect CAT Button -->
-                        <Button Name="CatConnectButton" Click="CatConnect_Click"
-                               Background="#3498db" Foreground="White" VerticalAlignment="Center"
-                               Padding="12,6" BorderThickness="0" Margin="0,0,10,0">
-                            <emoji:TextBlock Text="📡 Connect CAT" FontSize="12" Foreground="White"/>
-                        </Button>
+                        <!-- Group 1: CAT status indicator + Connect CAT, paired. -->
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <Border Background="#1AFFFFFF" CornerRadius="4" Padding="12,6" Height="42" Margin="0,0,15,0">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Ellipse Width="10" Height="10" Fill="{Binding QsoEntry.CatIndicatorColor}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                    <TextBlock Foreground="#cccccc" FontSize="12" VerticalAlignment="Center" Text="{Binding QsoEntry.CatStatusText}"/>
+                                </StackPanel>
+                            </Border>
 
-                        <!-- Columns Button -->
-                        <Button Name="GridColumnsButton" Click="GridColumnsButton_Click"
-                               Background="#3498db" Foreground="White" VerticalAlignment="Center"
-                               Padding="12,6" BorderThickness="0">
-                            <emoji:TextBlock Text="⚙️ Columns" FontSize="12" Foreground="White"/>
-                        </Button>
-                    </StackPanel>
+                            <!-- Connect CAT Button: was a MessageBox stub ("CAT Connection would be initiated
+                                 here") that never actually connected anything. Now calls the same
+                                 connect/disconnect toggle already used elsewhere (Hamlib or Internet CAT per
+                                 Settings, see QsoEntryViewModel.ToggleCatConnectionAsync). The sidebar's CAT
+                                 button is a separate, complementary action: it opens CatControlWindow to
+                                 configure which backend/credentials to use, not to connect/disconnect. -->
+                            <Button Name="CatConnectButton" Command="{Binding QsoEntry.ToggleCatConnectionCommand}"
+                                   Style="{StaticResource RibbonButtonStyle}" Background="#3498db">
+                                <emoji:TextBlock Text="{Binding QsoEntry.CatConnectButtonLabel}" FontSize="13" Foreground="White"/>
+                            </Button>
+                        </StackPanel>
+
+                        <!-- Group 2: Start + End time stamps, paired. -->
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <!-- Start Time Button: freezes Date/Time UTC at the current instant (see
+                                 QsoEntryViewModel.SetStartTime). Local Time keeps live-ticking independently. -->
+                            <Button Command="{Binding QsoEntry.SetStartTimeCommand}"
+                                   Style="{StaticResource RibbonButtonStyle}" Background="#2E7D32" Margin="0,0,15,0">
+                                <emoji:TextBlock Text="▶️ Start" FontSize="13" Foreground="White"/>
+                            </Button>
+
+                            <!-- End Time Button: stamps the current instant into Time Off (UTC) (see
+                                 QsoEntryViewModel.SetEndTime). -->
+                            <Button Command="{Binding QsoEntry.SetEndTimeCommand}"
+                                   Style="{StaticResource RibbonButtonStyle}" Background="#c0392b">
+                                <emoji:TextBlock Text="⏹️ End" FontSize="13" Foreground="White"/>
+                            </Button>
+                        </StackPanel>
+
+                        <!-- Group 3: Lookup + Log QSO + Columns. Columns doesn't pair with anything else,
+                             so it joins this group for now. Lookup/Log QSO moved here from the entry
+                             form's bottom (see QsoEntryView.xaml) so they're reachable regardless of how
+                             the form's fields scroll or how tall the current mode's layout gets. -->
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <Button Content="Lookup" Command="{Binding QsoEntry.LookupCommand}"
+                                   Style="{StaticResource RibbonButtonStyle}" Background="#3498db" Margin="0,0,15,0"/>
+                            <Button Content="Log QSO" Command="{Binding QsoEntry.LogQsoCommand}"
+                                   Style="{StaticResource RibbonButtonStyle}" Background="#2E7D32" Margin="0,0,15,0"/>
+                            <Button Name="GridColumnsButton" Click="GridColumnsButton_Click"
+                                   Style="{StaticResource RibbonButtonStyle}" Background="#3498db">
+                                <emoji:TextBlock Text="⚙️ Columns" FontSize="13" Foreground="White"/>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
                 </Border>
 
                 <!-- CONTACT LOG GRID -->

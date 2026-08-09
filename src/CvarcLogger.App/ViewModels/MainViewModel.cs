@@ -24,6 +24,18 @@ public partial class MainViewModel : ObservableObject
         ImportExport.ImportCompleted += async (_, _) => await QsoLog.RefreshAsync();
         _wsjtxListener.QsoLogged += async (_, _) => await QsoLog.RefreshAsync();
         QsoLog.ColumnVisibilityChanged += (_, _) => QsoEntry.NotifyFieldVisibilityChanged();
+        QsoLog.ModeLabelsChanged += (_, _) => QsoEntry.NotifyModeLabelsChanged();
+
+        // Grid columns and entry-form fields now share one per-mode visibility set (SettingsService.
+        // GetHiddenColumns), so switching Log Entry Mode has to push the new mode into QsoLog even though
+        // no column checkbox was actually touched -- QsoLog.IsColumnVisible only reads whatever mode
+        // SetLiveMode last told it about, it doesn't watch QsoEntry itself.
+        QsoEntry.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(QsoEntryViewModel.SelectedEntryModeOption))
+                QsoLog.SetLiveMode(QsoEntry.SelectedEntryModeOption.Value.ToString());
+        };
+        QsoLog.SetLiveMode(QsoEntry.SelectedEntryModeOption.Value.ToString());
     }
 
     public async Task InitializeAsync()
