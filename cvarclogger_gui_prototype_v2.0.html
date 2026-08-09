@@ -2325,6 +2325,113 @@
         // Load saved column visibility and apply to grid on page load
         loadColumnVisibility();
         applyColumnVisibility();
+
+        // ===== API INTEGRATION =====
+        const API_BASE = 'http://localhost:5000/api';
+
+        // Load QSOs from API and populate table
+        async function loadQsosFromApi() {
+            try {
+                const response = await fetch(`${API_BASE}/qso`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const qsos = await response.json();
+                const tbody = document.querySelector('#contact-log tbody');
+
+                if (!qsos || qsos.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="12" style="text-align:center; padding:20px; color:#999;">No QSOs logged yet</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = qsos.map(qso => `
+                    <tr>
+                        <td>${formatDate(qso.qsoDateTimeOnUtc)}</td>
+                        <td><strong>${qso.callsign}</strong></td>
+                        <td>${qso.band || '-'}</td>
+                        <td>${qso.mode || '-'}</td>
+                        <td>${qso.frequency ? parseFloat(qso.frequency).toFixed(3) : '-'}</td>
+                        <td>${qso.rstSent || '-'}</td>
+                        <td>${qso.rstRcvd || '-'}</td>
+                        <td>${qso.name || '-'}</td>
+                        <td>${qso.gridSquare || '-'}</td>
+                        <td>${qso.comment || '-'}</td>
+                        <td><button onclick="deleteQsoFromApi(${qso.id})" style="padding:4px 8px; font-size:11px; background:#e74c3c; color:white; border:none; cursor:pointer; border-radius:2px;">Delete</button></td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading QSOs:', error);
+            }
+        }
+
+        // Save QSO to API
+        async function saveQsoToApi(formData) {
+            try {
+                const response = await fetch(`${API_BASE}/qso`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                alert('✓ QSO saved!');
+                loadQsosFromApi();
+            } catch (error) {
+                alert(`Error saving QSO: ${error.message}`);
+                console.error('Error:', error);
+            }
+        }
+
+        // Delete QSO from API
+        async function deleteQsoFromApi(id) {
+            if (!confirm('Delete this QSO?')) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/qso/${id}`, { method: 'DELETE' });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                loadQsosFromApi();
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            }
+        }
+
+        // Format date for display
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleString('en-US', {
+                year: 'numeric', month: '2-digit', day: '2-digit',
+                hour: '2-digit', minute: '2-digit'
+            });
+        }
+
+        // Hook up Log QSO button to save to API
+        const originalLogButton = document.querySelector('button[onclick*="logQso"]');
+        if (originalLogButton) {
+            originalLogButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                const form = document.getElementById('normal-form');
+                if (!form) return;
+
+                const qsoData = {
+                    callsign: form.querySelector('[name="callsign"]')?.value || '',
+                    qsoDateTimeOnUtc: new Date(form.querySelector('[name="date"]')?.value || Date.now()).toISOString(),
+                    band: form.querySelector('[name="band"]')?.value || '',
+                    mode: form.querySelector('[name="mode"]')?.value || '',
+                    frequency: parseFloat(form.querySelector('[name="frequency"]')?.value) || null,
+                    rstSent: form.querySelector('[name="rstSent"]')?.value || null,
+                    rstRcvd: form.querySelector('[name="rstRcvd"]')?.value || null,
+                    name: form.querySelector('[name="name"]')?.value || null,
+                    gridSquare: form.querySelector('[name="gridSquare"]')?.value || null,
+                    comment: form.querySelector('[name="comment"]')?.value || null
+                };
+
+                saveQsoToApi(qsoData);
+            });
+        }
+
+        // Load QSOs on page load
+        window.addEventListener('load', loadQsosFromApi);
     </script>
 </body>
 </html>

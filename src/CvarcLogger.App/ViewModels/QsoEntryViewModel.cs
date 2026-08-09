@@ -28,6 +28,8 @@ public partial class QsoEntryViewModel : ObservableObject
     private readonly DialogService _dialogService;
     private readonly IClock _clock;
     private readonly GridTrackerBroadcastService _gridTrackerBroadcast;
+    private readonly SotaRefDatabase _sotaRefDb;
+    private readonly PotaRefDatabase _potaRefDb;
     private readonly DispatcherTimer _catPollTimer;
     private readonly DispatcherTimer _liveClockTimer;
     private string? _lastLookedUpCallsign;
@@ -221,6 +223,101 @@ public partial class QsoEntryViewModel : ObservableObject
     public Visibility ShowSotaRefWarning => IsSotaRefValid ? Visibility.Collapsed : Visibility.Visible;
     public Visibility ShowMySigInfoWarning => IsMySigInfoValid ? Visibility.Collapsed : Visibility.Visible;
     public Visibility ShowSigInfoWarning => IsSigInfoValid ? Visibility.Collapsed : Visibility.Visible;
+
+    // Chaser-focused reference lookup: when the operator types a *contacted* station's SOTA/POTA
+    // reference (SotaRef/SigInfo -- not the My... sticky variants, which describe the operator's own
+    // activation and aren't looked up), resolve its name/detail from the local reference database (see
+    // SotaRefDatabase/PotaRefDatabase, downloaded via the "Sota DB"/"Pota DB" sidebar buttons) and show
+    // it in the same label spot the format warning above uses. The two are naturally mutually exclusive:
+    // a lookup only runs once the format is already valid, so the warning is never visible at the same
+    // time as a resolved name.
+    [ObservableProperty] private string? sotaLookupText;
+    [ObservableProperty] private string? potaLookupText;
+    public Visibility ShowSotaLookupText => string.IsNullOrEmpty(SotaLookupText) ? Visibility.Collapsed : Visibility.Visible;
+    public Visibility ShowPotaLookupText => string.IsNullOrEmpty(PotaLookupText) ? Visibility.Collapsed : Visibility.Visible;
+
+    // Force-uppercase as the operator types (not just at save time, like State/ArrlSection) -- both
+    // ReferenceFormatStandards' regexes and the reference database's ref column are uppercase, and the
+    // field updates live (UpdateSourceTrigger=PropertyChanged, see QsoEntryView.xaml) specifically so the
+    // lookup can fire without a click-away, so lowercase input needs correcting immediately rather than
+    // only at save. Setting the property back to its own uppercase form re-enters this same handler once
+    // more, already uppercase, which is what actually triggers the lookup.
+    partial void OnSotaRefChanged(string? value)
+    {
+        if (value is not null && value != value.ToUpperInvariant()) { SotaRef = value.ToUpperInvariant(); return; }
+        _ = ResolveSotaRefAsync(value);
+    }
+
+    partial void OnSigInfoChanged(string? value)
+    {
+        if (value is not null && value != value.ToUpperInvariant()) { SigInfo = value.ToUpperInvariant(); return; }
+        _ = ResolvePotaRefAsync(value);
+    }
+
+    private async Task ResolveSotaRefAsync(string? value)
+    {
+        SotaLookupText = null;
+        OnPropertyChanged(nameof(ShowSotaLookupText));
+        if (string.IsNullOrWhiteSpace(value) || !ReferenceFormatStandards.IsValidSotaRef(value)) return;
+
+        var info = await _sotaRefDb.LookupAsync(value);
+        if (value != SotaRef) return; // the field changed again while this lookup was in flight
+
+        SotaLookupText = info?.Display;
+        OnPropertyChanged(nameof(ShowSotaLookupText));
+    }
+
+    private async Task ResolvePotaRefAsync(string? value)
+    {
+        PotaLookupText = null;
+        OnPropertyChanged(nameof(ShowPotaLookupText));
+        if (string.IsNullOrWhiteSpace(value) || !ReferenceFormatStandards.IsValidPotaRef(value)) return;
+
+        var info = await _potaRefDb.LookupAsync(value);
+        if (value != SigInfo) return; // the field changed again while this lookup was in flight
+
+        PotaLookupText = info?.Display;
+        OnPropertyChanged(nameof(ShowPotaLookupText));
+    }
+
+    [ObservableProperty] private bool isUpdatingSotaDb;
+    [ObservableProperty] private bool isUpdatingPotaDb;
+
+    /// <summary>"Sota DB" sidebar button: downloads/rebuilds the local SOTA reference database (see
+    /// SotaRefDatabase.UpdateAsync) so SOTA reference lookups on the entry form work offline and don't
+    /// depend on any per-call network request.</summary>
+    [RelayCommand]
+    private async Task UpdateSotaDbAsync()
+    {
+        IsUpdatingSotaDb = true;
+        try
+        {
+            int count = await _sotaRefDb.UpdateAsync();
+            if (count > 0) _dialogService.ShowInfo($"SOTA reference database updated: {count:N0} summits.");
+            else _dialogService.ShowError("Could not update the SOTA reference database. Check your connection and try again.");
+        }
+        finally
+        {
+            IsUpdatingSotaDb = false;
+        }
+    }
+
+    /// <summary>"Pota DB" sidebar button, mirrors UpdateSotaDbAsync for PotaRefDatabase.</summary>
+    [RelayCommand]
+    private async Task UpdatePotaDbAsync()
+    {
+        IsUpdatingPotaDb = true;
+        try
+        {
+            int count = await _potaRefDb.UpdateAsync();
+            if (count > 0) _dialogService.ShowInfo($"POTA reference database updated: {count:N0} parks.");
+            else _dialogService.ShowError("Could not update the POTA reference database. Check your connection and try again.");
+        }
+        finally
+        {
+            IsUpdatingPotaDb = false;
+        }
+    }
 
     // Contest/SKCC fields. These describe the *contacted* station (what they sent), so -- like SotaRef/
     // SigInfo above -- they reset per QSO, not sticky.
@@ -500,7 +597,9 @@ public partial class QsoEntryViewModel : ObservableObject
         SettingsService settings,
         DialogService dialogService,
         IClock clock,
-        GridTrackerBroadcastService gridTrackerBroadcast)
+        GridTrackerBroadcastService gridTrackerBroadcast,
+        SotaRefDatabase sotaRefDb,
+        PotaRefDatabase potaRefDb)
     {
         _qsoRepository = qsoRepository;
         _stationProfileRepository = stationProfileRepository;
@@ -513,6 +612,8 @@ public partial class QsoEntryViewModel : ObservableObject
         _dialogService = dialogService;
         _clock = clock;
         _gridTrackerBroadcast = gridTrackerBroadcast;
+        _sotaRefDb = sotaRefDb;
+        _potaRefDb = potaRefDb;
 
         _catPollTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1.5) };
         _catPollTimer.Tick += OnCatPollTick;

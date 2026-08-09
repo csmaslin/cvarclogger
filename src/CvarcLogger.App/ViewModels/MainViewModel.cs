@@ -1,3 +1,4 @@
+using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CvarcLogger.App.Services;
 using CvarcLogger.Core.UiStandards;
@@ -26,14 +27,29 @@ public partial class MainViewModel : ObservableObject
         QsoLog.ColumnVisibilityChanged += (_, _) => QsoEntry.NotifyFieldVisibilityChanged();
         QsoLog.ModeLabelsChanged += (_, _) => QsoEntry.NotifyModeLabelsChanged();
 
+        // Picking a different tab in the Column Visibility picker switches the app's actual live mode
+        // to match (sidebar highlight included) -- full two-way sync with the sidebar's mode buttons,
+        // per the operator's explicit request.
+        QsoLog.PickerModeTabChanged += (_, mode) => QsoEntry.SelectedEntryModeOption = QsoEntryModeOptions.For(mode);
+
         // Grid columns and entry-form fields now share one per-mode visibility set (SettingsService.
         // GetHiddenColumns), so switching Log Entry Mode has to push the new mode into QsoLog even though
         // no column checkbox was actually touched -- QsoLog.IsColumnVisible only reads whatever mode
-        // SetLiveMode last told it about, it doesn't watch QsoEntry itself.
+        // SetLiveMode last told it about, it doesn't watch QsoEntry itself. This also keeps the picker's
+        // selected tab following the live mode continuously (not just at the moment the picker is opened),
+        // so a sidebar click while the picker is already open moves its tab too. Safe against feedback
+        // with PickerModeTabChanged above: both QsoEntryModeOption and ColumnPickerModeTab lookups here
+        // resolve to the SAME already-selected instance once in sync, so the generated property setters'
+        // equality checks make the second leg of any round trip a no-op.
         QsoEntry.PropertyChanged += (_, e) =>
         {
             if (e.PropertyName == nameof(QsoEntryViewModel.SelectedEntryModeOption))
+            {
                 QsoLog.SetLiveMode(QsoEntry.SelectedEntryModeOption.Value.ToString());
+
+                var matchingTab = QsoLog.PickerModeTabs.FirstOrDefault(t => t.Value == QsoEntry.SelectedEntryModeOption.Value);
+                if (matchingTab is not null) QsoLog.SelectedPickerModeTab = matchingTab;
+            }
         };
         QsoLog.SetLiveMode(QsoEntry.SelectedEntryModeOption.Value.ToString());
     }

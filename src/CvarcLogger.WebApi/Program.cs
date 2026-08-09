@@ -1,4 +1,5 @@
 using CvarcLogger.Data;
+using CvarcLogger.Data.Models;
 using CvarcLogger.Core.Abstractions;
 using CvarcLogger.Data.Repositories;
 using CvarcLogger.App.Services;
@@ -35,17 +36,12 @@ builder.Services.AddSwaggerGen();
 // Register core abstractions
 builder.Services.AddSingleton<IClock, SystemClock>();
 
-// Register data access layer
-builder.Services.AddDbContext<CvarcLoggerDbContext>(options =>
+// Register data access layer - use scaffolded DbContext
+builder.Services.AddDbContext<CvarcloggerContext>(options =>
 {
-    var dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CvarcLogger", "cvarclogger.db");
+    var dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CVARC Logger", "cvarclogger.db");
     options.UseSqlite($"Data Source={dbPath}");
 });
-builder.Services.AddScoped<IQsoRepository, QsoRepository>();
-builder.Services.AddScoped<IStationProfileRepository, StationProfileRepository>();
-builder.Services.AddScoped<IDxccEntityRepository, DxccEntityRepository>();
-builder.Services.AddScoped<ISotaActivationRepository, SotaActivationRepository>();
-builder.Services.AddScoped<IPotaActivationRepository, PotaActivationRepository>();
 
 // Register application services
 builder.Services.AddSingleton<SettingsService>();
@@ -57,17 +53,16 @@ builder.Services.AddHttpClient<CallookLookupService>();
 builder.Services.AddHttpClient<QrzLookupService>();
 builder.Services.AddHttpClient<QrzCqLookupService>();
 builder.Services.AddScoped<LookupCoordinator>();
-builder.Services.AddScoped<LookupCoordinator>();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 app.UseCors("AllowPrototype");
 app.UseAuthorization();
 app.MapControllers();

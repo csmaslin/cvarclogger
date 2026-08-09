@@ -1,4 +1,4 @@
-<Window x:Class="CvarcLogger.App.Views.QsoEditWindow"
+﻿<Window x:Class="CvarcLogger.App.Views.QsoEditWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -7,23 +7,49 @@
         xmlns:behaviors="clr-namespace:CvarcLogger.App.Behaviors"
         mc:Ignorable="d"
         Title="Edit QSO" Icon="/Assets/AppIcon.ico" Height="900" Width="1000" MinHeight="500" MinWidth="660" WindowStartupLocation="CenterOwner"
-        ResizeMode="CanResize">
+        ResizeMode="CanResize" Background="#E8F4FC">
     <!-- Return saves the edited QSO, mirroring the main entry form where Return logs the QSO. -->
     <Window.InputBindings>
         <KeyBinding Key="Return" Command="{Binding SaveCommand}"/>
     </Window.InputBindings>
     <Window.Resources>
         <converters:SubModeVisibilityConverter x:Key="SubModeVisibilityConverter"/>
-        <!-- A fixed Height so every TextBox and every ComboBox in this window measures identically.
-             ComboBox's extra dropdown-arrow chrome otherwise makes it a few pixels taller than a plain
-             TextBox by default, misaligning the two control types row to row. The whole form sits inside
-             a Viewbox (see below), so this natural/unscaled height still scales proportionally with
-             everything else at runtime. -->
+        <!-- No fixed Height (unlike before): natural sizing from Padding+FontSize so a larger FontSize
+             here automatically grows the box to fit, the same "no explicit Height" lesson the main entry
+             form's fields already settled on. ComboBox's extra dropdown-arrow chrome makes its natural
+             height a few px different from a plain TextBox's; Padding is tuned per control below so both
+             land close enough not to visibly mismatch row to row. The whole form sits inside a Viewbox
+             (see below), so this natural height still scales proportionally with everything else. -->
         <Style TargetType="TextBox">
-            <Setter Property="Height" Value="32"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#555555"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="6,5"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <!-- Beta feedback: hard to tell which field currently has the text cursor. Thicker +
+                 accent-blue border on focus, same treatment as the main entry form (see App.xaml).
+                 This window defines its own local TextBox/ComboBox styles, which shadow the App.xaml
+                 ones, so it needs its own copy of the trigger rather than inheriting it. -->
+            <Style.Triggers>
+                <Trigger Property="IsFocused" Value="True">
+                    <Setter Property="BorderBrush" Value="#3498db"/>
+                    <Setter Property="BorderThickness" Value="2"/>
+                </Trigger>
+            </Style.Triggers>
         </Style>
         <Style TargetType="ComboBox">
-            <Setter Property="Height" Value="32"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#555555"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="6,3"/>
+            <Style.Triggers>
+                <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                    <Setter Property="BorderBrush" Value="#3498db"/>
+                    <Setter Property="BorderThickness" Value="2"/>
+                </Trigger>
+            </Style.Triggers>
         </Style>
         <!-- Centers every field caption over its input control (each is the first child of its own
              StackPanel, directly above a TextBox/ComboBox), and reserves the same MinHeight for all of
@@ -38,18 +64,23 @@
             <Setter Property="TextAlignment" Value="Center"/>
             <Setter Property="TextWrapping" Value="Wrap"/>
             <Setter Property="MinHeight" Value="36"/>
+            <Setter Property="Foreground" Value="#555555"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="15"/>
         </Style>
     </Window.Resources>
     <DockPanel>
-        <Border DockPanel.Dock="Top" Background="MediumBlue" Padding="0,8">
+        <Border DockPanel.Dock="Top" Background="#3498db" Padding="0,8">
             <TextBlock Text="EDIT QSO" FontSize="14" FontWeight="Bold" Foreground="White"
                        HorizontalAlignment="Center" TextAlignment="Center"/>
         </Border>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="14,10,14,10" DockPanel.Dock="Bottom">
-            <Button Content="Lookup" Command="{Binding LookupCommand}" Padding="14,4" Margin="0,0,8,0"/>
-            <Button Content="Cancel" Click="Cancel_Click" Padding="14,4" Margin="0,0,8,0"/>
+            <Button Content="Lookup" Command="{Binding LookupCommand}" Padding="14,4" Margin="0,0,8,0"
+                    Background="#3498db" Foreground="White" BorderThickness="0" FontWeight="SemiBold" Cursor="Hand"/>
+            <Button Content="Cancel" Click="Cancel_Click" Padding="14,4" Margin="0,0,8,0"
+                    Background="#7f8c8d" Foreground="White" BorderThickness="0" FontWeight="SemiBold" Cursor="Hand"/>
             <Button Content="Save" Command="{Binding SaveCommand}" Padding="14,4"
-                    Background="#2E7D32" Foreground="White" FontWeight="Bold"/>
+                    Background="#2E7D32" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand"/>
         </StackPanel>
         <!-- Fixed Width so the WrapPanels below wrap predictably regardless of window size. Viewbox
              always measures its child at infinite available size to learn its natural size. -->
@@ -57,132 +88,132 @@
     <StackPanel Margin="14" Width="660">
         <WrapPanel>
             <StackPanel Margin="0,0,10,8" Width="150">
-                <TextBlock Text="Date/Time On (UTC)" FontSize="11" Foreground="Gray"/>
+                <TextBlock Text="Date/Time On (UTC)"/>
                 <TextBox TextAlignment="Center" Text="{Binding QsoDateTimeUtcText, UpdateSourceTrigger=PropertyChanged}"
                          behaviors:DateInputMask.Format="yyyy-MM-dd HH:mm"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="150">
-                <TextBlock Text="Local Date/Time" FontSize="11" Foreground="Gray"/>
+                <TextBlock Text="Local Date/Time"/>
                 <TextBox TextAlignment="Center" Text="{Binding LocalDateTimeText, UpdateSourceTrigger=PropertyChanged}"
                          behaviors:DateInputMask.Format="yyyy-MM-dd HH:mm"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="100">
-                <TextBlock Text="Callsign" FontSize="11" Foreground="Gray"/>
+                <TextBlock Text="Callsign"/>
                 <TextBox Text="{Binding Callsign, UpdateSourceTrigger=PropertyChanged}"
                          CharacterCasing="Upper" FontWeight="Bold"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="65">
-                <TextBlock Text="Band" FontSize="11" Foreground="Gray"/>
+                <TextBlock Text="Band"/>
                 <ComboBox ItemsSource="{Binding Bands}" SelectedItem="{Binding Band}" IsEditable="True"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="90">
-                <TextBlock Text="Mode" FontSize="11" Foreground="Gray"/>
+                <TextBlock Text="Mode"/>
                 <ComboBox ItemsSource="{Binding Modes}" SelectedItem="{Binding Mode}" IsEditable="True"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="90"
                         Visibility="{Binding Mode, Converter={StaticResource SubModeVisibilityConverter}}">
-                <TextBlock Text="Sub-Mode" FontSize="11" Foreground="Gray"/>
+                <TextBlock Text="Sub-Mode"/>
                 <ComboBox ItemsSource="{Binding SubModes}" SelectedItem="{Binding SubMode}" IsEditable="True"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="70">
-                <TextBlock Text="Freq (MHz)" FontSize="11" Foreground="Gray" TextWrapping="Wrap"/>
+                <TextBlock Text="Freq (MHz)" TextWrapping="Wrap"/>
                 <TextBox Text="{Binding FrequencyMhz, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
             <StackPanel Margin="0,0,0,8" Width="70">
-                <TextBlock Text="Freq Rx (MHz)" FontSize="11" Foreground="Gray" TextWrapping="Wrap"/>
+                <TextBlock Text="Freq Rx (MHz)" TextWrapping="Wrap"/>
                 <TextBox Text="{Binding FrequencyRxMhz, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
         </WrapPanel>
 
         <WrapPanel>
             <StackPanel Margin="0,0,10,8" Width="50">
-                <TextBlock Text="RST Sent" FontSize="11" Foreground="Gray" TextWrapping="Wrap"/>
+                <TextBlock Text="RST Sent" TextWrapping="Wrap"/>
                 <TextBox TextAlignment="Center" Text="{Binding RstSent, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="50">
-                <TextBlock Text="RST Rcvd" FontSize="11" Foreground="Gray" TextWrapping="Wrap"/>
+                <TextBlock Text="RST Rcvd" TextWrapping="Wrap"/>
                 <TextBox TextAlignment="Center" Text="{Binding RstRcvd, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="160">
-                <TextBlock Text="Name" FontSize="11" Foreground="Gray"/>
+                <TextBlock Text="Name"/>
                 <TextBox TextAlignment="Center" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="70">
-                <TextBlock Text="Grid" FontSize="11" Foreground="Gray"/>
+                <TextBlock Text="Grid"/>
                 <TextBox TextAlignment="Center" Text="{Binding GridSquare, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="120">
-                <TextBlock Text="City" FontSize="11" Foreground="Gray"/>
+                <TextBlock Text="City"/>
                 <TextBox TextAlignment="Center" Text="{Binding City, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="45">
-                <TextBlock Text="State" FontSize="11" Foreground="Gray" TextWrapping="Wrap"/>
+                <TextBlock Text="State" TextWrapping="Wrap"/>
                 <TextBox TextAlignment="Center" Text="{Binding State, UpdateSourceTrigger=PropertyChanged}" CharacterCasing="Upper"/>
             </StackPanel>
             <StackPanel Margin="0,0,0,8" Width="100">
-                <TextBlock Text="County" FontSize="11" Foreground="Gray"/>
+                <TextBlock Text="County"/>
                 <TextBox TextAlignment="Center" Text="{Binding County, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
         </WrapPanel>
 
         <WrapPanel>
             <StackPanel Margin="0,0,10,8" Width="180">
-                <TextBlock Text="Country" FontSize="11" Foreground="Gray"/>
+                <TextBlock Text="Country"/>
                 <TextBox TextAlignment="Center" Text="{Binding Country, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="60">
-                <TextBlock Text="ARRL Section" FontSize="11" Foreground="Gray" TextWrapping="Wrap"/>
+                <TextBlock Text="ARRL Section" TextWrapping="Wrap"/>
                 <TextBox TextAlignment="Center" Text="{Binding ArrlSection, UpdateSourceTrigger=PropertyChanged}" CharacterCasing="Upper"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="80">
-                <TextBlock Text="Continent" FontSize="11" Foreground="Gray"/>
+                <TextBlock Text="Continent"/>
                 <TextBox TextAlignment="Center" Text="{Binding Continent, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="50">
-                <TextBlock Text="CQ Zone" FontSize="11" Foreground="Gray" TextWrapping="Wrap"/>
+                <TextBlock Text="CQ Zone" TextWrapping="Wrap"/>
                 <TextBox TextAlignment="Center" Text="{Binding CqZone, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="50">
-                <TextBlock Text="ITU Zone" FontSize="11" Foreground="Gray" TextWrapping="Wrap"/>
+                <TextBlock Text="ITU Zone" TextWrapping="Wrap"/>
                 <TextBox TextAlignment="Center" Text="{Binding ItuZone, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
             <StackPanel Margin="0,0,0,8" Width="80">
-                <TextBlock Text="TX Power (W)" FontSize="11" Foreground="Gray"/>
+                <TextBlock Text="TX Power (W)"/>
                 <TextBox TextAlignment="Center" Text="{Binding TxPowerWatts, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
         </WrapPanel>
 
         <WrapPanel>
             <StackPanel Margin="0,0,10,8" Width="140">
-                <TextBlock Text="Station Callsign" FontSize="11" Foreground="Gray"/>
+                <TextBlock Text="Station Callsign"/>
                 <TextBox Text="{Binding StationCallsign, UpdateSourceTrigger=PropertyChanged}" CharacterCasing="Upper"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="120">
-                <TextBlock Text="Operator" FontSize="11" Foreground="Gray"/>
+                <TextBlock Text="Operator"/>
                 <TextBox Text="{Binding OperatorCallsign, UpdateSourceTrigger=PropertyChanged}" CharacterCasing="Upper"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="70">
-                <TextBlock Text="My Grid" FontSize="11" Foreground="Gray"/>
+                <TextBlock Text="My Grid"/>
                 <TextBox TextAlignment="Center" Text="{Binding MyGridSquare, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="45">
-                <TextBlock Text="My State" FontSize="11" Foreground="Gray" TextWrapping="Wrap"/>
+                <TextBlock Text="My State" TextWrapping="Wrap"/>
                 <TextBox TextAlignment="Center" Text="{Binding MyState, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="100">
-                <TextBlock Text="My County" FontSize="11" Foreground="Gray"/>
+                <TextBlock Text="My County"/>
                 <TextBox TextAlignment="Center" Text="{Binding MyCounty, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="100">
-                <TextBlock Text="QTH" FontSize="11" Foreground="Gray"/>
+                <TextBlock Text="QTH"/>
                 <TextBox TextAlignment="Center" Text="{Binding Qth, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="90">
-                <TextBlock Text="OP" FontSize="11" Foreground="Gray"/>
+                <TextBlock Text="OP"/>
                 <TextBox TextAlignment="Center" Text="{Binding Op, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="90">
-                <TextBlock Text="UTC Offset (h)" FontSize="11" Foreground="Gray"/>
+                <TextBlock Text="UTC Offset (h)"/>
                 <TextBox TextAlignment="Center" Text="{Binding UtcOffsetHours, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
             <StackPanel Margin="0,0,0,8" Width="110" VerticalAlignment="Bottom">
@@ -192,7 +223,7 @@
 
         <WrapPanel>
             <StackPanel Margin="0,0,0,8" Width="500">
-                <TextBlock Text="Comment" FontSize="11" Foreground="Gray"/>
+                <TextBlock Text="Comment"/>
                 <TextBox Text="{Binding Comment, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
         </WrapPanel>
@@ -202,19 +233,19 @@
         <TextBlock Text="SOTA / POTA" FontWeight="Bold" Margin="0,0,0,6"/>
         <WrapPanel>
             <StackPanel Margin="0,0,10,8" Width="100">
-                <TextBlock Text="My SOTA" FontSize="11" Foreground="Gray"/>
+                <TextBlock Text="My SOTA"/>
                 <TextBox TextAlignment="Center" Text="{Binding MySotaRef, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="100">
-                <TextBlock Text="SOTA" FontSize="11" Foreground="Gray"/>
+                <TextBlock Text="SOTA"/>
                 <TextBox TextAlignment="Center" Text="{Binding SotaRef, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="160">
-                <TextBlock Text="My POTA" FontSize="11" Foreground="Gray"/>
+                <TextBlock Text="My POTA"/>
                 <TextBox TextAlignment="Center" Text="{Binding MySigInfo, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
             <StackPanel Margin="0,0,0,8" Width="160">
-                <TextBlock Text="POTA" FontSize="11" Foreground="Gray"/>
+                <TextBlock Text="POTA"/>
                 <TextBox TextAlignment="Center" Text="{Binding SigInfo, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
         </WrapPanel>
@@ -224,44 +255,44 @@
         <TextBlock Text="QSL Status" FontWeight="Bold" Margin="0,0,0,6"/>
         <WrapPanel>
             <StackPanel Margin="0,0,10,8" Width="130">
-                <TextBlock Text="QSL Sent" FontSize="11" Foreground="Gray"/>
+                <TextBlock Text="QSL Sent"/>
                 <ComboBox ItemsSource="{Binding QslStatuses}" SelectedItem="{Binding QslSent}"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="110">
-                <TextBlock Text="QSL Sent Date" FontSize="11" Foreground="Gray"/>
+                <TextBlock Text="QSL Sent Date"/>
                 <TextBox TextAlignment="Center" Text="{Binding QslSentDateText, UpdateSourceTrigger=PropertyChanged}"
                          behaviors:DateInputMask.Format="yyyy-MM-dd"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="130">
-                <TextBlock Text="QSL Rcvd" FontSize="11" Foreground="Gray"/>
+                <TextBlock Text="QSL Rcvd"/>
                 <ComboBox ItemsSource="{Binding QslStatuses}" SelectedItem="{Binding QslRcvd}"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="110">
-                <TextBlock Text="QSL Rcvd Date" FontSize="11" Foreground="Gray"/>
+                <TextBlock Text="QSL Rcvd Date"/>
                 <TextBox TextAlignment="Center" Text="{Binding QslRcvdDateText, UpdateSourceTrigger=PropertyChanged}"
                          behaviors:DateInputMask.Format="yyyy-MM-dd"/>
             </StackPanel>
             <StackPanel Margin="0,0,0,8" Width="110">
-                <TextBlock Text="QSL Via" FontSize="11" Foreground="Gray"/>
+                <TextBlock Text="QSL Via"/>
                 <TextBox TextAlignment="Center" Text="{Binding QslViaCallsign, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
         </WrapPanel>
         <WrapPanel>
             <StackPanel Margin="0,0,10,8" Width="130">
-                <TextBlock Text="LoTW Sent" FontSize="11" Foreground="Gray"/>
+                <TextBlock Text="LoTW Sent"/>
                 <ComboBox ItemsSource="{Binding QslStatuses}" SelectedItem="{Binding LotwQslSent}"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="110">
-                <TextBlock Text="LoTW Sent Date" FontSize="11" Foreground="Gray"/>
+                <TextBlock Text="LoTW Sent Date"/>
                 <TextBox TextAlignment="Center" Text="{Binding LotwQslSentDateText, UpdateSourceTrigger=PropertyChanged}"
                          behaviors:DateInputMask.Format="yyyy-MM-dd"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="130">
-                <TextBlock Text="LoTW Rcvd" FontSize="11" Foreground="Gray"/>
+                <TextBlock Text="LoTW Rcvd"/>
                 <ComboBox ItemsSource="{Binding QslStatuses}" SelectedItem="{Binding LotwQslRcvd}"/>
             </StackPanel>
             <StackPanel Margin="0,0,0,8" Width="110">
-                <TextBlock Text="LoTW Rcvd Date" FontSize="11" Foreground="Gray"/>
+                <TextBlock Text="LoTW Rcvd Date"/>
                 <TextBox TextAlignment="Center" Text="{Binding LotwQslRcvdDateText, UpdateSourceTrigger=PropertyChanged}"
                          behaviors:DateInputMask.Format="yyyy-MM-dd"/>
             </StackPanel>

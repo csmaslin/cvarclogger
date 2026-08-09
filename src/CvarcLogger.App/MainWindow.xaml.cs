@@ -1,8 +1,10 @@
+using System.ComponentModel;
 using System.IO;
 using System.Windows;
 using CvarcLogger.App.Services;
 using CvarcLogger.App.ViewModels;
 using CvarcLogger.App.Views;
+using CvarcLogger.Core.UiStandards;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace CvarcLogger.App;
@@ -26,6 +28,17 @@ public partial class MainWindow : Window
         string dbPath = SettingsService.ResolveActiveDatabasePath();
         LogNameText.Text = $"Log: {Path.GetFileName(dbPath)}";
         LogNameText.ToolTip = dbPath;
+
+        // The sidebar's "active mode" highlight has to react to SelectedEntryModeOption changing from
+        // *any* source, not just a sidebar button click -- picking a different tab in the Column
+        // Visibility picker now also changes the live mode (see MainViewModel's PickerModeTabChanged
+        // wiring), and the highlight needs to follow that too.
+        _viewModel.QsoEntry.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(QsoEntryViewModel.SelectedEntryModeOption))
+                UpdateModeButtonStyles(_viewModel.QsoEntry.SelectedEntryModeOption.Value);
+        };
+        UpdateModeButtonStyles(_viewModel.QsoEntry.SelectedEntryModeOption.Value);
     }
 
     private async void Window_Loaded(object sender, RoutedEventArgs e)
@@ -81,6 +94,9 @@ public partial class MainWindow : Window
 
     private void ColumnsButton_Click(object sender, RoutedEventArgs e)
     {
+        // SelectedPickerModeTab is kept continuously in sync with the live mode by MainViewModel's
+        // QsoEntry.PropertyChanged subscription, so no open-time sync is needed here -- the picker already
+        // reflects whatever mode is live, whether it was already open or is being created just now.
         if (_columnPickerWindow is not null)
         {
             _columnPickerWindow.Activate();
@@ -104,15 +120,20 @@ public partial class MainWindow : Window
 
     private void SwitchMode(string modeName)
     {
-        // Update active button styling
-        NormalModeButton.Style = modeName == "Normal" ? Resources["SidebarButtonActiveStyle"] as Style : Resources["SidebarButtonStyle"] as Style;
-        ContestModeButton.Style = modeName == "Contest" ? Resources["SidebarButtonActiveStyle"] as Style : Resources["SidebarButtonStyle"] as Style;
-        SotaModeButton.Style = modeName == "SOTA" ? Resources["SidebarButtonActiveStyle"] as Style : Resources["SidebarButtonStyle"] as Style;
-        PotaModeButton.Style = modeName == "POTA" ? Resources["SidebarButtonActiveStyle"] as Style : Resources["SidebarButtonStyle"] as Style;
-        AllModeButton.Style = modeName == "All" ? Resources["SidebarButtonActiveStyle"] as Style : Resources["SidebarButtonStyle"] as Style;
-
-        // Switch the entry form based on mode
+        // Sets QsoEntry.SelectedEntryModeOption, which the PropertyChanged subscription in the
+        // constructor picks up to update the sidebar highlight (see UpdateModeButtonStyles) -- so a
+        // sidebar click and a Column Visibility picker tab change both end up driving the highlight
+        // through the exact same path, rather than this method needing its own separate styling logic.
         _viewModel.SwitchMode(modeName);
+    }
+
+    private void UpdateModeButtonStyles(QsoEntryMode mode)
+    {
+        NormalModeButton.Style = mode == QsoEntryMode.Normal ? Resources["SidebarButtonActiveStyle"] as Style : Resources["SidebarButtonStyle"] as Style;
+        ContestModeButton.Style = mode == QsoEntryMode.Contest ? Resources["SidebarButtonActiveStyle"] as Style : Resources["SidebarButtonStyle"] as Style;
+        SotaModeButton.Style = mode == QsoEntryMode.Sota ? Resources["SidebarButtonActiveStyle"] as Style : Resources["SidebarButtonStyle"] as Style;
+        PotaModeButton.Style = mode == QsoEntryMode.Pota ? Resources["SidebarButtonActiveStyle"] as Style : Resources["SidebarButtonStyle"] as Style;
+        AllModeButton.Style = mode == QsoEntryMode.All ? Resources["SidebarButtonActiveStyle"] as Style : Resources["SidebarButtonStyle"] as Style;
     }
 
     private void GridColumnsButton_Click(object sender, RoutedEventArgs e) => ColumnsButton_Click(sender, e);

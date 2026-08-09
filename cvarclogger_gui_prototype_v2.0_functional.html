@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CVARC Logger - Functional Prototype</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        :root {
+            --primary: #3498db;
+            --grey-dark: #34495e;
+            --grey-light: #ecf0f1;
+            --border: #bdc3c7;
+            --text: #2c3e50;
+            --danger: #e74c3c;
+        }
+
+        .header {
+            background: var(--primary);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            letter-spacing: 1px;
+        }
+
+        .container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            gap: 10px;
+            padding: 10px;
+        }
+
+        .panel {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 15px;
+            overflow-y: auto;
+        }
+
+        .entry-panel {
+            flex: 0 0 35%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .grid-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 4px;
+            font-size: 12px;
+        }
+
+        input, select, textarea {
+            padding: 8px;
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            font-family: inherit;
+            font-size: 13px;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .button {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 3px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+
+        .btn-secondary {
+            background: var(--grey-light);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: #d5dbdb;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .grid-container {
+            flex: 1;
+            overflow: auto;
+            border: 1px solid var(--border);
+            border-radius: 3px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        th {
+            background: var(--grey-dark);
+            color: white;
+            padding: 10px;
+            text-align: left;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+
+        td {
+            padding: 8px 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        tr:hover {
+            background: #f9f9f9;
+        }
+
+        .status {
+            padding: 10px;
+            border-radius: 3px;
+            margin-bottom: 10px;
+            font-size: 12px;
+        }
+
+        .status-info {
+            background: #d6eaf8;
+            color: #1a5276;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .file-label {
+            padding: 10px 16px;
+            background: var(--grey-light);
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            display: inline-block;
+        }
+
+        .file-label:hover {
+            background: #d5dbdb;
+        }
+
+        .empty-state {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 200px;
+            color: #95a5a6;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>CVARC Logger - Functional Prototype</h1>
+    </div>
+
+    <div class="container">
+        <!-- ENTRY FORM PANEL -->
+        <div class="panel entry-panel">
+            <h2 style="margin-bottom: 15px; color: var(--text);">Log QSO</h2>
+
+            <div id="formStatus" class="status status-info" style="display:none;"></div>
+
+            <form id="qsoForm">
+                <div class="form-group">
+                    <label>Callsign *</label>
+                    <input type="text" id="callsign" required placeholder="W5ABC">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Date/Time (UTC) *</label>
+                        <input type="datetime-local" id="dateTime" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Band *</label>
+                        <select id="band" required>
+                            <option value="">Select Band</option>
+                            <option value="160m">160m</option>
+                            <option value="80m">80m</option>
+                            <option value="40m">40m</option>
+                            <option value="20m">20m</option>
+                            <option value="15m">15m</option>
+                            <option value="10m">10m</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Mode *</label>
+                        <select id="mode" required>
+                            <option value="">Select Mode</option>
+                            <option value="SSB">SSB</option>
+                            <option value="CW">CW</option>
+                            <option value="DATA">DATA</option>
+                            <option value="FM">FM</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Frequency (MHz)</label>
+                        <input type="number" id="frequency" step="0.001" placeholder="14.200">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>RST Sent</label>
+                        <input type="text" id="rstSent" placeholder="599">
+                    </div>
+                    <div class="form-group">
+                        <label>RST Rcvd</label>
+                        <input type="text" id="rstRcvd" placeholder="599">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" id="name" placeholder="John">
+                </div>
+
+                <div class="form-group">
+                    <label>Grid Square</label>
+                    <input type="text" id="gridSquare" placeholder="AA00AA">
+                </div>
+
+                <div class="form-group">
+                    <label>Comments</label>
+                    <textarea id="comments" rows="3" placeholder="QSO notes..."></textarea>
+                </div>
+
+                <button type="submit" class="button btn-primary" style="width:100%;">Log QSO</button>
+            </form>
+        </div>
+
+        <!-- GRID PANEL -->
+        <div class="panel grid-panel">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h2 style="color: var(--text);">Contact Log</h2>
+                <div class="toolbar">
+                    <button class="button btn-secondary" onclick="loadQsos()">Refresh</button>
+                    <label for="adifFile" class="file-label">Import ADIF</label>
+                    <input type="file" id="adifFile" accept=".adi,.adif" onchange="importAdif(event)">
+                    <button class="button btn-danger" onclick="clearAllQsos()">Clear All</button>
+                </div>
+            </div>
+
+            <div id="gridStatus" class="status status-info" style="display:none;"></div>
+
+            <div class="grid-container">
+                <table id="qsoTable">
+                    <thead>
+                        <tr>
+                            <th>Date/Time</th>
+                            <th>Callsign</th>
+                            <th>Band</th>
+                            <th>Mode</th>
+                            <th>Freq (MHz)</th>
+                            <th>Name</th>
+                            <th>Grid</th>
+                            <th>RST Sent</th>
+                            <th>RST Rcvd</th>
+                            <th>Comments</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="qsoTableBody">
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="emptyState" class="empty-state">
+                No QSOs logged yet. Create one or import ADIF file.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            setDefaultDateTime();
+            loadQsos();
+            document.getElementById('qsoForm').addEventListener('submit', saveQso);
+        });
+
+        // Set current UTC time as default
+        function setDefaultDateTime() {
+            const now = new Date();
+            const utcString = now.toISOString().slice(0, 16);
+            document.getElementById('dateTime').value = utcString;
+        }
+
+        // Load QSOs from API
+        async function loadQsos() {
+            try {
+                showStatus('gridStatus', 'Loading QSOs...', 'info');
+                const response = await fetch(`${API_BASE}/qso`);
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const data = await response.json();
+                const qsos = Array.isArray(data) ? data : data.qsos || [];
+
+                displayQsos(qsos);
+                showStatus('gridStatus', `Loaded ${qsos.length} QSOs`, 'success');
+
+                setTimeout(() => document.getElementById('gridStatus').style.display = 'none', 3000);
+            } catch (error) {
+                showStatus('gridStatus', `Error: ${error.message}`, 'error');
+                console.error('Load QSOs error:', error);
+            }
+        }
+
+        // Display QSOs in table
+        function displayQsos(qsos) {
+            const tbody = document.getElementById('qsoTableBody');
+            const emptyState = document.getElementById('emptyState');
+
+            if (!qsos || qsos.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.style.display = 'flex';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            tbody.innerHTML = qsos.map(qso => `
+                <tr>
+                    <td>${formatDate(qso.qsoDateTimeOnUtc)}</td>
+                    <td><strong>${qso.callsign}</strong></td>
+                    <td>${qso.band || '-'}</td>
+                    <td>${qso.mode || '-'}</td>
+                    <td>${qso.frequency ? parseFloat(qso.frequency).toFixed(3) : '-'}</td>
+                    <td>${qso.name || '-'}</td>
+                    <td>${qso.gridSquare || '-'}</td>
+                    <td>${qso.rstSent || '-'}</td>
+                    <td>${qso.rstRcvd || '-'}</td>
+                    <td>${qso.comment || '-'}</td>
+                    <td>
+                        <button class="button btn-danger" style="padding:4px 8px; font-size:11px;" onclick="deleteQso(${qso.id})">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Format date for display
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleString('en-US', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // Save QSO to API
+        async function saveQso(e) {
+            e.preventDefault();
+
+            try {
+                const qsoData = {
+                    callsign: document.getElementById('callsign').value,
+                    qsoDateTimeOnUtc: new Date(document.getElementById('dateTime').value).toISOString(),
+                    band: document.getElementById('band').value,
+                    mode: document.getElementById('mode').value,
+                    frequency: parseFloat(document.getElementById('frequency').value) || null,
+                    rstSent: document.getElementById('rstSent').value || null,
+                    rstRcvd: document.getElementById('rstRcvd').value || null,
+                    name: document.getElementById('name').value || null,
+                    gridSquare: document.getElementById('gridSquare').value || null,
+                    comment: document.getElementById('comments').value || null
+                };
+
+                showStatus('formStatus', 'Saving QSO...', 'info');
+
+                const response = await fetch(`${API_BASE}/qso`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(qsoData)
+                });
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                showStatus('formStatus', '✓ QSO saved!', 'success');
+                document.getElementById('qsoForm').reset();
+                setDefaultDateTime();
+
+                setTimeout(() => loadQsos(), 500);
+            } catch (error) {
+                showStatus('formStatus', `Error: ${error.message}`, 'error');
+                console.error('Save error:', error);
+            }
+        }
+
+        // Delete QSO
+        async function deleteQso(id) {
+            if (!confirm('Delete this QSO?')) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/qso/${id}`, { method: 'DELETE' });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                loadQsos();
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            }
+        }
+
+        // Clear all QSOs
+        async function clearAllQsos() {
+            if (!confirm('Delete ALL QSOs? This cannot be undone.')) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/qso/clear-all`, { method: 'DELETE' });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                loadQsos();
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            }
+        }
+
+        // Import ADIF file
+        async function importAdif(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            try {
+                showStatus('gridStatus', 'Parsing ADIF file...', 'info');
+                const text = await file.text();
+                const qsos = parseAdif(text);
+
+                showStatus('gridStatus', `Importing ${qsos.length} QSOs...`, 'info');
+
+                let imported = 0;
+                for (const qso of qsos) {
+                    try {
+                        const response = await fetch(`${API_BASE}/qso`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(qso)
+                        });
+                        if (response.ok) imported++;
+                    } catch (e) {
+                        console.error('Import error for QSO:', e);
+                    }
+                }
+
+                showStatus('gridStatus', `✓ Imported ${imported}/${qsos.length} QSOs`, 'success');
+                document.getElementById('adifFile').value = '';
+                setTimeout(() => loadQsos(), 500);
+            } catch (error) {
+                showStatus('gridStatus', `Error: ${error.message}`, 'error');
+                console.error('ADIF import error:', error);
+            }
+        }
+
+        // Parse ADIF format
+        function parseAdif(text) {
+            const qsos = [];
+            const lines = text.split('\n');
+            let currentQso = {};
+
+            for (const line of lines) {
+                const match = line.match(/<([^:>]+):?(\d+)?>(.*?)<\/\1>/i);
+                if (!match) continue;
+
+                const [, tag, length, value] = match;
+                const key = tag.toLowerCase();
+
+                if (key === 'eor') {
+                    if (Object.keys(currentQso).length > 0) {
+                        qsos.push(formatAdifQso(currentQso));
+                    }
+                    currentQso = {};
+                } else {
+                    currentQso[key] = value.trim();
+                }
+            }
+
+            return qsos;
+        }
+
+        // Format ADIF QSO to API format
+        function formatAdifQso(adifQso) {
+            const qsoDate = adifQso.qso_date || '';
+            const qsoTime = (adifQso.time_on || '000000').padStart(6, '0');
+
+            let dateTimeUtc = null;
+            if (qsoDate.length === 8) {
+                const year = qsoDate.substring(0, 4);
+                const month = qsoDate.substring(4, 6);
+                const day = qsoDate.substring(6, 8);
+                const hour = qsoTime.substring(0, 2);
+                const min = qsoTime.substring(2, 4);
+                const sec = qsoTime.substring(4, 6);
+                dateTimeUtc = new Date(`${year}-${month}-${day}T${hour}:${min}:${sec}Z`).toISOString();
+            }
+
+            return {
+                callsign: adifQso.call || '',
+                qsoDateTimeOnUtc: dateTimeUtc,
+                band: adifQso.band || '',
+                mode: adifQso.mode || '',
+                frequency: parseFloat(adifQso.freq) || null,
+                rstSent: adifQso.rst_sent || null,
+                rstRcvd: adifQso.rst_rcvd || null,
+                name: adifQso.name || null,
+                gridSquare: adifQso.gridsquare || null,
+                comment: adifQso.comment || null
+            };
+        }
+
+        // Show status message
+        function showStatus(elementId, message, type) {
+            const el = document.getElementById(elementId);
+            el.textContent = message;
+            el.className = `status status-${type}`;
+            el.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
