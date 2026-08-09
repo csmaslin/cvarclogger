@@ -92,6 +92,7 @@ public partial class DxccViewModel : ObservableObject
         try
         {
             Progress = ComputeProgress(null, BandFilter);
+            var confirmedByCode = Progress.Entities.ToDictionary(e => e.EntityCode, e => e.Confirmed);
 
             var phone = ComputeProgress(PhoneModes, BandFilter);
             var cw = ComputeProgress(CwModes, BandFilter);
@@ -111,6 +112,8 @@ public partial class DxccViewModel : ObservableObject
             {
                 EntityRows.Add(new DxccEntityModeRow(
                     entity.EntityName,
+                    Worked: true,
+                    Confirmed: confirmedByCode.TryGetValue(entity.EntityCode, out var confirmed) && confirmed,
                     phoneCodes.Contains(entity.EntityCode),
                     cwCodes.Contains(entity.EntityCode),
                     digitalCodes.Contains(entity.EntityCode)));
@@ -178,6 +181,7 @@ public record FiveBandDxccRow(string Band, int ConfirmedCount)
 }
 
 /// <summary>One row of the DXCC entity table -- Phone/Cw/Digital are true when at least one QSO with
-/// that entity was logged in that mode category (any band currently selected), independent of the
-/// overall Worked/Confirmed counts shown in the summary line above.</summary>
-public record DxccEntityModeRow(string EntityName, bool Phone, bool Cw, bool Digital);
+/// that entity was logged in that mode category (any band currently selected). Worked is always true
+/// here (a row only exists if the entity was worked in at least one mode); Confirmed reflects the
+/// entity's overall confirmed status (any mode), matching AwardsService.IsConfirmed.</summary>
+public record DxccEntityModeRow(string EntityName, bool Worked, bool Confirmed, bool Phone, bool Cw, bool Digital);

@@ -19,22 +19,36 @@ public partial class SettingsViewModel : ObservableObject
     private readonly HamlibRigCatalog _rigCatalog;
     private readonly GridTrackerBroadcastService _gridTrackerBroadcast;
     private readonly WsjtxUdpListenerService _wsjtxListener;
+    private readonly QrzLookupService _qrzLookupService;
+    private readonly QrzCqLookupService _qrzCqLookupService;
+
+    /// <summary>Well-known, always-registered callsign (ARRL HQ) used purely to exercise the login +
+    /// lookup round-trip when the user clicks Test -- there's no meaningful "ping" endpoint on either
+    /// API, so a real lookup is the only way to confirm the credentials actually work.</summary>
+    private const string TestLookupCallsign = "W1AW";
 
     [ObservableProperty] private string qrzUsername = string.Empty;
     [ObservableProperty] private string qrzPassword = string.Empty;
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(QrzStatusText))]
     private bool isQrzConfigured;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(QrzStatusText))]
+    private bool qrzTestedGood;
     [ObservableProperty] private string qrzCqUsername = string.Empty;
     [ObservableProperty] private string qrzCqPassword = string.Empty;
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(QrzCqStatusText))]
     private bool isQrzCqConfigured;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(QrzCqStatusText))]
+    private bool qrzCqTestedGood;
 
-    /// <summary>Whether credentials are saved, not whether they've been verified against QRZ's servers
-    /// -- no API call happens on save, so this can still say Configured even if the password is wrong.</summary>
-    public string QrzStatusText => IsQrzConfigured ? "Configured" : "Not Configured";
-    public string QrzCqStatusText => IsQrzCqConfigured ? "Configured" : "Not Configured";
+    /// <summary>"Confirmed" only after a successful Test click this session (a real login+lookup
+    /// round-trip); "Configured" just means credentials are saved, not verified; saving new credentials
+    /// clears a prior test result since it hasn't been re-verified.</summary>
+    public string QrzStatusText => QrzTestedGood ? "Confirmed" : IsQrzConfigured ? "Configured" : "Not Configured";
+    public string QrzCqStatusText => QrzCqTestedGood ? "Confirmed" : IsQrzCqConfigured ? "Configured" : "Not Configured";
 
     [ObservableProperty] private CatSource catSource;
     [ObservableProperty] private bool launchRigctldAutomatically;
@@ -61,7 +75,6 @@ public partial class SettingsViewModel : ObservableObject
 
     public string InternetRadioStatusText => IsInternetRadioConfigured ? "Configured" : "Not Configured";
 
-    public ObservableCollection<string> RadioNames { get; } = new();
     public ObservableCollection<RadioProfileEditorViewModel> RadioProfileEditors { get; } = new();
     public ObservableCollection<HamlibRigInfo> AvailableRigs { get; } = new();
     public ObservableCollection<string> AvailableComPorts { get; } = new();
@@ -73,7 +86,9 @@ public partial class SettingsViewModel : ObservableObject
         RigControlCoordinator rigCoordinator,
         HamlibRigCatalog rigCatalog,
         GridTrackerBroadcastService gridTrackerBroadcast,
-        WsjtxUdpListenerService wsjtxListener)
+        WsjtxUdpListenerService wsjtxListener,
+        QrzLookupService qrzLookupService,
+        QrzCqLookupService qrzCqLookupService)
     {
         _settings = settings;
         _credentialStore = credentialStore;
@@ -82,6 +97,8 @@ public partial class SettingsViewModel : ObservableObject
         _rigCatalog = rigCatalog;
         _gridTrackerBroadcast = gridTrackerBroadcast;
         _wsjtxListener = wsjtxListener;
+        _qrzLookupService = qrzLookupService;
+        _qrzCqLookupService = qrzCqLookupService;
 
         catSource = _settings.CatSource;
         launchRigctldAutomatically = _settings.LaunchRigctldAutomatically;
@@ -102,7 +119,6 @@ public partial class SettingsViewModel : ObservableObject
         {
             var profile = _settings.RadioProfiles[i];
             string slotLabel = $"Radio {i + 1}";
-            RadioNames.Add(slotLabel);
             RadioProfileEditors.Add(new RadioProfileEditorViewModel(profile, slotLabel, AvailableRigs, AvailableComPorts));
         }
     }
@@ -172,8 +188,8 @@ public partial class SettingsViewModel : ObservableObject
         }
 
         await _credentialStore.SaveAsync(QrzLookupService.CredentialKey, QrzUsername, QrzPassword);
-        QrzPassword = string.Empty;
         IsQrzConfigured = true;
+        QrzTestedGood = false;
         _dialogService.ShowInfo("QRZ credentials saved.");
     }
 
@@ -184,6 +200,31 @@ public partial class SettingsViewModel : ObservableObject
         QrzUsername = string.Empty;
         QrzPassword = string.Empty;
         IsQrzConfigured = false;
+        QrzTestedGood = false;
+    }
+
+    /// <summary>Saves the entered credentials (same as Save) then performs a real lookup against
+    /// TestLookupCallsign, so "Test" actually proves the username/password work rather than just
+    /// checking they're non-empty. Sets QrzTestedGood so the status line reflects a verified
+    /// connection, not just "credentials are present".</summary>
+    [RelayCommand]
+    private async Task TestQrzConnectionAsync()
+    {
+        if (string.IsNullOrWhiteSpace(QrzUsername) || string.IsNullOrWhiteSpace(QrzPassword))
+        {
+            _dialogService.ShowError("Enter both a QRZ username and password before testing.");
+            return;
+        }
+
+        await _credentialStore.SaveAsync(QrzLookupService.CredentialKey, QrzUsername, QrzPassword);
+        IsQrzConfigured = true;
+
+        var result = await _qrzLookupService.LookupAsync(TestLookupCallsign);
+        QrzTestedGood = result.Found;
+        if (result.Found)
+            _dialogService.ShowInfo("QRZ.com connection successful.");
+        else
+            _dialogService.ShowError($"QRZ.com test failed: {result.Error ?? "unknown error"}");
     }
 
     [RelayCommand]
@@ -196,8 +237,8 @@ public partial class SettingsViewModel : ObservableObject
         }
 
         await _credentialStore.SaveAsync(QrzCqLookupService.CredentialKey, QrzCqUsername, QrzCqPassword);
-        QrzCqPassword = string.Empty;
         IsQrzCqConfigured = true;
+        QrzCqTestedGood = false;
         _dialogService.ShowInfo("QRZCQ credentials saved.");
     }
 
@@ -208,6 +249,28 @@ public partial class SettingsViewModel : ObservableObject
         QrzCqUsername = string.Empty;
         QrzCqPassword = string.Empty;
         IsQrzCqConfigured = false;
+        QrzCqTestedGood = false;
+    }
+
+    /// <summary>Mirror of TestQrzConnectionAsync for QRZCQ.</summary>
+    [RelayCommand]
+    private async Task TestQrzCqConnectionAsync()
+    {
+        if (string.IsNullOrWhiteSpace(QrzCqUsername) || string.IsNullOrWhiteSpace(QrzCqPassword))
+        {
+            _dialogService.ShowError("Enter both a QRZCQ username and password before testing.");
+            return;
+        }
+
+        await _credentialStore.SaveAsync(QrzCqLookupService.CredentialKey, QrzCqUsername, QrzCqPassword);
+        IsQrzCqConfigured = true;
+
+        var result = await _qrzCqLookupService.LookupAsync(TestLookupCallsign);
+        QrzCqTestedGood = result.Found;
+        if (result.Found)
+            _dialogService.ShowInfo("QRZCQ.com connection successful.");
+        else
+            _dialogService.ShowError($"QRZCQ.com test failed: {result.Error ?? "unknown error"}");
     }
 
     partial void OnCatSourceChanged(CatSource value) => _settings.CatSource = value;

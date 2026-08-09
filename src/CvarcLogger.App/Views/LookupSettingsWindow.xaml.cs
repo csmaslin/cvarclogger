@@ -29,14 +29,38 @@ public partial class LookupSettingsWindow : Window
     {
         _viewModel.QrzPassword = QrzShowPasswordCheckBox.IsChecked == true ? QrzPasswordTextBox.Text : QrzPasswordBox.Password;
         await _viewModel.SaveQrzCredentialsCommand.ExecuteAsync(null);
-        QrzPasswordBox.Clear();
-        QrzPasswordTextBox.Clear();
     }
 
     private async void SaveQrzCqCredentials_Click(object sender, RoutedEventArgs e)
     {
         _viewModel.QrzCqPassword = QrzCqShowPasswordCheckBox.IsChecked == true ? QrzCqPasswordTextBox.Text : QrzCqPasswordBox.Password;
         await _viewModel.SaveQrzCqCredentialsCommand.ExecuteAsync(null);
+    }
+
+    private async void TestQrzConnection_Click(object sender, RoutedEventArgs e)
+    {
+        _viewModel.QrzPassword = QrzShowPasswordCheckBox.IsChecked == true ? QrzPasswordTextBox.Text : QrzPasswordBox.Password;
+        await _viewModel.TestQrzConnectionCommand.ExecuteAsync(null);
+    }
+
+    private async void TestQrzCqConnection_Click(object sender, RoutedEventArgs e)
+    {
+        _viewModel.QrzCqPassword = QrzCqShowPasswordCheckBox.IsChecked == true ? QrzCqPasswordTextBox.Text : QrzCqPasswordBox.Password;
+        await _viewModel.TestQrzCqConnectionCommand.ExecuteAsync(null);
+    }
+
+    // The Clear buttons bind ClearQrz(Cq)CredentialsCommand directly (no code-behind needed for the
+    // delete-from-store logic), but that command only clears the ViewModel's Qrz(Cq)Password -- the
+    // PasswordBox itself is never bound to it (by design), so nothing else would ever tell the visible
+    // box to empty out. These handlers run alongside the bound command to clear that visible state too.
+    private void ClearQrzPasswordBox_Click(object sender, RoutedEventArgs e)
+    {
+        QrzPasswordBox.Clear();
+        QrzPasswordTextBox.Clear();
+    }
+
+    private void ClearQrzCqPasswordBox_Click(object sender, RoutedEventArgs e)
+    {
         QrzCqPasswordBox.Clear();
         QrzCqPasswordTextBox.Clear();
     }

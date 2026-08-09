@@ -31,7 +31,15 @@ public partial class RadioProfileEditorViewModel : ObservableObject
     [ObservableProperty] private string comPort;
     [ObservableProperty] private string baudRate;
     [ObservableProperty] private string maxPowerWatts;
-    [ObservableProperty] private HamlibRigInfo? selectedRig;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ActiveRadioDisplayName))]
+    private HamlibRigInfo? selectedRig;
+
+    /// <summary>What the "Active radio" dropdown shows for this slot -- the actual Hamlib rig name
+    /// (e.g. "Elecraft K4 (2047)"), not the generic "Radio 1"/"Radio 2" slot label, so picking an active
+    /// radio means picking a rig you can recognize. Falls back to the profile's stored Name before
+    /// AvailableRigs has loaded (SelectedRig is still null at that point).</summary>
+    public string ActiveRadioDisplayName => SelectedRig?.DisplayName ?? Name;
 
     private bool _syncing;
 

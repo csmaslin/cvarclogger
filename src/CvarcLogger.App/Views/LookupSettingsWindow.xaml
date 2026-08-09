@@ -3,112 +3,176 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:emoji="clr-namespace:Emoji.Wpf;assembly=Emoji.Wpf"
+        xmlns:behaviors="clr-namespace:CvarcLogger.App.Behaviors"
         mc:Ignorable="d"
         Title="Lookup" Icon="/Assets/AppIcon.ico" FontSize="14"
-        Height="620" Width="900" MinHeight="500" MinWidth="700"
+        Height="900" Width="950" MinHeight="700" MinWidth="800"
+        Background="White"
         WindowStartupLocation="CenterOwner" ResizeMode="CanResize"
         Loaded="Window_Loaded">
-    <!-- This window used to be the left column of a combined Settings window (see CatControlWindow for
-         the other half, split out the same day): callsign lookup preference, QRZ/QRZCQ credentials,
-         and the two log-relay integrations (GridTracker2, WSJT-X). Landscape two-column layout (left:
-         Callsign Lookup + QRZ, right: QRZCQ + GridTracker2 + WSJT-X) rather than one long portrait
-         column. Fixed Width so wrapping is predictable; Viewbox measures its child at infinite
-         available size otherwise. -->
-    <Viewbox Stretch="Uniform">
-        <Grid Margin="14" Width="872">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="410"/>
-                <ColumnDefinition Width="32"/>
-                <ColumnDefinition Width="410"/>
-            </Grid.ColumnDefinitions>
+    <Window.Resources>
+        <Style x:Key="SectionTitle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#000000"/>
+        </Style>
+        <Style x:Key="FieldLabel" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#000000"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
+        </Style>
+        <Style x:Key="Description" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="#666666"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+        </Style>
+    </Window.Resources>
+    <Grid Margin="30">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
 
-            <StackPanel Grid.Column="0">
-                <TextBlock Text="Callsign Lookup" FontWeight="Bold" Margin="0,0,0,6"/>
-                <TextBlock Text="Checked in order: QRZ.com, then QRZCQ.com, then Callook.info -- each is skipped automatically if it's not configured, or if the earlier results already have everything it could add."
-                           TextWrapping="Wrap" Margin="0,0,0,14" Foreground="Gray"/>
+        <!-- Modal Title -->
+        <Border Grid.Row="0" BorderThickness="0,0,0,2" BorderBrush="#e0e0e0" Padding="0,0,0,10" Margin="0,0,0,20">
+            <emoji:TextBlock Text="🔍 Lookup Sources" FontSize="18" FontWeight="Bold" Foreground="#000000"/>
+        </Border>
 
-                <Separator Margin="0,0,0,14"/>
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="30"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
 
-                <TextBlock Text="QRZ.com XML Data API Credentials" FontWeight="Bold" Margin="0,0,0,6"/>
-                <TextBlock Margin="0,0,0,8" Foreground="Gray" TextWrapping="Wrap"
-                           Text="Requires a paid QRZ XML Data subscription. Stored encrypted (Windows DPAPI) on this machine only, never in the QSO log."/>
+                <!-- LEFT COLUMN -->
+                <StackPanel Grid.Column="0">
+                    <Border BorderThickness="0,0,0,1" BorderBrush="#dddddd" Padding="0,0,0,8" Margin="0,0,0,10">
+                        <TextBlock Text="CALLSIGN LOOKUP" Style="{StaticResource SectionTitle}"/>
+                    </Border>
+                    <TextBlock Style="{StaticResource Description}"
+                               Text="Checked in order: QRZ.com, QRZCQ.com, then Callook.info — each is skipped if not configured."/>
 
-                <TextBlock Text="Username" Foreground="Gray"/>
-                <TextBox Text="{Binding QrzUsername, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+                    <Border BorderThickness="0,0,0,1" BorderBrush="#dddddd" Padding="0,0,0,8" Margin="0,0,0,10">
+                        <TextBlock Text="QRZ.COM XML DATA API" Style="{StaticResource SectionTitle}"/>
+                    </Border>
+                    <TextBlock Style="{StaticResource Description}"
+                               Text="Requires a paid QRZ XML Data subscription. Credentials stored encrypted on this machine only."/>
 
-                <TextBlock Text="Password" Foreground="Gray"/>
-                <PasswordBox x:Name="QrzPasswordBox" Margin="0,0,0,4"/>
-                <TextBox x:Name="QrzPasswordTextBox" Margin="0,0,0,4" Visibility="Collapsed"/>
-                <CheckBox x:Name="QrzShowPasswordCheckBox" Content="Show password" Margin="0,0,0,8"
-                          Checked="QrzShowPassword_Checked" Unchecked="QrzShowPassword_Unchecked"/>
+                    <TextBlock Text="USERNAME" Style="{StaticResource FieldLabel}"/>
+                    <TextBox Text="{Binding QrzUsername, UpdateSourceTrigger=PropertyChanged}" Tag="Your QRZ username" Padding="8" FontSize="14" Margin="0,0,0,10"/>
 
-                <TextBlock Margin="0,0,0,8" FontStyle="Italic">
-                    <Run Text="Status: "/>
-                    <Run Text="{Binding QrzStatusText, Mode=OneWay}"/>
-                </TextBlock>
+                    <TextBlock Text="PASSWORD" Style="{StaticResource FieldLabel}"/>
+                    <PasswordBox x:Name="QrzPasswordBox" behaviors:PasswordBoxHelper.Placeholder="Your QRZ password" Padding="8" FontSize="14" Margin="0,0,0,4"/>
+                    <TextBox x:Name="QrzPasswordTextBox" Tag="Your QRZ password" Padding="8" FontSize="14" Margin="0,0,0,4" Visibility="Collapsed"/>
+                    <CheckBox x:Name="QrzShowPasswordCheckBox" Content="Show password" FontSize="13" Foreground="#000000"
+                              Margin="0,0,0,10"
+                              Checked="QrzShowPassword_Checked" Unchecked="QrzShowPassword_Unchecked"/>
 
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
-                    <Button Content="Save Credentials" Click="SaveCredentials_Click" Padding="10,4" Margin="0,0,8,0"/>
-                    <Button Content="Clear" Command="{Binding ClearQrzCredentialsCommand}" Padding="10,4"/>
-                </StackPanel>
-            </StackPanel>
+                    <Border Background="#f9f9f9" CornerRadius="3" Padding="8" Margin="0,0,0,12">
+                        <TextBlock FontStyle="Italic" Foreground="#666666" FontSize="12">
+                            <Run Text="Status: "/>
+                            <Run Text="{Binding QrzStatusText, Mode=OneWay}"/>
+                        </TextBlock>
+                    </Border>
 
-            <StackPanel Grid.Column="2">
-                <TextBlock Text="QRZCQ.com XML API Credentials" FontWeight="Bold" Margin="0,0,0,6"/>
-                <TextBlock Margin="0,0,0,8" Foreground="Gray" TextWrapping="Wrap"
-                           Text="Requires a Premium QRZCQ account. Stored encrypted (Windows DPAPI) on this machine only, never in the QSO log. QRZCQ doesn't provide County, so that field still comes from whichever other configured service has it."/>
-
-                <TextBlock Text="Username" Foreground="Gray"/>
-                <TextBox Text="{Binding QrzCqUsername, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
-
-                <TextBlock Text="Password" Foreground="Gray"/>
-                <PasswordBox x:Name="QrzCqPasswordBox" Margin="0,0,0,4"/>
-                <TextBox x:Name="QrzCqPasswordTextBox" Margin="0,0,0,4" Visibility="Collapsed"/>
-                <CheckBox x:Name="QrzCqShowPasswordCheckBox" Content="Show password" Margin="0,0,0,8"
-                          Checked="QrzCqShowPassword_Checked" Unchecked="QrzCqShowPassword_Unchecked"/>
-
-                <TextBlock Margin="0,0,0,8" FontStyle="Italic">
-                    <Run Text="Status: "/>
-                    <Run Text="{Binding QrzCqStatusText, Mode=OneWay}"/>
-                </TextBlock>
-
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
-                    <Button Content="Save Credentials" Click="SaveQrzCqCredentials_Click" Padding="10,4" Margin="0,0,8,0"/>
-                    <Button Content="Clear" Command="{Binding ClearQrzCqCredentialsCommand}" Padding="10,4"/>
-                </StackPanel>
-
-                <Separator Margin="0,0,0,14"/>
-
-                <TextBlock Text="GridTracker2" FontWeight="Bold" Margin="0,0,0,6"/>
-                <TextBlock Margin="0,0,0,8" Foreground="Gray" TextWrapping="Wrap"
-                           Text="Broadcasts each logged/edited QSO as an ADIF record over UDP so GridTracker2 can plot it on its map/grid-tracking in real time. Point this at whatever host/port GridTracker2's &quot;Receive ADIF UDP (Broadcasts for Logging)&quot; setting (General tab) is configured to (127.0.0.1:2240 by default)."/>
-
-                <CheckBox Content="Enable outbound log Broadcast to GridTracker2" IsChecked="{Binding GridTrackerEnabled}" Margin="0,0,0,10"/>
-
-                <WrapPanel Margin="0,0,0,10">
-                    <StackPanel Margin="0,0,10,0" Width="160">
-                        <TextBlock Text="Host" Foreground="Gray"/>
-                        <TextBox Text="{Binding GridTrackerHost, UpdateSourceTrigger=PropertyChanged}"/>
+                    <StackPanel Orientation="Horizontal">
+                        <Button Click="SaveCredentials_Click" Padding="14,10"
+                                Background="#2E7D32" Foreground="White" BorderThickness="0" Margin="0,0,10,0">
+                            <emoji:TextBlock Text="💾 Save" FontSize="13" Foreground="White"/>
+                        </Button>
+                        <Button Click="TestQrzConnection_Click" Padding="14,10"
+                                Background="#3498db" Foreground="White" BorderThickness="0" Margin="0,0,10,0">
+                            <emoji:TextBlock Text="🧪 Test" FontSize="13" Foreground="White"/>
+                        </Button>
+                        <Button Content="Clear" Command="{Binding ClearQrzCredentialsCommand}" Click="ClearQrzPasswordBox_Click" Padding="14,10"
+                                Background="#3498db" Foreground="White" BorderThickness="0" FontSize="13" FontWeight="SemiBold"/>
                     </StackPanel>
-                    <StackPanel Width="100">
-                        <TextBlock Text="Port" Foreground="Gray"/>
-                        <TextBox Text="{Binding GridTrackerPort, UpdateSourceTrigger=PropertyChanged}"/>
-                    </StackPanel>
-                </WrapPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                    <Button Content="Save GridTracker Settings" Command="{Binding SaveGridTrackerSettingsCommand}" Padding="10,4" Margin="0,0,8,0"/>
-                    <Button Content="Send Test QSO" Command="{Binding SendGridTrackerTestPacketCommand}" Padding="10,4"/>
                 </StackPanel>
 
-                <Separator Margin="0,0,0,14"/>
+                <!-- RIGHT COLUMN -->
+                <StackPanel Grid.Column="2">
+                    <Border BorderThickness="0,0,0,1" BorderBrush="#dddddd" Padding="0,0,0,8" Margin="0,0,0,10">
+                        <TextBlock Text="QRZCQ.COM XML API" Style="{StaticResource SectionTitle}"/>
+                    </Border>
+                    <TextBlock Style="{StaticResource Description}"
+                               Text="Requires a Premium QRZCQ account. Credentials stored encrypted on this machine only."/>
 
-                <TextBlock Text="WSJT-X" FontWeight="Bold" Margin="0,0,0,6"/>
-                <TextBlock Margin="0,0,0,8" Foreground="Gray" TextWrapping="Wrap"
-                           Text="Receives WSJT-X's logged-QSO data as relayed by GridTracker2 on UDP port 2238 (requires &quot;Forward UDP messages&quot; enabled on port 2238 under GridTracker2's own General tab) and adds each one to the log automatically. These are not forwarded back to GridTracker2 above, to avoid duplicate entries there."/>
+                    <TextBlock Text="USERNAME" Style="{StaticResource FieldLabel}"/>
+                    <TextBox Text="{Binding QrzCqUsername, UpdateSourceTrigger=PropertyChanged}" Tag="Your QRZCQ username" Padding="8" FontSize="14" Margin="0,0,0,10"/>
 
-                <CheckBox Content="Enable WSJT-X log receiving (UDP 2238, via GridTracker2)" IsChecked="{Binding WsjtxEnabled}" Margin="0,0,0,10"/>
-            </StackPanel>
-        </Grid>
-    </Viewbox>
+                    <TextBlock Text="PASSWORD" Style="{StaticResource FieldLabel}"/>
+                    <PasswordBox x:Name="QrzCqPasswordBox" behaviors:PasswordBoxHelper.Placeholder="Your QRZCQ password" Padding="8" FontSize="14" Margin="0,0,0,4"/>
+                    <TextBox x:Name="QrzCqPasswordTextBox" Tag="Your QRZCQ password" Padding="8" FontSize="14" Margin="0,0,0,4" Visibility="Collapsed"/>
+                    <CheckBox x:Name="QrzCqShowPasswordCheckBox" Content="Show password" FontSize="13" Foreground="#000000"
+                              Margin="0,0,0,10"
+                              Checked="QrzCqShowPassword_Checked" Unchecked="QrzCqShowPassword_Unchecked"/>
+
+                    <Border Background="#f9f9f9" CornerRadius="3" Padding="8" Margin="0,0,0,12">
+                        <TextBlock FontStyle="Italic" Foreground="#666666" FontSize="12">
+                            <Run Text="Status: "/>
+                            <Run Text="{Binding QrzCqStatusText, Mode=OneWay}"/>
+                        </TextBlock>
+                    </Border>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                        <Button Click="SaveQrzCqCredentials_Click" Padding="14,10"
+                                Background="#2E7D32" Foreground="White" BorderThickness="0" Margin="0,0,10,0">
+                            <emoji:TextBlock Text="💾 Save" FontSize="13" Foreground="White"/>
+                        </Button>
+                        <Button Click="TestQrzCqConnection_Click" Padding="14,10"
+                                Background="#3498db" Foreground="White" BorderThickness="0" Margin="0,0,10,0">
+                            <emoji:TextBlock Text="🧪 Test" FontSize="13" Foreground="White"/>
+                        </Button>
+                        <Button Content="Clear" Command="{Binding ClearQrzCqCredentialsCommand}" Click="ClearQrzCqPasswordBox_Click" Padding="14,10"
+                                Background="#3498db" Foreground="White" BorderThickness="0" FontSize="13" FontWeight="SemiBold"/>
+                    </StackPanel>
+
+                    <Border BorderThickness="0,0,0,1" BorderBrush="#dddddd" Padding="0,0,0,8" Margin="0,0,0,10">
+                        <TextBlock Text="GRIDTRACKER2" Style="{StaticResource SectionTitle}"/>
+                    </Border>
+                    <TextBlock Style="{StaticResource Description}"
+                               Text="Broadcasts logged QSOs over UDP so GridTracker2 can plot them in real time."/>
+
+                    <CheckBox Content="Enable GridTracker2 broadcast" IsChecked="{Binding GridTrackerEnabled}"
+                              FontSize="13" Foreground="#000000" Margin="0,0,0,10"/>
+
+                    <WrapPanel Margin="0,0,0,10">
+                        <StackPanel Margin="0,0,10,0" Width="200">
+                            <TextBlock Text="HOST" Style="{StaticResource FieldLabel}"/>
+                            <TextBox Text="{Binding GridTrackerHost, UpdateSourceTrigger=PropertyChanged}" Tag="127.0.0.1" Padding="8" FontSize="14"/>
+                        </StackPanel>
+                        <StackPanel Width="100">
+                            <TextBlock Text="PORT" Style="{StaticResource FieldLabel}"/>
+                            <TextBox Text="{Binding GridTrackerPort, UpdateSourceTrigger=PropertyChanged}" Tag="2240" Padding="8" FontSize="14"/>
+                        </StackPanel>
+                    </WrapPanel>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                        <Button Command="{Binding SaveGridTrackerSettingsCommand}" Padding="14,10"
+                                Background="#2E7D32" Foreground="White" BorderThickness="0" Margin="0,0,10,0">
+                            <emoji:TextBlock Text="💾 Save" FontSize="13" Foreground="White"/>
+                        </Button>
+                        <Button Command="{Binding SendGridTrackerTestPacketCommand}" Padding="14,10"
+                                Background="#3498db" Foreground="White" BorderThickness="0">
+                            <emoji:TextBlock Text="🧪 Test" FontSize="13" Foreground="White"/>
+                        </Button>
+                    </StackPanel>
+
+                    <Border BorderThickness="0,0,0,1" BorderBrush="#dddddd" Padding="0,0,0,8" Margin="0,0,0,10">
+                        <TextBlock Text="WSJT-X" Style="{StaticResource SectionTitle}"/>
+                    </Border>
+                    <TextBlock Style="{StaticResource Description}"
+                               Text="Receives WSJT-X QSO data via GridTracker2 on UDP port 2238 and adds to log automatically."/>
+
+                    <CheckBox Content="Enable WSJT-X log receiving (UDP 2238)" IsChecked="{Binding WsjtxEnabled}"
+                              FontSize="13" Foreground="#000000"/>
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
 </Window>

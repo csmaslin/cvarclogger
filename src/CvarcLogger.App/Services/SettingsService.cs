@@ -317,7 +317,6 @@ public class SettingsService
             // Model IDs confirmed via `rigctld --list` against Hamlib 4.6.3.
             new RadioProfile { Name = "Elecraft K4D", HamlibModelId = 2047, ComPort = "COM3", BaudRate = 38400 },
             new RadioProfile { Name = "Yaesu FT-991A", HamlibModelId = 1035, ComPort = "COM4", BaudRate = 38400 },
-            new RadioProfile { Name = "Kenwood TS-890", HamlibModelId = 2041, ComPort = "COM5", BaudRate = 115200 },
             new RadioProfile { Name = "Yaesu FT-920", HamlibModelId = 1014, ComPort = "COM7", BaudRate = 4800 },
         };
 

@@ -7,25 +7,10 @@
              mc:Ignorable="d">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <DockPanel Grid.Row="0" Margin="8,6,8,4">
-            <TextBlock Text="Search:" VerticalAlignment="Center" Margin="0,0,6,0"/>
-            <TextBox Width="240" HorizontalAlignment="Left"
-                     Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"/>
-            <Button Content="Delete" Command="{Binding DeleteSelectedCommand}"
-                    DockPanel.Dock="Right" Padding="10,2"/>
-            <Button Content="Edit" Click="EditButton_Click"
-                    DockPanel.Dock="Right" Padding="10,2" Margin="0,0,6,0"/>
-            <Button Content="Columns..." Click="ColumnsButton_Click"
-                    DockPanel.Dock="Right" Padding="10,2" Margin="0,0,6,0"/>
-            <Button Content="Refresh" Command="{Binding RefreshCommand}"
-                    DockPanel.Dock="Right" Padding="10,2" Margin="0,0,6,0"/>
-        </DockPanel>
-
-        <DataGrid x:Name="LogDataGrid" Grid.Row="1" ItemsSource="{Binding QsosView}" SelectedItem="{Binding SelectedQso}"
+        <DataGrid x:Name="LogDataGrid" Grid.Row="0" ItemsSource="{Binding QsosView}" SelectedItem="{Binding SelectedQso}"
                   AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="All" VerticalGridLinesBrush="#BBBBBB"
                   CanUserAddRows="False" SelectionMode="Extended" SelectionUnit="FullRow"
                   CanUserResizeColumns="True"
@@ -72,21 +57,24 @@
             </DataGrid.Resources>
             <DataGrid.ColumnHeaderStyle>
                 <Style TargetType="DataGridColumnHeader">
-                    <Setter Property="Background" Value="LightBlue"/>
+                    <Setter Property="Background" Value="#f5f5f5"/>
+                    <Setter Property="Foreground" Value="#000000"/>
+                    <Setter Property="FontSize" Value="14"/>
+                    <Setter Property="FontWeight" Value="SemiBold"/>
                     <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                     <Setter Property="VerticalContentAlignment" Value="Center"/>
                     <Setter Property="ContentTemplate">
                         <Setter.Value>
                             <DataTemplate>
                                 <!-- Border gives every header a visible right-edge separator line. The
-                                     default header chrome's own separator blends into the LightBlue
-                                     background above and isn't reliably visible. -->
-                                <Border BorderBrush="#6699BB" BorderThickness="0,0,1,0">
+                                     default header chrome's own separator blends into the background
+                                     above and isn't reliably visible. -->
+                                <Border BorderBrush="#dddddd" BorderThickness="0,0,1,0">
                                     <!-- Word-wraps onto a second line instead of truncating a header into a
                                          partial word or a hyphenated break when a column is narrower than its
                                          title (e.g. "ARRL Section", "Station Callsign"). -->
                                     <TextBlock Text="{Binding}" TextWrapping="Wrap" TextAlignment="Center"
-                                               Padding="4,2"/>
+                                               Padding="8,6"/>
                                 </Border>
                             </DataTemplate>
                         </Setter.Value>
