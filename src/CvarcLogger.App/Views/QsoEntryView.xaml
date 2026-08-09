@@ -14,31 +14,69 @@
             <Setter Property="Margin" Value="0,0,15,15"/>
         </Style>
     </UserControl.Resources>
-    <Grid Background="White" Margin="20">
+    <Grid Background="#E8F4FC" Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <!-- Form Title -->
         <Border Grid.Row="0" BorderThickness="0,0,0,1" BorderBrush="#e0e0e0" Padding="0,0,0,10" Margin="0,0,0,15">
-            <TextBlock Text="Entry Form - Normal Mode (Fields are movable within tabs)"
+            <TextBlock Text="{Binding EntryFormTitle}"
                       FontSize="16" FontWeight="Bold" Foreground="#000000"/>
         </Border>
 
-        <!-- Form Content -->
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-            <StackPanel Orientation="Vertical">
-                <!-- Row 1 -->
-                <WrapPanel Orientation="Horizontal">
+        <!-- Form Content: no ScrollViewer here. MainWindow.xaml already wraps this whole UserControl in
+             one, and a second, nested ScrollViewer around just this part caused mouse-wheel scrolling to
+             stop working over the fields (the inner one silently swallows/handles wheel input first;
+             reaching the outer scrollbar required literally grabbing it with the mouse). Row 1 is Auto
+             height, not *, so the Grid sizes to its natural content height and leaves the actual
+             scrolling decision to the one outer ScrollViewer. -->
+        <StackPanel Grid.Row="1" Orientation="Vertical">
+                <!-- Field layout grid: each field's Grid.Row/Grid.Column is assigned in code-behind
+                     (QsoEntryView.xaml.cs ApplyFieldLayout) from the saved per-mode row/position (see
+                     SettingsService.GetEntryFormFieldPositions), falling back to DefaultPositions there
+                     for any field never dragged. 5 columns match the established "max 5 fields per row"
+                     cap. RowDefinitions carry a small MinHeight so rows with nothing in them yet are
+                     still a reachable drop target (a pure Auto row with no content collapses to zero
+                     height, making it impossible to drag a field into). Drag-and-drop (stage 3): drag a
+                     field by its label onto another field to swap them, or onto empty space to move it
+                     there, see FieldsGrid_PreviewMouseLeftButtonDown/PreviewMouseMove/Drop in the
+                     code-behind. Background="Transparent" is required for empty cells to be hit-testable
+                     (a null background lets pointer events pass straight through). -->
+                <Grid x:Name="FieldsGrid" Background="Transparent" AllowDrop="True"
+                      PreviewMouseLeftButtonDown="FieldsGrid_PreviewMouseLeftButtonDown"
+                      PreviewMouseMove="FieldsGrid_PreviewMouseMove"
+                      DragOver="FieldsGrid_DragOver"
+                      Drop="FieldsGrid_Drop">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" MinHeight="20"/>
+                        <RowDefinition Height="Auto" MinHeight="20"/>
+                        <RowDefinition Height="Auto" MinHeight="20"/>
+                        <RowDefinition Height="Auto" MinHeight="20"/>
+                        <RowDefinition Height="Auto" MinHeight="20"/>
+                        <RowDefinition Height="Auto" MinHeight="20"/>
+                        <RowDefinition Height="Auto" MinHeight="20"/>
+                        <RowDefinition Height="Auto" MinHeight="20"/>
+                        <RowDefinition Height="Auto" MinHeight="20"/>
+                        <RowDefinition Height="Auto" MinHeight="20"/>
+                    </Grid.RowDefinitions>
+
                     <!-- Station -->
-                    <StackPanel Style="{StaticResource FieldBox}">
+                    <StackPanel x:Name="StationField" Style="{StaticResource FieldBox}">
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
                             <TextBlock Text="STATION" FontSize="12" FontWeight="Bold" Foreground="#555555"/>
                             <TextBlock Text=" (static)" FontSize="10" Foreground="#999999" FontStyle="Italic" VerticalAlignment="Bottom"/>
                         </StackPanel>
                         <ComboBox Background="#ecf0f1" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
-                                 SelectedValuePath="Callsign" ItemsSource="{Binding AvailableStationProfiles}"
+                                 SelectedValuePath="Callsign" ItemsSource="{Binding StationProfiles}"
                                  SelectedItem="{Binding SelectedStationProfile, Mode=TwoWay}">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate>
@@ -49,7 +87,7 @@
                     </StackPanel>
 
                     <!-- Callsign -->
-                    <StackPanel Style="{StaticResource FieldBox}">
+                    <StackPanel x:Name="CallsignField" Style="{StaticResource FieldBox}">
                         <TextBlock Text="CALLSIGN" FontSize="12" FontWeight="Bold" Foreground="#555555"
                                   Margin="0,0,0,5"/>
                         <TextBox Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
@@ -57,7 +95,7 @@
                     </StackPanel>
 
                     <!-- Date/Time UTC -->
-                    <StackPanel Style="{StaticResource FieldBox}" Visibility="{Binding ShowUtcTimeField, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel x:Name="UtcTimeField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowUtcTimeField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <TextBlock Text="DATE/TIME UTC" FontSize="12" FontWeight="Bold" Foreground="#555555"
                                   Margin="0,0,0,5"/>
                         <TextBox Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
@@ -65,7 +103,7 @@
                     </StackPanel>
 
                     <!-- Band -->
-                    <StackPanel Style="{StaticResource FieldBox}" Visibility="{Binding ShowBandField, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel x:Name="BandField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowBandField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
                             <TextBlock Text="BAND" FontSize="12" FontWeight="Bold" Foreground="#555555"/>
                             <TextBlock Text=" (static)" FontSize="10" Foreground="#999999" FontStyle="Italic" VerticalAlignment="Bottom"/>
@@ -76,18 +114,15 @@
                     </StackPanel>
 
                     <!-- Freq -->
-                    <StackPanel Style="{StaticResource FieldBox}" Visibility="{Binding ShowFreqField, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel x:Name="FreqField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowFreqField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <TextBlock Text="FREQ (MHZ)" FontSize="12" FontWeight="Bold" Foreground="#555555"
                                   Margin="0,0,0,5"/>
                         <TextBox Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
                                 Text="{Binding FrequencyMhz, Mode=TwoWay}" Tag="14.200"/>
                     </StackPanel>
-                </WrapPanel>
 
-                <!-- Row 2 -->
-                <WrapPanel Orientation="Horizontal">
                     <!-- Mode -->
-                    <StackPanel Style="{StaticResource FieldBox}" Visibility="{Binding ShowModeField, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel x:Name="ModeField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowModeField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
                             <TextBlock Text="MODE" FontSize="12" FontWeight="Bold" Foreground="#555555"/>
                             <TextBlock Text=" (static)" FontSize="10" Foreground="#999999" FontStyle="Italic" VerticalAlignment="Bottom"/>
@@ -98,7 +133,7 @@
                     </StackPanel>
 
                     <!-- Sub-Mode -->
-                    <StackPanel Style="{StaticResource FieldBox}" Visibility="{Binding ShowSubModeField, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel x:Name="SubModeField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowSubModeField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
                             <TextBlock Text="SUB-MODE" FontSize="12" FontWeight="Bold" Foreground="#555555"/>
                             <TextBlock Text=" (static)" FontSize="10" Foreground="#999999" FontStyle="Italic" VerticalAlignment="Bottom"/>
@@ -109,19 +144,15 @@
                     </StackPanel>
 
                     <!-- Local Time -->
-                    <StackPanel Style="{StaticResource FieldBox}" Visibility="{Binding ShowLocalTimeField, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel x:Name="LocalTimeField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowLocalTimeField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <TextBlock Text="LOCAL TIME" FontSize="12" FontWeight="Bold" Foreground="#555555"
                                   Margin="0,0,0,5"/>
                         <TextBox Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
                                 Text="{Binding QsoDateTimeLocalText, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"/>
                     </StackPanel>
 
-                </WrapPanel>
-
-                <!-- Row 3 (continues Row 2's overflow: max 5 fields per row) -->
-                <WrapPanel Orientation="Horizontal">
                     <!-- Time Off -->
-                    <StackPanel Style="{StaticResource FieldBox}" Visibility="{Binding ShowTimeOffField, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel x:Name="TimeOffField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowTimeOffField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <TextBlock Text="TIME OFF (UTC)" FontSize="12" FontWeight="Bold" Foreground="#555555"
                                   Margin="0,0,0,5"/>
                         <TextBox Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
@@ -129,7 +160,7 @@
                     </StackPanel>
 
                     <!-- RST Sent -->
-                    <StackPanel Style="{StaticResource FieldBox}" Visibility="{Binding ShowRstField, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel x:Name="RstSentField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowRstField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
                             <TextBlock Text="RST SENT" FontSize="12" FontWeight="Bold" Foreground="#555555"/>
                             <TextBlock Text=" (static)" FontSize="10" Foreground="#999999" FontStyle="Italic" VerticalAlignment="Bottom"/>
@@ -139,7 +170,7 @@
                     </StackPanel>
 
                     <!-- RST Rcvd -->
-                    <StackPanel Style="{StaticResource FieldBox}" Visibility="{Binding ShowRstField, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel x:Name="RstRcvdField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowRstField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
                             <TextBlock Text="RST RCVD" FontSize="12" FontWeight="Bold" Foreground="#555555"/>
                             <TextBlock Text=" (static)" FontSize="10" Foreground="#999999" FontStyle="Italic" VerticalAlignment="Bottom"/>
@@ -149,7 +180,7 @@
                     </StackPanel>
 
                     <!-- Name -->
-                    <StackPanel Style="{StaticResource FieldBox}" Visibility="{Binding ShowNameField, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel x:Name="NameField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowNameField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <TextBlock Text="NAME" FontSize="12" FontWeight="Bold" Foreground="#555555"
                                   Margin="0,0,0,5"/>
                         <TextBox Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
@@ -157,18 +188,15 @@
                     </StackPanel>
 
                     <!-- Grid -->
-                    <StackPanel Style="{StaticResource FieldBox}" Visibility="{Binding ShowGridField, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel x:Name="GridField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowGridField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <TextBlock Text="GRID" FontSize="12" FontWeight="Bold" Foreground="#555555"
                                   Margin="0,0,0,5"/>
                         <TextBox Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
                                 Text="{Binding GridSquare, Mode=TwoWay}" Tag="DN70"/>
                     </StackPanel>
-                </WrapPanel>
 
-                <!-- Row 4 -->
-                <WrapPanel Orientation="Horizontal">
                     <!-- City -->
-                    <StackPanel Style="{StaticResource FieldBox}" Visibility="{Binding ShowCityField, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel x:Name="CityField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowCityField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <TextBlock Text="CITY" FontSize="12" FontWeight="Bold" Foreground="#555555"
                                   Margin="0,0,0,5"/>
                         <TextBox Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
@@ -176,7 +204,7 @@
                     </StackPanel>
 
                     <!-- State -->
-                    <StackPanel Style="{StaticResource FieldBox}" Visibility="{Binding ShowStateField, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel x:Name="StateField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowStateField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <TextBlock Text="STATE" FontSize="12" FontWeight="Bold" Foreground="#555555"
                                   Margin="0,0,0,5"/>
                         <TextBox Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
@@ -184,7 +212,7 @@
                     </StackPanel>
 
                     <!-- County -->
-                    <StackPanel Style="{StaticResource FieldBox}" Visibility="{Binding ShowCountyField, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel x:Name="CountyField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowCountyField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <TextBlock Text="COUNTY" FontSize="12" FontWeight="Bold" Foreground="#555555"
                                   Margin="0,0,0,5"/>
                         <TextBox Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
@@ -192,7 +220,7 @@
                     </StackPanel>
 
                     <!-- Country -->
-                    <StackPanel Style="{StaticResource FieldBox}" Visibility="{Binding ShowCountryField, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel x:Name="CountryField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowCountryField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <TextBlock Text="COUNTRY" FontSize="12" FontWeight="Bold" Foreground="#555555"
                                   Margin="0,0,0,5"/>
                         <TextBox Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
@@ -200,18 +228,15 @@
                     </StackPanel>
 
                     <!-- ARRL Section -->
-                    <StackPanel Style="{StaticResource FieldBox}" Visibility="{Binding ShowArrlSectionField, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel x:Name="ArrlSectionField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowArrlSectionField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <TextBlock Text="ARRL SECTION" FontSize="12" FontWeight="Bold" Foreground="#555555"
                                   Margin="0,0,0,5" TextWrapping="Wrap"/>
                         <TextBox Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
                                 Text="{Binding ArrlSection, Mode=TwoWay}" Tag="NTX"/>
                     </StackPanel>
-                </WrapPanel>
 
-                <!-- Row 5 -->
-                <WrapPanel Orientation="Horizontal">
                     <!-- CQ Zone -->
-                    <StackPanel Style="{StaticResource FieldBox}" Visibility="{Binding ShowCqZoneField, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel x:Name="CqZoneField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowCqZoneField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <TextBlock Text="CQ ZONE" FontSize="12" FontWeight="Bold" Foreground="#555555"
                                   Margin="0,0,0,5" TextWrapping="Wrap"/>
                         <TextBox Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
@@ -219,7 +244,7 @@
                     </StackPanel>
 
                     <!-- ITU Zone -->
-                    <StackPanel Style="{StaticResource FieldBox}" Visibility="{Binding ShowItuZoneField, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel x:Name="ItuZoneField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowItuZoneField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <TextBlock Text="ITU ZONE" FontSize="12" FontWeight="Bold" Foreground="#555555"
                                   Margin="0,0,0,5" TextWrapping="Wrap"/>
                         <TextBox Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
@@ -227,7 +252,7 @@
                     </StackPanel>
 
                     <!-- Comment -->
-                    <StackPanel Style="{StaticResource FieldBox}" Visibility="{Binding ShowCommentField, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel x:Name="CommentField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowCommentField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <TextBlock Text="COMMENT" FontSize="12" FontWeight="Bold" Foreground="#555555"
                                   Margin="0,0,0,5"/>
                         <TextBox Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
@@ -235,7 +260,7 @@
                     </StackPanel>
 
                     <!-- Operator -->
-                    <StackPanel Style="{StaticResource FieldBox}" Visibility="{Binding ShowOpField, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel x:Name="OpField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowOpField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
                             <TextBlock Text="OP" FontSize="12" FontWeight="Bold" Foreground="#555555"/>
                             <TextBlock Text=" (static)" FontSize="10" Foreground="#999999" FontStyle="Italic" VerticalAlignment="Bottom"/>
@@ -245,7 +270,7 @@
                     </StackPanel>
 
                     <!-- TX Power -->
-                    <StackPanel Style="{StaticResource FieldBox}" Visibility="{Binding ShowTxPowerField, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel x:Name="TxPowerField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowTxPowerField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
                             <TextBlock Text="TX(W)" FontSize="12" FontWeight="Bold" Foreground="#555555"/>
                             <TextBlock Text=" (static)" FontSize="10" Foreground="#999999" FontStyle="Italic" VerticalAlignment="Bottom"/>
@@ -253,18 +278,206 @@
                         <TextBox Background="#ecf0f1" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
                                 Text="{Binding TxPowerWatts, Mode=TwoWay}" Tag="100"/>
                     </StackPanel>
-                </WrapPanel>
 
-                <!-- Buttons -->
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,0">
-                    <Button Content="Lookup" Background="#3498db" Foreground="White"
-                           Padding="24,12" FontSize="14" FontWeight="SemiBold" Margin="0,0,10,0"
-                           Click="LookupButton_Click" BorderThickness="0" Cursor="Hand"/>
-                    <Button Content="Log QSO" Background="#2E7D32" Foreground="White"
-                           Padding="24,12" FontSize="14" FontWeight="SemiBold"
-                           Click="LogButton_Click" BorderThickness="0" Cursor="Hand"/>
-                </StackPanel>
-            </StackPanel>
-        </ScrollViewer>
+                    <!-- QTH: sticky, same rationale as OP/TX(W) above (see QsoEntryViewModel.SeedStationDefaults). -->
+                    <StackPanel x:Name="QthField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowQthField, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                            <TextBlock Text="QTH" FontSize="12" FontWeight="Bold" Foreground="#555555"/>
+                            <TextBlock Text=" (static)" FontSize="10" Foreground="#999999" FontStyle="Italic" VerticalAlignment="Bottom"/>
+                        </StackPanel>
+                        <TextBox Background="#ecf0f1" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
+                                Text="{Binding Qth, Mode=TwoWay}" Tag="Home"/>
+                    </StackPanel>
+
+                    <!-- Freq Rx (split operation) -->
+                    <StackPanel x:Name="FreqRxField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowFreqRxField, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <TextBlock Text="FREQ RX (MHZ)" FontSize="12" FontWeight="Bold" Foreground="#555555"
+                                  Margin="0,0,0,5"/>
+                        <TextBox Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
+                                Text="{Binding FrequencyRxMhz, Mode=TwoWay}" Tag="14.200"/>
+                    </StackPanel>
+
+                    <!-- Continent -->
+                    <StackPanel x:Name="ContinentField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowContinentField, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <TextBlock Text="CONTINENT" FontSize="12" FontWeight="Bold" Foreground="#555555"
+                                  Margin="0,0,0,5"/>
+                        <TextBox Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
+                                Text="{Binding Continent, Mode=TwoWay}" Tag="NA"/>
+                    </StackPanel>
+
+                    <!-- My Grid: sticky, same rationale as QTH above. -->
+                    <StackPanel x:Name="MyGridField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowMyGridField, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                            <TextBlock Text="MY GRID" FontSize="12" FontWeight="Bold" Foreground="#555555"/>
+                            <TextBlock Text=" (static)" FontSize="10" Foreground="#999999" FontStyle="Italic" VerticalAlignment="Bottom"/>
+                        </StackPanel>
+                        <TextBox Background="#ecf0f1" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
+                                Text="{Binding MyGridSquare, Mode=TwoWay}" Tag="DN70"/>
+                    </StackPanel>
+
+                    <!-- My State: sticky, same rationale as QTH above. -->
+                    <StackPanel x:Name="MyStateField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowMyStateField, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                            <TextBlock Text="MY STATE" FontSize="12" FontWeight="Bold" Foreground="#555555"/>
+                            <TextBlock Text=" (static)" FontSize="10" Foreground="#999999" FontStyle="Italic" VerticalAlignment="Bottom"/>
+                        </StackPanel>
+                        <TextBox Background="#ecf0f1" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
+                                Text="{Binding MyState, Mode=TwoWay}" Tag="TX"/>
+                    </StackPanel>
+
+                    <!-- My County: sticky, same rationale as QTH above. -->
+                    <StackPanel x:Name="MyCountyField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowMyCountyField, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                            <TextBlock Text="MY COUNTY" FontSize="12" FontWeight="Bold" Foreground="#555555"/>
+                            <TextBlock Text=" (static)" FontSize="10" Foreground="#999999" FontStyle="Italic" VerticalAlignment="Bottom"/>
+                        </StackPanel>
+                        <TextBox Background="#ecf0f1" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
+                                Text="{Binding MyCounty, Mode=TwoWay}" Tag="Dallas County"/>
+                    </StackPanel>
+
+                    <!-- QSL Sent/Rcvd: one visibility flag (ShowQslField) drives two separate draggable
+                         slots, same precedent as RST Sent/RST Rcvd above. -->
+                    <StackPanel x:Name="QslSentField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowQslField, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <TextBlock Text="QSL SENT" FontSize="12" FontWeight="Bold" Foreground="#555555"
+                                  Margin="0,0,0,5"/>
+                        <ComboBox Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
+                                 ItemsSource="{Binding QslStatuses}" SelectedItem="{Binding QslSent, Mode=TwoWay}"/>
+                    </StackPanel>
+
+                    <StackPanel x:Name="QslRcvdField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowQslField, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <TextBlock Text="QSL RCVD" FontSize="12" FontWeight="Bold" Foreground="#555555"
+                                  Margin="0,0,0,5"/>
+                        <ComboBox Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
+                                 ItemsSource="{Binding QslStatuses}" SelectedItem="{Binding QslRcvd, Mode=TwoWay}"/>
+                    </StackPanel>
+
+                    <!-- LoTW Sent/Rcvd: same one-flag/two-slots precedent as QSL Sent/Rcvd above. -->
+                    <StackPanel x:Name="LotwQslSentField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowLotwField, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <TextBlock Text="LOTW SENT" FontSize="12" FontWeight="Bold" Foreground="#555555"
+                                  Margin="0,0,0,5"/>
+                        <ComboBox Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
+                                 ItemsSource="{Binding QslStatuses}" SelectedItem="{Binding LotwQslSent, Mode=TwoWay}"/>
+                    </StackPanel>
+
+                    <StackPanel x:Name="LotwQslRcvdField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowLotwField, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <TextBlock Text="LOTW RCVD" FontSize="12" FontWeight="Bold" Foreground="#555555"
+                                  Margin="0,0,0,5"/>
+                        <ComboBox Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
+                                 ItemsSource="{Binding QslStatuses}" SelectedItem="{Binding LotwQslRcvd, Mode=TwoWay}"/>
+                    </StackPanel>
+
+                    <!-- SKCC # -->
+                    <StackPanel x:Name="SkccField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowSkccField, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <TextBlock Text="SKCC #" FontSize="12" FontWeight="Bold" Foreground="#555555"
+                                  Margin="0,0,0,5"/>
+                        <TextBox Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
+                                Text="{Binding SkccNr, Mode=TwoWay}" Tag="12345"/>
+                    </StackPanel>
+
+                    <!-- My SKCC #: sticky, same rationale as QTH above. -->
+                    <StackPanel x:Name="MySkccField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowMySkccField, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                            <TextBlock Text="MY SKCC #" FontSize="12" FontWeight="Bold" Foreground="#555555"/>
+                            <TextBlock Text=" (static)" FontSize="10" Foreground="#999999" FontStyle="Italic" VerticalAlignment="Bottom"/>
+                        </StackPanel>
+                        <TextBox Background="#ecf0f1" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
+                                Text="{Binding MySkccNr, Mode=TwoWay}" Tag="12345"/>
+                    </StackPanel>
+
+                    <!-- Precedence -->
+                    <StackPanel x:Name="PrecedenceField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowPrecedenceField, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <TextBlock Text="PRECEDENCE" FontSize="12" FontWeight="Bold" Foreground="#555555"
+                                  Margin="0,0,0,5"/>
+                        <ComboBox Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
+                                 ItemsSource="{Binding PrecedenceOptions}" SelectedItem="{Binding SelectedPrecedenceOption, Mode=TwoWay}"/>
+                    </StackPanel>
+
+                    <!-- Check -->
+                    <StackPanel x:Name="CheckField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowCheckField, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <TextBlock Text="CHECK" FontSize="12" FontWeight="Bold" Foreground="#555555"
+                                  Margin="0,0,0,5"/>
+                        <TextBox Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
+                                Text="{Binding Check, Mode=TwoWay}" Tag="26"/>
+                    </StackPanel>
+
+                    <!-- Class -->
+                    <StackPanel x:Name="ClassField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowClassField, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <TextBlock Text="CLASS" FontSize="12" FontWeight="Bold" Foreground="#555555"
+                                  Margin="0,0,0,5"/>
+                        <TextBox Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
+                                Text="{Binding QsoClass, Mode=TwoWay}" Tag="A"/>
+                    </StackPanel>
+
+                    <!-- My SOTA: sticky, same rationale as QTH above. Warning label is soft validation only,
+                         see QsoEntryViewModel.IsMySotaRefValid, never blocks Log QSO. -->
+                    <StackPanel x:Name="MySotaField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowMySotaField, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                            <TextBlock Text="MY SOTA" FontSize="12" FontWeight="Bold" Foreground="#555555"/>
+                            <TextBlock Text=" (static)" FontSize="10" Foreground="#999999" FontStyle="Italic" VerticalAlignment="Bottom"/>
+                        </StackPanel>
+                        <TextBox Background="#ecf0f1" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
+                                Text="{Binding MySotaRef, Mode=TwoWay}" Tag="W6/CT-003"/>
+                        <TextBlock Text="Format looks off (expects e.g. W6/CT-003)" FontSize="10" Foreground="#e67e22"
+                                  FontStyle="Italic" Margin="0,3,0,0" TextWrapping="Wrap" Visibility="{Binding ShowMySotaRefWarning}"/>
+                    </StackPanel>
+
+                    <!-- SOTA: per-QSO, same warning-label rationale as My SOTA above. -->
+                    <StackPanel x:Name="SotaField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowSotaField, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <TextBlock Text="SOTA" FontSize="12" FontWeight="Bold" Foreground="#555555"
+                                  Margin="0,0,0,5"/>
+                        <TextBox Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
+                                Text="{Binding SotaRef, Mode=TwoWay}" Tag="W6/CT-003"/>
+                        <TextBlock Text="Format looks off (expects e.g. W6/CT-003)" FontSize="10" Foreground="#e67e22"
+                                  FontStyle="Italic" Margin="0,3,0,0" TextWrapping="Wrap" Visibility="{Binding ShowSotaRefWarning}"/>
+                    </StackPanel>
+
+                    <!-- My POTA (bound to MySigInfo): sticky, same rationale as My SOTA above. -->
+                    <StackPanel x:Name="MyPotaField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowMyPotaField, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                            <TextBlock Text="MY POTA" FontSize="12" FontWeight="Bold" Foreground="#555555"/>
+                            <TextBlock Text=" (static)" FontSize="10" Foreground="#999999" FontStyle="Italic" VerticalAlignment="Bottom"/>
+                        </StackPanel>
+                        <TextBox Background="#ecf0f1" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
+                                Text="{Binding MySigInfo, Mode=TwoWay}" Tag="K-0001"/>
+                        <TextBlock Text="Format looks off (expects e.g. K-0001)" FontSize="10" Foreground="#e67e22"
+                                  FontStyle="Italic" Margin="0,3,0,0" TextWrapping="Wrap" Visibility="{Binding ShowMySigInfoWarning}"/>
+                    </StackPanel>
+
+                    <!-- POTA (bound to SigInfo): per-QSO, same warning-label rationale as My POTA above. -->
+                    <StackPanel x:Name="PotaField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowPotaField, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <TextBlock Text="POTA" FontSize="12" FontWeight="Bold" Foreground="#555555"
+                                  Margin="0,0,0,5"/>
+                        <TextBox Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
+                                Text="{Binding SigInfo, Mode=TwoWay}" Tag="K-0001"/>
+                        <TextBlock Text="Format looks off (expects e.g. K-0001)" FontSize="10" Foreground="#e67e22"
+                                  FontStyle="Italic" Margin="0,3,0,0" TextWrapping="Wrap" Visibility="{Binding ShowSigInfoWarning}"/>
+                    </StackPanel>
+
+                    <!-- Seq #: read-only counter, Start arms it at 1 and enables auto-increment on each
+                         logged QSO, Reset disarms it back to "—" (see QsoEntryViewModel.StartSequence/
+                         ResetSequence). -->
+                    <StackPanel x:Name="SequenceField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowSequenceField, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <TextBlock Text="SEQ #" FontSize="12" FontWeight="Bold" Foreground="#555555"
+                                  Margin="0,0,0,5"/>
+                        <StackPanel Orientation="Horizontal">
+                            <Border Background="#ecf0f1" BorderBrush="#555555" BorderThickness="1" Padding="10" MinWidth="50">
+                                <TextBlock Text="{Binding SequenceNumberText}" FontSize="14" HorizontalAlignment="Center"/>
+                            </Border>
+                            <Button Content="Start" Command="{Binding StartSequenceCommand}" Background="#2E7D32" Foreground="White"
+                                   Padding="10,10" FontSize="12" Margin="8,0,0,0" BorderThickness="0" Cursor="Hand"/>
+                            <Button Content="Reset" Command="{Binding ResetSequenceCommand}" Background="#c0392b" Foreground="White"
+                                   Padding="10,10" FontSize="12" Margin="8,0,0,0" BorderThickness="0" Cursor="Hand"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- QSL Via -->
+                    <StackPanel x:Name="QslViaField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowQslViaField, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <TextBlock Text="QSL VIA" FontSize="12" FontWeight="Bold" Foreground="#555555"
+                                  Margin="0,0,0,5"/>
+                        <TextBox Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
+                                Text="{Binding QslViaCallsign, Mode=TwoWay}" Tag="W1AW"/>
+                    </StackPanel>
+                </Grid>
+        </StackPanel>
     </Grid>
 </UserControl>

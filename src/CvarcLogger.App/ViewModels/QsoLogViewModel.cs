@@ -7,6 +7,7 @@ using CvarcLogger.App.Services;
 using CvarcLogger.Core.Abstractions;
 using CvarcLogger.Core.Awards;
 using CvarcLogger.Core.Models;
+using CvarcLogger.Core.UiStandards;
 
 namespace CvarcLogger.App.ViewModels;
 
@@ -32,12 +33,31 @@ public partial class QsoLogViewModel : ObservableObject
     /// empty, so a plain single click still works for Delete.</summary>
     public ObservableCollection<Qso> SelectedQsos { get; } = new();
 
-    /// <summary>Toggleable columns for the "Columns..." picker, alphabetically by display name.
-    /// Callsign and Station Callsign are always shown and intentionally not included here.</summary>
+    /// <summary>Toggleable columns for the currently selected picker tab (SelectedPickerModeTab),
+    /// alphabetically by display name. Callsign and Station Callsign are always shown and intentionally
+    /// not included here. Rebuilt by RebuildColumnOptions whenever the tab selection changes -- each tab
+    /// edits its own mode's independent hidden-columns set (SettingsService.GetHiddenColumns).</summary>
     public ObservableCollection<ColumnOption> ColumnOptions { get; } = new();
 
-    /// <summary>Raised whenever any column's visibility changes, so the view can update the DataGrid
-    /// (DataGridColumn isn't part of the visual tree, so it can't bind to this directly).</summary>
+    /// <summary>Tabs for the Column Visibility picker: Normal/Contest/SOTA/POTA (each independently
+    /// renameable, see ColumnPickerModeTab) plus a static "All" catch-all. Net is excluded -- it isn't
+    /// wired into any UI yet (see QsoEntryModeOptions), so there's nothing to give it a tab for.</summary>
+    public ObservableCollection<ColumnPickerModeTab> PickerModeTabs { get; } = new();
+
+    [ObservableProperty] private ColumnPickerModeTab selectedPickerModeTab = null!;
+
+    private readonly (string Key, string DisplayName, bool DefaultVisible)[] _columnDefinitions;
+
+    /// <summary>The app's actual active Log Entry Mode, kept in sync by MainViewModel via SetLiveMode
+    /// whenever QsoEntryViewModel.SelectedEntryModeOption changes. Drives IsColumnVisible (and so the
+    /// grid's real rendering) independently of SelectedPickerModeTab, which only controls what the picker
+    /// UI is currently showing/editing -- they're the same mode most of the time but don't have to be
+    /// (e.g. editing SOTA's field list while still in Normal mode).</summary>
+    private string _liveMode = QsoEntryMode.Normal.ToString();
+
+    /// <summary>Raised whenever any column's visibility changes (a checkbox toggle, "All"/"None", or a
+    /// live mode switch), so the view can update the DataGrid (DataGridColumn isn't part of the visual
+    /// tree, so it can't bind to this directly).</summary>
     public event EventHandler? ColumnVisibilityChanged;
 
     public QsoLogViewModel(
@@ -56,7 +76,7 @@ public partial class QsoLogViewModel : ObservableObject
         // defaultVisible=false for every column added after the original 12 keeps existing users'
         // grids exactly as they were — SettingsService.EnsureLogColumnDefault only applies a column's
         // default the first time that key is ever seen for a given settings file.
-        var columnDefinitions = new[]
+        _columnDefinitions = new[]
         {
             ("UtcTime", "Date/Time (UTC)", true),
             ("LocalTime", "Local Time", true), ("Band", "Band", true), ("Mode", "Mode", true),
@@ -79,29 +99,82 @@ public partial class QsoLogViewModel : ObservableObject
             ("Sequence", "Seq #", false),
         };
 
-        foreach (var (key, displayName, defaultVisible) in columnDefinitions.OrderBy(c => c.Item2, StringComparer.OrdinalIgnoreCase))
-        {
+        foreach (var (key, _, defaultVisible) in _columnDefinitions)
             _settings.EnsureLogColumnDefault(key, defaultVisible);
-            var option = new ColumnOption(key, displayName, !_settings.HiddenLogColumns.Contains(key));
+
+        foreach (var mode in new[] { QsoEntryMode.Normal, QsoEntryMode.Contest, QsoEntryMode.Sota, QsoEntryMode.Pota })
+        {
+            var modeKey = mode.ToString();
+            PickerModeTabs.Add(new ColumnPickerModeTab(mode, _settings.GetModeTabLabel(modeKey, DefaultTabLabel(mode)), isRenameable: true));
+        }
+        PickerModeTabs.Add(new ColumnPickerModeTab(QsoEntryMode.All, "All", isRenameable: false));
+
+        SelectedPickerModeTab = PickerModeTabs[0]; // Normal -- setter fires RebuildColumnOptions via the partial method below.
+    }
+
+    private static string DefaultTabLabel(QsoEntryMode mode) => mode switch
+    {
+        QsoEntryMode.Sota => "SOTA",
+        QsoEntryMode.Pota => "POTA",
+        _ => mode.ToString(),
+    };
+
+    partial void OnSelectedPickerModeTabChanged(ColumnPickerModeTab value) => RebuildColumnOptions();
+
+    private void RebuildColumnOptions()
+    {
+        foreach (var option in ColumnOptions) option.PropertyChanged -= OnColumnOptionChanged;
+        ColumnOptions.Clear();
+
+        var hidden = _settings.GetHiddenColumns(SelectedPickerModeTab.Value.ToString());
+        foreach (var (key, displayName, _) in _columnDefinitions.OrderBy(c => c.DisplayName, StringComparer.OrdinalIgnoreCase))
+        {
+            var option = new ColumnOption(key, displayName, !hidden.Contains(key));
             option.PropertyChanged += OnColumnOptionChanged;
             ColumnOptions.Add(option);
         }
     }
 
-    public bool IsColumnVisible(string key) =>
-        ColumnOptions.FirstOrDefault(c => c.Key == key)?.IsVisible ?? true;
+    /// <summary>Persists a new display label for a picker tab (see RenameModeDialog). "All" isn't
+    /// renameable (ColumnPickerModeTab.IsRenameable) -- enforced by the view disabling the Rename button
+    /// for it, not re-checked here. Renaming propagates everywhere that mode's name appears (sidebar mode
+    /// button, entry form title) via ModeLabelsChanged -- see MainViewModel's wiring to QsoEntry.</summary>
+    public void RenameTab(ColumnPickerModeTab tab, string newLabel)
+    {
+        tab.Label = newLabel;
+        _settings.SetModeTabLabel(tab.Value.ToString(), newLabel);
+        ModeLabelsChanged?.Invoke(this, EventArgs.Empty);
+    }
 
-    /// <summary>"All" button in the Columns picker: shows every toggleable column. Setting each
-    /// option's IsVisible fires OnColumnOptionChanged the same as a manual checkbox click, so the grid,
-    /// entry form, and saved settings all update through the existing path.</summary>
+    /// <summary>Raised whenever a mode's display label changes (see RenameTab), so MainViewModel can tell
+    /// QsoEntryViewModel to refresh its own label-derived properties (EntryFormTitle) -- same bridging
+    /// pattern as ColumnVisibilityChanged above, since QsoEntryViewModel deliberately doesn't reference
+    /// its sibling QsoLogViewModel directly.</summary>
+    public event EventHandler? ModeLabelsChanged;
+
+    public bool IsColumnVisible(string key) => !_settings.GetHiddenColumns(_liveMode).Contains(key);
+
+    /// <summary>Called by MainViewModel whenever QsoEntryViewModel.SelectedEntryModeOption changes, so
+    /// the log grid's rendered columns follow the app's actual active mode regardless of which tab
+    /// happens to be open in the picker (SelectedPickerModeTab).</summary>
+    public void SetLiveMode(string mode)
+    {
+        _liveMode = mode;
+        ColumnVisibilityChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>"All" button in the Columns picker: shows every column in the currently selected tab.
+    /// Setting each option's IsVisible fires OnColumnOptionChanged the same as a manual checkbox click,
+    /// so the grid, entry form, and saved settings all update through the existing path.</summary>
     [RelayCommand]
     private void SelectAllColumns()
     {
         foreach (var option in ColumnOptions) option.IsVisible = true;
     }
 
-    /// <summary>"None" button in the Columns picker: hides every toggleable column. Callsign and Station
-    /// Callsign are always shown and aren't in ColumnOptions, so they stay visible.</summary>
+    /// <summary>"None" button in the Columns picker: hides every column in the currently selected tab.
+    /// Callsign and Station Callsign are always shown and aren't in ColumnOptions, so they stay
+    /// visible.</summary>
     [RelayCommand]
     private void SelectNoColumns()
     {
@@ -131,9 +204,10 @@ public partial class QsoLogViewModel : ObservableObject
     {
         if (e.PropertyName != nameof(ColumnOption.IsVisible) || sender is not ColumnOption option) return;
 
-        if (option.IsVisible) _settings.HiddenLogColumns.Remove(option.Key);
-        else _settings.HiddenLogColumns.Add(option.Key);
-        _settings.SaveHiddenLogColumns();
+        var hidden = _settings.GetHiddenColumns(SelectedPickerModeTab.Value.ToString());
+        if (option.IsVisible) hidden.Remove(option.Key);
+        else hidden.Add(option.Key);
+        _settings.SaveHiddenColumns();
 
         ColumnVisibilityChanged?.Invoke(this, EventArgs.Empty);
     }
