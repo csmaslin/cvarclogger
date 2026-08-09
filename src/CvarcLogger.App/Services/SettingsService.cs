@@ -187,6 +187,40 @@ public class SettingsService
         Save();
     }
 
+    /// <summary>Keys of entry-form fields hidden for one specific Log Entry Mode (Normal/Contest/Sota/
+    /// Pota/Net/All each get their own independent set, keyed by QsoEntryMode.ToString()) -- distinct
+    /// from HiddenLogColumns above, which controls the QSO log grid and is shared across every mode.
+    /// Auto-creates an empty set for a mode never touched before. Mutate in place, then call
+    /// SaveEntryFormHiddenFields().</summary>
+    public HashSet<string> GetEntryFormHiddenFields(string mode)
+    {
+        if (!_data.EntryFormHiddenFieldsByMode.TryGetValue(mode, out var set))
+        {
+            set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            _data.EntryFormHiddenFieldsByMode[mode] = set;
+        }
+        return set;
+    }
+
+    public void SaveEntryFormHiddenFields() => Save();
+
+    /// <summary>Saved (Row, Position) for each entry-form field, independently per Log Entry Mode --
+    /// what the click-and-drag layout editor writes to. A field missing from a mode's map (never
+    /// dragged, or added in a later app version) falls back to its XAML-declared default row/position.
+    /// Auto-creates an empty map for a mode never touched before. Mutate in place, then call
+    /// SaveEntryFormFieldPositions().</summary>
+    public Dictionary<string, EntryFormFieldPosition> GetEntryFormFieldPositions(string mode)
+    {
+        if (!_data.EntryFormFieldPositionsByMode.TryGetValue(mode, out var map))
+        {
+            map = new Dictionary<string, EntryFormFieldPosition>(StringComparer.OrdinalIgnoreCase);
+            _data.EntryFormFieldPositionsByMode[mode] = map;
+        }
+        return map;
+    }
+
+    public void SaveEntryFormFieldPositions() => Save();
+
     /// <summary>Seeds a column's HiddenLogColumns membership from <paramref name="defaultVisible"/> the
     /// first time this key is ever seen for this settings file, then never touches it again — so a
     /// column added in a later app version starts hidden (or visible) as the code intends, without
@@ -296,6 +330,12 @@ public class SettingsService
         public HashSet<string> SeenLogColumnKeys { get; set; } = new(StringComparer.OrdinalIgnoreCase);
         public Dictionary<string, int> LogColumnOrder { get; set; } = new(StringComparer.OrdinalIgnoreCase);
         public Dictionary<string, double> LogColumnWidths { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+
+        // Keyed by QsoEntryMode.ToString() ("Normal", "Contest", "Sota", "Pota", "Net", "All") so each
+        // Log Entry Mode's entry-form layout is fully independent -- see SettingsService.
+        // GetEntryFormHiddenFields/GetEntryFormFieldPositions.
+        public Dictionary<string, HashSet<string>> EntryFormHiddenFieldsByMode { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, Dictionary<string, EntryFormFieldPosition>> EntryFormFieldPositionsByMode { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
         public bool CatEnabled { get; set; }
         public bool LaunchRigctldAutomatically { get; set; }
