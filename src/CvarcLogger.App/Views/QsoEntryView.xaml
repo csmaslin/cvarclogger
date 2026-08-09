@@ -14,6 +14,9 @@
             <Setter Property="Margin" Value="0,0,15,15"/>
         </Style>
     </UserControl.Resources>
+    <UserControl.InputBindings>
+        <KeyBinding Key="Return" Command="{Binding LogQsoCommand}"/>
+    </UserControl.InputBindings>
     <Grid Background="#E8F4FC" Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -115,8 +118,10 @@
 
                     <!-- Freq -->
                     <StackPanel x:Name="FreqField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowFreqField, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <TextBlock Text="FREQ (MHZ)" FontSize="12" FontWeight="Bold" Foreground="#555555"
-                                  Margin="0,0,0,5"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                            <TextBlock Text="FREQ (MHZ)" FontSize="12" FontWeight="Bold" Foreground="#555555"/>
+                            <TextBlock Text=" (static)" FontSize="10" Foreground="#999999" FontStyle="Italic" VerticalAlignment="Bottom"/>
+                        </StackPanel>
                         <TextBox Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
                                 Text="{Binding FrequencyMhz, Mode=TwoWay}" Tag="14.200"/>
                     </StackPanel>
@@ -421,14 +426,28 @@
                                   FontStyle="Italic" Margin="0,3,0,0" TextWrapping="Wrap" Visibility="{Binding ShowMySotaRefWarning}"/>
                     </StackPanel>
 
-                    <!-- SOTA: per-QSO, same warning-label rationale as My SOTA above. -->
+                    <!-- SOTA: per-QSO, same warning-label rationale as My SOTA above. The field is
+                         narrowed and an inline "update reference database" button sits beside it (same
+                         field-plus-buttons layout as Seq # below) rather than a separate sidebar button,
+                         so the update trigger sits right next to the field it actually affects; together
+                         they still fill the same width the field alone used to. -->
                     <StackPanel x:Name="SotaField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowSotaField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <TextBlock Text="SOTA" FontSize="12" FontWeight="Bold" Foreground="#555555"
                                   Margin="0,0,0,5"/>
-                        <TextBox Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
-                                Text="{Binding SotaRef, Mode=TwoWay}" Tag="W6/CT-003"/>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBox Width="185" Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
+                                    Text="{Binding SotaRef, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Tag="W6/CT-003"/>
+                            <Button Content="⟳" Command="{Binding UpdateSotaDbCommand}" FontSize="16"
+                                   ToolTip="Update the local SOTA reference database" Width="34" Padding="0"
+                                   Background="#3498db" Foreground="White" BorderThickness="0" Margin="8,0,0,0" Cursor="Hand"/>
+                        </StackPanel>
                         <TextBlock Text="Format looks off (expects e.g. W6/CT-003)" FontSize="10" Foreground="#e67e22"
                                   FontStyle="Italic" Margin="0,3,0,0" TextWrapping="Wrap" Visibility="{Binding ShowSotaRefWarning}"/>
+                        <!-- Resolved summit name/detail from the local SOTA reference database (see
+                             QsoEntryViewModel.ResolveSotaRefAsync); same slot as the warning above, the
+                             two never show at once. -->
+                        <TextBlock Text="{Binding SotaLookupText}" FontSize="10" Foreground="#2980b9"
+                                  Margin="0,3,0,0" TextWrapping="Wrap" Visibility="{Binding ShowSotaLookupText}"/>
                     </StackPanel>
 
                     <!-- My POTA (bound to MySigInfo): sticky, same rationale as My SOTA above. -->
@@ -443,14 +462,25 @@
                                   FontStyle="Italic" Margin="0,3,0,0" TextWrapping="Wrap" Visibility="{Binding ShowMySigInfoWarning}"/>
                     </StackPanel>
 
-                    <!-- POTA (bound to SigInfo): per-QSO, same warning-label rationale as My POTA above. -->
+                    <!-- POTA (bound to SigInfo): per-QSO, same warning-label rationale as My POTA above.
+                         Same narrowed-field-plus-button layout as SOTA above. -->
                     <StackPanel x:Name="PotaField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowPotaField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <TextBlock Text="POTA" FontSize="12" FontWeight="Bold" Foreground="#555555"
                                   Margin="0,0,0,5"/>
-                        <TextBox Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
-                                Text="{Binding SigInfo, Mode=TwoWay}" Tag="K-0001"/>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBox Width="185" Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
+                                    Text="{Binding SigInfo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Tag="K-0001"/>
+                            <Button Content="⟳" Command="{Binding UpdatePotaDbCommand}" FontSize="16"
+                                   ToolTip="Update the local POTA reference database" Width="34" Padding="0"
+                                   Background="#3498db" Foreground="White" BorderThickness="0" Margin="8,0,0,0" Cursor="Hand"/>
+                        </StackPanel>
                         <TextBlock Text="Format looks off (expects e.g. K-0001)" FontSize="10" Foreground="#e67e22"
                                   FontStyle="Italic" Margin="0,3,0,0" TextWrapping="Wrap" Visibility="{Binding ShowSigInfoWarning}"/>
+                        <!-- Resolved park name/detail from the local POTA reference database (see
+                             QsoEntryViewModel.ResolvePotaRefAsync); same slot as the warning above, the
+                             two never show at once. -->
+                        <TextBlock Text="{Binding PotaLookupText}" FontSize="10" Foreground="#2980b9"
+                                  Margin="0,3,0,0" TextWrapping="Wrap" Visibility="{Binding ShowPotaLookupText}"/>
                     </StackPanel>
 
                     <!-- Seq #: read-only counter, Start arms it at 1 and enables auto-increment on each

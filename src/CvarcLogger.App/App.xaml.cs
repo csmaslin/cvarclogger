@@ -95,6 +95,8 @@ public partial class App : Application
                 services.AddScoped<LookupCoordinator>();
                 services.AddHttpClient<SotaSummitLookupService>();
                 services.AddHttpClient<PotaParkLookupService>();
+                services.AddHttpClient<SotaRefDatabase>();
+                services.AddHttpClient<PotaRefDatabase>();
 
                 services.AddSingleton<IRigControlService, RigctldClient>();
                 services.AddSingleton<RigctldProcessManager>();

@@ -45,7 +45,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TextBox">
-                        <Border Background="{TemplateBinding Background}"
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}">
                             <Grid>
@@ -61,6 +61,13 @@
                         <ControlTemplate.Triggers>
                             <Trigger Property="Text" Value="">
                                 <Setter TargetName="PlaceholderText" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                            <!-- Beta feedback: hard to tell which field currently has the text cursor.
+                                 Thicker + accent-blue border on focus, on top of the blinking caret
+                                 itself, gives a second, harder-to-miss cue for where typing will go. -->
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="#3498db"/>
+                                <Setter TargetName="Bd" Property="BorderThickness" Value="2"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -85,7 +92,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="PasswordBox">
-                        <Border Background="{TemplateBinding Background}"
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}">
                             <Grid>
@@ -102,6 +109,10 @@
                             <Trigger Property="behaviors:PasswordBoxHelper.HasText" Value="False">
                                 <Setter TargetName="PlaceholderText" Property="Visibility" Value="Visible"/>
                             </Trigger>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="#3498db"/>
+                                <Setter TargetName="Bd" Property="BorderThickness" Value="2"/>
+                            </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
@@ -117,6 +128,18 @@
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="FontFamily" Value="Segoe UI, Roboto, sans-serif"/>
+            <Style.Triggers>
+                <!-- IsKeyboardFocusWithin (not IsFocused): an editable ComboBox's actual text focus lives
+                     on an internal TextBox, and the ComboBox's own IsFocused doesn't go true while typing
+                     in it. IsKeyboardFocusWithin covers that and the non-editable case identically. No
+                     custom ControlTemplate here (unlike TextBox/PasswordBox above), so these Setters
+                     target the ComboBox's own styleable BorderBrush/BorderThickness directly; the default
+                     template already binds its border to those. -->
+                <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                    <Setter Property="BorderBrush" Value="#3498db"/>
+                    <Setter Property="BorderThickness" Value="2"/>
+                </Trigger>
+            </Style.Triggers>
         </Style>
 
         <Style TargetType="Label">

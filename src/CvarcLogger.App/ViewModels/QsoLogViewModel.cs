@@ -119,7 +119,17 @@ public partial class QsoLogViewModel : ObservableObject
         _ => mode.ToString(),
     };
 
-    partial void OnSelectedPickerModeTabChanged(ColumnPickerModeTab value) => RebuildColumnOptions();
+    /// <summary>Raised when the operator picks a different tab in the Column Visibility picker, so
+    /// MainViewModel can switch the app's actual live mode to match (sidebar highlight included) -- full
+    /// two-way sync with the sidebar's mode buttons, per the operator's explicit request: picking a tab in
+    /// the picker should feel the same as clicking that mode in the sidebar.</summary>
+    public event EventHandler<QsoEntryMode>? PickerModeTabChanged;
+
+    partial void OnSelectedPickerModeTabChanged(ColumnPickerModeTab value)
+    {
+        RebuildColumnOptions();
+        PickerModeTabChanged?.Invoke(this, value.Value);
+    }
 
     private void RebuildColumnOptions()
     {

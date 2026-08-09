@@ -242,14 +242,14 @@
                                  QsoEntryViewModel.SetStartTime). Local Time keeps live-ticking independently. -->
                             <Button Command="{Binding QsoEntry.SetStartTimeCommand}"
                                    Style="{StaticResource RibbonButtonStyle}" Background="#2E7D32" Margin="0,0,15,0">
-                                <emoji:TextBlock Text="▶️ Start" FontSize="13" Foreground="White"/>
+                                <emoji:TextBlock Text="▶️ Start Clock" FontSize="13" Foreground="White"/>
                             </Button>
 
                             <!-- End Time Button: stamps the current instant into Time Off (UTC) (see
                                  QsoEntryViewModel.SetEndTime). -->
                             <Button Command="{Binding QsoEntry.SetEndTimeCommand}"
                                    Style="{StaticResource RibbonButtonStyle}" Background="#c0392b">
-                                <emoji:TextBlock Text="⏹️ End" FontSize="13" Foreground="White"/>
+                                <emoji:TextBlock Text="⏹️ End Clock" FontSize="13" Foreground="White"/>
                             </Button>
                         </StackPanel>
 
@@ -258,7 +258,7 @@
                              form's bottom (see QsoEntryView.xaml) so they're reachable regardless of how
                              the form's fields scroll or how tall the current mode's layout gets. -->
                         <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <Button Content="Lookup" Command="{Binding QsoEntry.LookupCommand}"
+                            <Button Content="Call Lookup" Command="{Binding QsoEntry.LookupCommand}"
                                    Style="{StaticResource RibbonButtonStyle}" Background="#3498db" Margin="0,0,15,0"/>
                             <Button Content="Log QSO" Command="{Binding QsoEntry.LogQsoCommand}"
                                    Style="{StaticResource RibbonButtonStyle}" Background="#2E7D32" Margin="0,0,15,0"/>
