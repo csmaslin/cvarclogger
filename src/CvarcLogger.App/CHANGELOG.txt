@@ -8,6 +8,17 @@ Versions before 1.17 predate this changelog and are not documented here.
 2.0
 ----
 - UI restructure to locked-in design rules: All Rows 1-3 now maintain same vertical height with consistent font sizes and button heights. Row 1 remains fixed in place through all Log Mode changes (Log Mode, Station, Callsign always visible) and collapses left as fields are hidden. Rows 2-3 collapse when all fields are hidden. All margins set to 50 pixels from window edges on both sides. Hidden items allow remaining row entities to shift left. Startup check for Hamlib with on-demand installation option via download page link.
+- QSO Entry form is now fully customizable: any field can be dragged to a new position, and field visibility can be chosen independently per Log Mode (Normal/Contest/SOTA/POTA/Net/All) via the Column Visibility picker, which now has one renameable tab per mode.
+- Per-field "static" (sticky-across-QSOs) toggle: a checkbox next to Band, Freq, Mode, Sub-Mode, RST Sent, RST Rcvd, Op, TX(W), My Grid, My State, My SOTA, and My POTA lets you choose whether that field clears after each QSO or carries over, replacing the old fixed sticky-field list.
+- Local SOTA/POTA reference databases: download the official summit/park lists locally, then typing a reference number shows its name right on the entry form without a per-contact internet lookup. Entries are force-uppercased as you type and the lookup runs live.
+- QSO log grid gained a live search box (filters by callsign/name/grid/city) with a Clear button.
+- Short tooltips added to every button across the main window and every dialog window.
+- Fixed: Tab now follows a field's actual on-screen position instead of stale declaration order after it's been dragged elsewhere.
+- Fixed: Enter now logs the QSO using whatever's currently typed in the Callsign field, instead of a stale value from before the last keystroke (WPF's default text-binding update timing).
+- Column Visibility picker and the sidebar's Log Mode buttons now stay in sync in both directions, including live while the picker is already open.
+- Edit QSO window restyled to match the rest of the program; larger text throughout; a thicker, accent-colored border now shows which field the text cursor is in, on both the entry form and Edit QSO window.
+- Start/End/Lookup ribbon buttons relabeled Start Clock/End Clock/Call Lookup for clarity.
+- New user manual written from scratch, covering every current feature.
 
 1.48
 ----
