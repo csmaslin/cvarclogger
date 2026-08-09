@@ -70,7 +70,7 @@
                               SelectedIndex="{Binding ActiveRadioIndex}"
                               HorizontalAlignment="Left" Width="220" Padding="8" FontSize="14" Margin="0,0,0,10"/>
 
-                    <Button Command="{Binding RefreshAvailableComPortsCommand}" Padding="10,8"
+                    <Button Command="{Binding RefreshAvailableComPortsCommand}" ToolTip="Re-scan available COM ports" Padding="10,8"
                             Background="#3498db" Foreground="White" BorderThickness="0"
                             HorizontalAlignment="Stretch" Margin="0,0,0,6">
                         <emoji:TextBlock Text="🔄 Refresh Ports" FontSize="13" Foreground="White"/>
@@ -121,11 +121,11 @@
                     </Border>
 
                     <StackPanel Orientation="Horizontal">
-                        <Button Click="SaveCatSettings_Click" Padding="16,10"
+                        <Button Click="SaveCatSettings_Click" ToolTip="Save these CAT settings" Padding="16,10"
                                 Background="#2E7D32" Foreground="White" BorderThickness="0" Margin="0,0,10,0">
                             <emoji:TextBlock Text="💾 Save Settings" FontSize="14" Foreground="White"/>
                         </Button>
-                        <Button Command="{Binding TestCatConnectionCommand}" Padding="16,10"
+                        <Button Command="{Binding TestCatConnectionCommand}" ToolTip="Try connecting now to verify these settings work" Padding="16,10"
                                 Background="#3498db" Foreground="White" BorderThickness="0">
                             <emoji:TextBlock Text="🧪 Test Connection" FontSize="14" Foreground="White"/>
                         </Button>

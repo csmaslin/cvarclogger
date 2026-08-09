@@ -75,11 +75,11 @@
                        HorizontalAlignment="Center" TextAlignment="Center"/>
         </Border>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="14,10,14,10" DockPanel.Dock="Bottom">
-            <Button Content="Lookup" Command="{Binding LookupCommand}" Padding="14,4" Margin="0,0,8,0"
+            <Button Content="Lookup" Command="{Binding LookupCommand}" ToolTip="Look up this callsign online" Padding="14,4" Margin="0,0,8,0"
                     Background="#3498db" Foreground="White" BorderThickness="0" FontWeight="SemiBold" Cursor="Hand"/>
-            <Button Content="Cancel" Click="Cancel_Click" Padding="14,4" Margin="0,0,8,0"
+            <Button Content="Cancel" Click="Cancel_Click" ToolTip="Discard changes and close" Padding="14,4" Margin="0,0,8,0"
                     Background="#7f8c8d" Foreground="White" BorderThickness="0" FontWeight="SemiBold" Cursor="Hand"/>
-            <Button Content="Save" Command="{Binding SaveCommand}" Padding="14,4"
+            <Button Content="Save" Command="{Binding SaveCommand}" ToolTip="Save changes to this QSO" Padding="14,4"
                     Background="#2E7D32" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand"/>
         </StackPanel>
         <!-- Fixed Width so the WrapPanels below wrap predictably regardless of window size. Viewbox

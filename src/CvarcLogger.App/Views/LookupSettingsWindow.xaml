@@ -81,15 +81,15 @@
                     </Border>
 
                     <StackPanel Orientation="Horizontal">
-                        <Button Click="SaveCredentials_Click" Padding="14,10"
+                        <Button Click="SaveCredentials_Click" ToolTip="Save QRZ.com credentials" Padding="14,10"
                                 Background="#2E7D32" Foreground="White" BorderThickness="0" Margin="0,0,10,0">
                             <emoji:TextBlock Text="💾 Save" FontSize="13" Foreground="White"/>
                         </Button>
-                        <Button Click="TestQrzConnection_Click" Padding="14,10"
+                        <Button Click="TestQrzConnection_Click" ToolTip="Test the QRZ.com connection" Padding="14,10"
                                 Background="#3498db" Foreground="White" BorderThickness="0" Margin="0,0,10,0">
                             <emoji:TextBlock Text="🧪 Test" FontSize="13" Foreground="White"/>
                         </Button>
-                        <Button Content="Clear" Command="{Binding ClearQrzCredentialsCommand}" Click="ClearQrzPasswordBox_Click" Padding="14,10"
+                        <Button Content="Clear" Command="{Binding ClearQrzCredentialsCommand}" Click="ClearQrzPasswordBox_Click" ToolTip="Clear saved QRZ.com credentials" Padding="14,10"
                                 Background="#3498db" Foreground="White" BorderThickness="0" FontSize="13" FontWeight="SemiBold"/>
                     </StackPanel>
                 </StackPanel>
@@ -120,15 +120,15 @@
                     </Border>
 
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
-                        <Button Click="SaveQrzCqCredentials_Click" Padding="14,10"
+                        <Button Click="SaveQrzCqCredentials_Click" ToolTip="Save QRZCQ.com credentials" Padding="14,10"
                                 Background="#2E7D32" Foreground="White" BorderThickness="0" Margin="0,0,10,0">
                             <emoji:TextBlock Text="💾 Save" FontSize="13" Foreground="White"/>
                         </Button>
-                        <Button Click="TestQrzCqConnection_Click" Padding="14,10"
+                        <Button Click="TestQrzCqConnection_Click" ToolTip="Test the QRZCQ.com connection" Padding="14,10"
                                 Background="#3498db" Foreground="White" BorderThickness="0" Margin="0,0,10,0">
                             <emoji:TextBlock Text="🧪 Test" FontSize="13" Foreground="White"/>
                         </Button>
-                        <Button Content="Clear" Command="{Binding ClearQrzCqCredentialsCommand}" Click="ClearQrzCqPasswordBox_Click" Padding="14,10"
+                        <Button Content="Clear" Command="{Binding ClearQrzCqCredentialsCommand}" Click="ClearQrzCqPasswordBox_Click" ToolTip="Clear saved QRZCQ.com credentials" Padding="14,10"
                                 Background="#3498db" Foreground="White" BorderThickness="0" FontSize="13" FontWeight="SemiBold"/>
                     </StackPanel>
 
@@ -153,11 +153,11 @@
                     </WrapPanel>
 
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
-                        <Button Command="{Binding SaveGridTrackerSettingsCommand}" Padding="14,10"
+                        <Button Command="{Binding SaveGridTrackerSettingsCommand}" ToolTip="Save GridTracker2 broadcast settings" Padding="14,10"
                                 Background="#2E7D32" Foreground="White" BorderThickness="0" Margin="0,0,10,0">
                             <emoji:TextBlock Text="💾 Save" FontSize="13" Foreground="White"/>
                         </Button>
-                        <Button Command="{Binding SendGridTrackerTestPacketCommand}" Padding="14,10"
+                        <Button Command="{Binding SendGridTrackerTestPacketCommand}" ToolTip="Send a test UDP packet to GridTracker2" Padding="14,10"
                                 Background="#3498db" Foreground="White" BorderThickness="0">
                             <emoji:TextBlock Text="🧪 Test" FontSize="13" Foreground="White"/>
                         </Button>

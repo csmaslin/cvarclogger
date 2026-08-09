@@ -14,9 +14,6 @@
             <Setter Property="Margin" Value="0,0,15,15"/>
         </Style>
     </UserControl.Resources>
-    <UserControl.InputBindings>
-        <KeyBinding Key="Return" Command="{Binding LogQsoCommand}"/>
-    </UserControl.InputBindings>
     <Grid Background="#E8F4FC" Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -93,8 +90,8 @@
                     <StackPanel x:Name="CallsignField" Style="{StaticResource FieldBox}">
                         <TextBlock Text="CALLSIGN" FontSize="12" FontWeight="Bold" Foreground="#555555"
                                   Margin="0,0,0,5"/>
-                        <TextBox Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
-                                Text="{Binding Callsign, Mode=TwoWay}" Tag="W5XYZ"/>
+                        <TextBox x:Name="CallsignTextBox" Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
+                                Text="{Binding Callsign, Mode=TwoWay}" Tag="W5XYZ" KeyDown="CallsignTextBox_KeyDown"/>
                     </StackPanel>
 
                     <!-- Date/Time UTC -->
@@ -109,10 +106,11 @@
                     <StackPanel x:Name="BandField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowBandField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
                             <TextBlock Text="BAND" FontSize="12" FontWeight="Bold" Foreground="#555555"/>
-                            <TextBlock Text=" (static)" FontSize="10" Foreground="#999999" FontStyle="Italic" VerticalAlignment="Bottom"/>
+                            <CheckBox Content="static" FontSize="10" Foreground="#999999" VerticalAlignment="Bottom" Margin="6,0,0,0"
+                                     IsChecked="{Binding BandIsStatic, Mode=TwoWay}"/>
                         </StackPanel>
                         <ComboBox Background="#ecf0f1" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
-                                 ItemsSource="{Binding Bands}" Text="{Binding Band, Mode=TwoWay}"
+                                 ItemsSource="{Binding Bands}" Text="{Binding Band, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  IsEditable="True" IsTextSearchEnabled="True"/>
                     </StackPanel>
 
@@ -120,7 +118,8 @@
                     <StackPanel x:Name="FreqField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowFreqField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
                             <TextBlock Text="FREQ (MHZ)" FontSize="12" FontWeight="Bold" Foreground="#555555"/>
-                            <TextBlock Text=" (static)" FontSize="10" Foreground="#999999" FontStyle="Italic" VerticalAlignment="Bottom"/>
+                            <CheckBox Content="static" FontSize="10" Foreground="#999999" VerticalAlignment="Bottom" Margin="6,0,0,0"
+                                     IsChecked="{Binding FreqIsStatic, Mode=TwoWay}"/>
                         </StackPanel>
                         <TextBox Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
                                 Text="{Binding FrequencyMhz, Mode=TwoWay}" Tag="14.200"/>
@@ -130,10 +129,11 @@
                     <StackPanel x:Name="ModeField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowModeField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
                             <TextBlock Text="MODE" FontSize="12" FontWeight="Bold" Foreground="#555555"/>
-                            <TextBlock Text=" (static)" FontSize="10" Foreground="#999999" FontStyle="Italic" VerticalAlignment="Bottom"/>
+                            <CheckBox Content="static" FontSize="10" Foreground="#999999" VerticalAlignment="Bottom" Margin="6,0,0,0"
+                                     IsChecked="{Binding ModeIsStatic, Mode=TwoWay}"/>
                         </StackPanel>
                         <ComboBox Background="#ecf0f1" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
-                                 ItemsSource="{Binding Modes}" Text="{Binding Mode, Mode=TwoWay}"
+                                 ItemsSource="{Binding Modes}" Text="{Binding Mode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  IsEditable="True" IsTextSearchEnabled="True"/>
                     </StackPanel>
 
@@ -141,10 +141,11 @@
                     <StackPanel x:Name="SubModeField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowSubModeField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
                             <TextBlock Text="SUB-MODE" FontSize="12" FontWeight="Bold" Foreground="#555555"/>
-                            <TextBlock Text=" (static)" FontSize="10" Foreground="#999999" FontStyle="Italic" VerticalAlignment="Bottom"/>
+                            <CheckBox Content="static" FontSize="10" Foreground="#999999" VerticalAlignment="Bottom" Margin="6,0,0,0"
+                                     IsChecked="{Binding SubModeIsStatic, Mode=TwoWay}"/>
                         </StackPanel>
                         <ComboBox Background="#ecf0f1" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
-                                 ItemsSource="{Binding SubModes}" Text="{Binding SubMode, Mode=TwoWay}"
+                                 ItemsSource="{Binding SubModes}" Text="{Binding SubMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  IsEditable="True" IsTextSearchEnabled="True"/>
                     </StackPanel>
 
@@ -168,7 +169,8 @@
                     <StackPanel x:Name="RstSentField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowRstField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
                             <TextBlock Text="RST SENT" FontSize="12" FontWeight="Bold" Foreground="#555555"/>
-                            <TextBlock Text=" (static)" FontSize="10" Foreground="#999999" FontStyle="Italic" VerticalAlignment="Bottom"/>
+                            <CheckBox Content="static" FontSize="10" Foreground="#999999" VerticalAlignment="Bottom" Margin="6,0,0,0"
+                                     IsChecked="{Binding RstSentIsStatic, Mode=TwoWay}"/>
                         </StackPanel>
                         <TextBox Background="#ecf0f1" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
                                 Text="{Binding RstSent, Mode=TwoWay}" Tag="599"/>
@@ -178,7 +180,8 @@
                     <StackPanel x:Name="RstRcvdField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowRstField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
                             <TextBlock Text="RST RCVD" FontSize="12" FontWeight="Bold" Foreground="#555555"/>
-                            <TextBlock Text=" (static)" FontSize="10" Foreground="#999999" FontStyle="Italic" VerticalAlignment="Bottom"/>
+                            <CheckBox Content="static" FontSize="10" Foreground="#999999" VerticalAlignment="Bottom" Margin="6,0,0,0"
+                                     IsChecked="{Binding RstRcvdIsStatic, Mode=TwoWay}"/>
                         </StackPanel>
                         <TextBox Background="#ecf0f1" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
                                 Text="{Binding RstRcvd, Mode=TwoWay}" Tag="599"/>
@@ -268,7 +271,8 @@
                     <StackPanel x:Name="OpField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowOpField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
                             <TextBlock Text="OP" FontSize="12" FontWeight="Bold" Foreground="#555555"/>
-                            <TextBlock Text=" (static)" FontSize="10" Foreground="#999999" FontStyle="Italic" VerticalAlignment="Bottom"/>
+                            <CheckBox Content="static" FontSize="10" Foreground="#999999" VerticalAlignment="Bottom" Margin="6,0,0,0"
+                                     IsChecked="{Binding OpIsStatic, Mode=TwoWay}"/>
                         </StackPanel>
                         <TextBox Background="#ecf0f1" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
                                 Text="{Binding Op, Mode=TwoWay}" Tag="W5ABC"/>
@@ -278,7 +282,8 @@
                     <StackPanel x:Name="TxPowerField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowTxPowerField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
                             <TextBlock Text="TX(W)" FontSize="12" FontWeight="Bold" Foreground="#555555"/>
-                            <TextBlock Text=" (static)" FontSize="10" Foreground="#999999" FontStyle="Italic" VerticalAlignment="Bottom"/>
+                            <CheckBox Content="static" FontSize="10" Foreground="#999999" VerticalAlignment="Bottom" Margin="6,0,0,0"
+                                     IsChecked="{Binding TxPowerIsStatic, Mode=TwoWay}"/>
                         </StackPanel>
                         <TextBox Background="#ecf0f1" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
                                 Text="{Binding TxPowerWatts, Mode=TwoWay}" Tag="100"/>
@@ -314,7 +319,8 @@
                     <StackPanel x:Name="MyGridField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowMyGridField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
                             <TextBlock Text="MY GRID" FontSize="12" FontWeight="Bold" Foreground="#555555"/>
-                            <TextBlock Text=" (static)" FontSize="10" Foreground="#999999" FontStyle="Italic" VerticalAlignment="Bottom"/>
+                            <CheckBox Content="static" FontSize="10" Foreground="#999999" VerticalAlignment="Bottom" Margin="6,0,0,0"
+                                     IsChecked="{Binding MyGridIsStatic, Mode=TwoWay}"/>
                         </StackPanel>
                         <TextBox Background="#ecf0f1" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
                                 Text="{Binding MyGridSquare, Mode=TwoWay}" Tag="DN70"/>
@@ -324,7 +330,8 @@
                     <StackPanel x:Name="MyStateField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowMyStateField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
                             <TextBlock Text="MY STATE" FontSize="12" FontWeight="Bold" Foreground="#555555"/>
-                            <TextBlock Text=" (static)" FontSize="10" Foreground="#999999" FontStyle="Italic" VerticalAlignment="Bottom"/>
+                            <CheckBox Content="static" FontSize="10" Foreground="#999999" VerticalAlignment="Bottom" Margin="6,0,0,0"
+                                     IsChecked="{Binding MyStateIsStatic, Mode=TwoWay}"/>
                         </StackPanel>
                         <TextBox Background="#ecf0f1" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
                                 Text="{Binding MyState, Mode=TwoWay}" Tag="TX"/>
@@ -418,7 +425,8 @@
                     <StackPanel x:Name="MySotaField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowMySotaField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
                             <TextBlock Text="MY SOTA" FontSize="12" FontWeight="Bold" Foreground="#555555"/>
-                            <TextBlock Text=" (static)" FontSize="10" Foreground="#999999" FontStyle="Italic" VerticalAlignment="Bottom"/>
+                            <CheckBox Content="static" FontSize="10" Foreground="#999999" VerticalAlignment="Bottom" Margin="6,0,0,0"
+                                     IsChecked="{Binding MySotaIsStatic, Mode=TwoWay}"/>
                         </StackPanel>
                         <TextBox Background="#ecf0f1" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
                                 Text="{Binding MySotaRef, Mode=TwoWay}" Tag="W6/CT-003"/>
@@ -454,7 +462,8 @@
                     <StackPanel x:Name="MyPotaField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowMyPotaField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
                             <TextBlock Text="MY POTA" FontSize="12" FontWeight="Bold" Foreground="#555555"/>
-                            <TextBlock Text=" (static)" FontSize="10" Foreground="#999999" FontStyle="Italic" VerticalAlignment="Bottom"/>
+                            <CheckBox Content="static" FontSize="10" Foreground="#999999" VerticalAlignment="Bottom" Margin="6,0,0,0"
+                                     IsChecked="{Binding MyPotaIsStatic, Mode=TwoWay}"/>
                         </StackPanel>
                         <TextBox Background="#ecf0f1" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
                                 Text="{Binding MySigInfo, Mode=TwoWay}" Tag="K-0001"/>
@@ -493,9 +502,11 @@
                             <Border Background="#ecf0f1" BorderBrush="#555555" BorderThickness="1" Padding="10" MinWidth="50">
                                 <TextBlock Text="{Binding SequenceNumberText}" FontSize="14" HorizontalAlignment="Center"/>
                             </Border>
-                            <Button Content="Start" Command="{Binding StartSequenceCommand}" Background="#2E7D32" Foreground="White"
+                            <Button Content="Start" Command="{Binding StartSequenceCommand}" ToolTip="Start the running QSO sequence number at 1"
+                                   Background="#2E7D32" Foreground="White"
                                    Padding="10,10" FontSize="12" Margin="8,0,0,0" BorderThickness="0" Cursor="Hand"/>
-                            <Button Content="Reset" Command="{Binding ResetSequenceCommand}" Background="#c0392b" Foreground="White"
+                            <Button Content="Reset" Command="{Binding ResetSequenceCommand}" ToolTip="Stop and clear the sequence number"
+                                   Background="#c0392b" Foreground="White"
                                    Padding="10,10" FontSize="12" Margin="8,0,0,0" BorderThickness="0" Cursor="Hand"/>
                         </StackPanel>
                     </StackPanel>

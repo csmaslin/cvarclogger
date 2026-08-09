@@ -166,13 +166,13 @@
                                 Command="{Binding MountainGoat.RefreshListCommand}"
                                 ToolTip="Force-downloads the official SOTA summit list now, instead of waiting for its normal 30-day refresh."/>
                         <Button DockPanel.Dock="Right" Content="Add" Padding="12,4" Margin="6,0,0,0"
-                                Command="{Binding MountainGoat.AddSummitCommand}"/>
+                                Command="{Binding MountainGoat.AddSummitCommand}" ToolTip="Add this summit to your activation list"/>
                         <TextBox Width="160" HorizontalAlignment="Left" CharacterCasing="Upper"
                                  Text="{Binding MountainGoat.NewSummitCode, UpdateSourceTrigger=PropertyChanged}"/>
                     </DockPanel>
 
                     <Button DockPanel.Dock="Bottom" Content="Delete Selected" Padding="10,2" Margin="0,8,0,0"
-                            HorizontalAlignment="Left"
+                            HorizontalAlignment="Left" ToolTip="Remove the selected summit from this list"
                             Command="{Binding MountainGoat.DeleteCommand}"
                             CommandParameter="{Binding ElementName=MountainGoatGrid, Path=SelectedItem}"/>
 
@@ -216,13 +216,13 @@
                                 Command="{Binding ParksOnTheAir.RefreshCommand}"
                                 ToolTip="Re-checks live park names for everything in this list from POTA's API. POTA has no single bulk export, so this only re-checks parks you're already tracking, not the full worldwide list."/>
                         <Button DockPanel.Dock="Right" Content="Add" Padding="12,4" Margin="6,0,0,0"
-                                Command="{Binding ParksOnTheAir.AddParkCommand}"/>
+                                Command="{Binding ParksOnTheAir.AddParkCommand}" ToolTip="Add this park to your activation list"/>
                         <TextBox Width="160" HorizontalAlignment="Left" CharacterCasing="Upper"
                                  Text="{Binding ParksOnTheAir.NewParkReference, UpdateSourceTrigger=PropertyChanged}"/>
                     </DockPanel>
 
                     <Button DockPanel.Dock="Bottom" Content="Delete Selected" Padding="10,2" Margin="0,8,0,0"
-                            HorizontalAlignment="Left"
+                            HorizontalAlignment="Left" ToolTip="Remove the selected park from this list"
                             Command="{Binding ParksOnTheAir.DeleteCommand}"
                             CommandParameter="{Binding ElementName=PotaGrid, Path=SelectedItem}"/>
 

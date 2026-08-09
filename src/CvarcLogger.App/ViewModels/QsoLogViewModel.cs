@@ -224,6 +224,9 @@ public partial class QsoLogViewModel : ObservableObject
 
     partial void OnSearchTextChanged(string? value) => QsosView.Refresh();
 
+    [RelayCommand]
+    private void ClearSearch() => SearchText = null;
+
     private bool FilterQso(object obj)
     {
         if (string.IsNullOrWhiteSpace(SearchText)) return true;
