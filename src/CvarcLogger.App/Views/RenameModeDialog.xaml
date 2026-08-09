@@ -20,10 +20,10 @@
                  Padding="10" FontSize="14" KeyDown="LabelTextBox_KeyDown"/>
 
         <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
-            <Button Content="Cancel" Click="Cancel_Click"
+            <Button Content="Cancel" Click="Cancel_Click" ToolTip="Discard and close"
                     Background="#7f8c8d" Foreground="White" BorderThickness="0"
                     Padding="16,8" FontSize="13" FontWeight="SemiBold" Margin="0,0,10,0"/>
-            <Button Content="OK" Click="Ok_Click"
+            <Button Content="OK" Click="Ok_Click" ToolTip="Save the new tab name"
                     Background="#2E7D32" Foreground="White" BorderThickness="0"
                     Padding="16,8" FontSize="13" FontWeight="SemiBold"/>
         </StackPanel>

@@ -238,6 +238,20 @@ public class SettingsService
 
     public void SaveEntryFormFieldPositions() => Save();
 
+    /// <summary>Whether an entry-form field the operator can toggle sticky ("static") on/off keeps its
+    /// value across QSOs instead of clearing in ResetForNextQso. Global, not per-mode -- it's a workflow
+    /// habit rather than a display choice. Stores the exceptions only (fields explicitly turned OFF), so
+    /// every such field defaults to static/on with no migration needed, matching the hardcoded behavior
+    /// that existed before this became configurable.</summary>
+    public bool IsFieldStatic(string key) => !_data.NonStaticFields.Contains(key);
+
+    public void SetFieldStatic(string key, bool isStatic)
+    {
+        if (isStatic) _data.NonStaticFields.Remove(key);
+        else _data.NonStaticFields.Add(key);
+        Save();
+    }
+
     /// <summary>Seeds a column's HiddenLogColumns membership from <paramref name="defaultVisible"/> the
     /// first time this key is ever seen for this settings file, then never touches it again — so a
     /// column added in a later app version starts hidden (or visible) as the code intends, without
@@ -354,6 +368,7 @@ public class SettingsService
         public Dictionary<string, HashSet<string>> HiddenColumnsByMode { get; set; } = new(StringComparer.OrdinalIgnoreCase);
         public Dictionary<string, Dictionary<string, EntryFormFieldPosition>> EntryFormFieldPositionsByMode { get; set; } = new(StringComparer.OrdinalIgnoreCase);
         public Dictionary<string, string> ModeTabLabels { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+        public HashSet<string> NonStaticFields { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
         public bool CatEnabled { get; set; }
         public bool LaunchRigctldAutomatically { get; set; }

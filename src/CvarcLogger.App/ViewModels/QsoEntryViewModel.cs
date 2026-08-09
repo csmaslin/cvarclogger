@@ -615,6 +615,19 @@ public partial class QsoEntryViewModel : ObservableObject
         _sotaRefDb = sotaRefDb;
         _potaRefDb = potaRefDb;
 
+        bandIsStatic = _settings.IsFieldStatic("Band");
+        freqIsStatic = _settings.IsFieldStatic("Freq");
+        modeIsStatic = _settings.IsFieldStatic("Mode");
+        subModeIsStatic = _settings.IsFieldStatic("SubMode");
+        rstSentIsStatic = _settings.IsFieldStatic("RstSent");
+        rstRcvdIsStatic = _settings.IsFieldStatic("RstRcvd");
+        opIsStatic = _settings.IsFieldStatic("Op");
+        txPowerIsStatic = _settings.IsFieldStatic("TxPower");
+        myGridIsStatic = _settings.IsFieldStatic("MyGrid");
+        myStateIsStatic = _settings.IsFieldStatic("MyState");
+        mySotaIsStatic = _settings.IsFieldStatic("MySota");
+        myPotaIsStatic = _settings.IsFieldStatic("MyPota");
+
         _catPollTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1.5) };
         _catPollTimer.Tick += OnCatPollTick;
 
@@ -1112,6 +1125,39 @@ public partial class QsoEntryViewModel : ObservableObject
         _dialogService.ShowInfo($"Cleared the log. {removed} QSO(s) deleted.");
     }
 
+    // Per-field "static" (sticky-across-QSOs) toggle -- a checkbox next to each field's label in
+    // QsoEntryView.xaml, replacing what used to be a fixed "(static)" label. Backed by
+    // SettingsService.IsFieldStatic/SetFieldStatic (global, not per-mode: it's a workflow habit, not a
+    // display choice). Initial values are seeded from settings in the constructor by assigning the
+    // backing fields directly, not the properties, so that seeding doesn't immediately re-save the same
+    // value it just read. Station isn't included here: it's the active station-profile selection, not
+    // per-QSO data, so "not static" has no coherent meaning for it -- its label stays plain text.
+    [ObservableProperty] private bool bandIsStatic;
+    [ObservableProperty] private bool freqIsStatic;
+    [ObservableProperty] private bool modeIsStatic;
+    [ObservableProperty] private bool subModeIsStatic;
+    [ObservableProperty] private bool rstSentIsStatic;
+    [ObservableProperty] private bool rstRcvdIsStatic;
+    [ObservableProperty] private bool opIsStatic;
+    [ObservableProperty] private bool txPowerIsStatic;
+    [ObservableProperty] private bool myGridIsStatic;
+    [ObservableProperty] private bool myStateIsStatic;
+    [ObservableProperty] private bool mySotaIsStatic;
+    [ObservableProperty] private bool myPotaIsStatic;
+
+    partial void OnBandIsStaticChanged(bool value) => _settings.SetFieldStatic("Band", value);
+    partial void OnFreqIsStaticChanged(bool value) => _settings.SetFieldStatic("Freq", value);
+    partial void OnModeIsStaticChanged(bool value) => _settings.SetFieldStatic("Mode", value);
+    partial void OnSubModeIsStaticChanged(bool value) => _settings.SetFieldStatic("SubMode", value);
+    partial void OnRstSentIsStaticChanged(bool value) => _settings.SetFieldStatic("RstSent", value);
+    partial void OnRstRcvdIsStaticChanged(bool value) => _settings.SetFieldStatic("RstRcvd", value);
+    partial void OnOpIsStaticChanged(bool value) => _settings.SetFieldStatic("Op", value);
+    partial void OnTxPowerIsStaticChanged(bool value) => _settings.SetFieldStatic("TxPower", value);
+    partial void OnMyGridIsStaticChanged(bool value) => _settings.SetFieldStatic("MyGrid", value);
+    partial void OnMyStateIsStaticChanged(bool value) => _settings.SetFieldStatic("MyState", value);
+    partial void OnMySotaIsStaticChanged(bool value) => _settings.SetFieldStatic("MySota", value);
+    partial void OnMyPotaIsStaticChanged(bool value) => _settings.SetFieldStatic("MyPota", value);
+
     private void ResetForNextQso()
     {
         _lastLookedUpCallsign = null;
@@ -1131,9 +1177,24 @@ public partial class QsoEntryViewModel : ObservableObject
         }
 
         QsoDateTimeOffUtcText = null;
-        // Frequency carries over to the next QSO (like Band and Mode) instead of clearing, so a
-        // manually-tuned frequency doesn't have to be re-typed for every contact when CAT isn't
-        // connected. When CAT is connected the live poll keeps overwriting it anyway.
+        // Each of these carries over to the next QSO by default (like Band and Mode) so a manually-tuned
+        // value doesn't have to be re-typed for every contact -- most are the operator's own choice per
+        // field now (the checkbox next to each field's label in QsoEntryView.xaml), conditional on their
+        // own IsStatic flag instead of simply never being touched here. Qth/MyCounty/MySkccNr went back
+        // to being unconditionally sticky (no checkbox) -- too many fields got the toggle at first pass.
+        if (!BandIsStatic) Band = "20m";
+        if (!FreqIsStatic) FrequencyMhz = null;
+        if (!ModeIsStatic) Mode = "SSB";
+        if (!SubModeIsStatic) SubMode = null;
+        if (!RstSentIsStatic) RstSent = "59";
+        if (!RstRcvdIsStatic) RstRcvd = "59";
+        if (!OpIsStatic) Op = null;
+        if (!TxPowerIsStatic) TxPowerWatts = null;
+        if (!MyGridIsStatic) MyGridSquare = null;
+        if (!MyStateIsStatic) MyState = null;
+        if (!MySotaIsStatic) MySotaRef = null;
+        if (!MyPotaIsStatic) MySigInfo = null;
+
         Name = null;
         GridSquare = null;
         City = null;

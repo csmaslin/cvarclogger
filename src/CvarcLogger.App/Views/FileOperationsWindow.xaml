@@ -17,19 +17,19 @@
                 <Border BorderThickness="0,0,0,1" BorderBrush="#ddd" Padding="0,0,0,8">
                     <emoji:TextBlock Text="📁 LOG FILES" FontSize="14" FontWeight="Bold" Foreground="#000000"/>
                 </Border>
-                <Button Padding="12,16" Foreground="#2c2c2c"
+                <Button Padding="12,16" Foreground="#2c2c2c" ToolTip="Create a new, empty log database"
                        Background="#f9f9f9" BorderBrush="#ccc" BorderThickness="1"
                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
                        Click="NewLog_Click">
                     <emoji:TextBlock Text="📄 New Log..." FontSize="14" Foreground="#2c2c2c"/>
                 </Button>
-                <Button Padding="12,16" Foreground="#2c2c2c"
+                <Button Padding="12,16" Foreground="#2c2c2c" ToolTip="Open an existing log database file"
                        Background="#f9f9f9" BorderBrush="#ccc" BorderThickness="1"
                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
                        Click="OpenLog_Click">
                     <emoji:TextBlock Text="🗂️ Open Log..." FontSize="14" Foreground="#2c2c2c"/>
                 </Button>
-                <Button Padding="12,16" Foreground="#2c2c2c"
+                <Button Padding="12,16" Foreground="#2c2c2c" ToolTip="Save a copy of the current log database"
                        Background="#f9f9f9" BorderBrush="#ccc" BorderThickness="1"
                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
                        Click="SaveLog_Click">
@@ -42,13 +42,13 @@
                 <Border BorderThickness="0,0,0,1" BorderBrush="#ddd" Padding="0,0,0,8">
                     <emoji:TextBlock Text="📨 IMPORT/EXPORT" FontSize="14" FontWeight="Bold" Foreground="#000000"/>
                 </Border>
-                <Button Padding="12,16" Foreground="#2c2c2c"
+                <Button Padding="12,16" Foreground="#2c2c2c" ToolTip="Import QSOs from an ADIF file"
                        Background="#f9f9f9" BorderBrush="#ccc" BorderThickness="1"
                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
                        Click="ImportADIF_Click">
                     <emoji:TextBlock Text="📥 Import ADIF..." FontSize="14" Foreground="#2c2c2c"/>
                 </Button>
-                <Button Padding="12,16" Foreground="#2c2c2c"
+                <Button Padding="12,16" Foreground="#2c2c2c" ToolTip="Export QSOs to an ADIF file"
                        Background="#f9f9f9" BorderBrush="#ccc" BorderThickness="1"
                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
                        Click="ExportADIF_Click">
@@ -58,7 +58,7 @@
 
             <!-- Close Button -->
             <StackPanel Orientation="Horizontal" Margin="0,15,0,0" HorizontalAlignment="Right">
-                <Button Content="Close" Padding="10,12,24,12" Margin="10,0"
+                <Button Content="Close" Padding="10,12,24,12" Margin="10,0" ToolTip="Close this window"
                        Background="#2E7D32" Foreground="White"
                        Click="Close_Click"/>
             </StackPanel>

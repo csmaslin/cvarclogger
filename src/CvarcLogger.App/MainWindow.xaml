@@ -114,31 +114,31 @@
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Orientation="Vertical" Margin="10,20,10,20">
                         <!-- File Operations Button -->
-                        <Button Name="FileButton" Click="FileButton_Click"
+                        <Button Name="FileButton" Click="FileButton_Click" ToolTip="Import, export, or switch log database files"
                                 Style="{StaticResource SidebarButtonStyle}">
                             <emoji:TextBlock Text="📁 File"/>
                         </Button>
 
                         <!-- Station Configuration Button -->
-                        <Button Name="StationButton" Click="StationButton_Click"
+                        <Button Name="StationButton" Click="StationButton_Click" ToolTip="Manage station profiles (callsign, grid, power)"
                                 Style="{StaticResource SidebarButtonStyle}">
                             <emoji:TextBlock Text="📍 Station"/>
                         </Button>
 
                         <!-- CAT Control Button -->
-                        <Button Name="CatButton" Click="CatButton_Click"
+                        <Button Name="CatButton" Click="CatButton_Click" ToolTip="Configure radio CAT control settings"
                                 Style="{StaticResource SidebarButtonStyle}">
                             <emoji:TextBlock Text="📡 CAT"/>
                         </Button>
 
                         <!-- Lookup Sources Button -->
-                        <Button Name="LookupButton" Click="LookupButton_Click"
+                        <Button Name="LookupButton" Click="LookupButton_Click" ToolTip="Configure callsign lookup sources"
                                 Style="{StaticResource SidebarButtonStyle}">
                             <emoji:TextBlock Text="🔍 Lookup"/>
                         </Button>
 
                         <!-- Column Visibility Button -->
-                        <Button Name="ColumnsButton" Click="ColumnsButton_Click"
+                        <Button Name="ColumnsButton" Click="ColumnsButton_Click" ToolTip="Choose which fields and columns are shown"
                                 Style="{StaticResource SidebarButtonStyle}">
                             <emoji:TextBlock Text="⚙️ Columns"/>
                         </Button>
@@ -150,27 +150,27 @@
                              Column Visibility picker's Rename Tab feature (see ColumnPickerWindow /
                              QsoLogViewModel.PickerModeTabs) shows up here too. Indices 0-3 match how
                              PickerModeTabs is built (Normal, Contest, Sota, Pota, then static "All"). -->
-                        <Button Name="NormalModeButton" Click="NormalMode_Click"
+                        <Button Name="NormalModeButton" Click="NormalMode_Click" ToolTip="Switch to Normal logging mode"
                                 Style="{StaticResource SidebarButtonActiveStyle}">
                             <emoji:TextBlock Text="{Binding QsoLog.PickerModeTabs[0].Label, StringFormat='📝 {0}'}"/>
                         </Button>
 
-                        <Button Name="ContestModeButton" Click="ContestMode_Click"
+                        <Button Name="ContestModeButton" Click="ContestMode_Click" ToolTip="Switch to Contest logging mode"
                                 Style="{StaticResource SidebarButtonStyle}">
                             <emoji:TextBlock Text="{Binding QsoLog.PickerModeTabs[1].Label, StringFormat='🏆 {0}'}"/>
                         </Button>
 
-                        <Button Name="SotaModeButton" Click="SotaMode_Click"
+                        <Button Name="SotaModeButton" Click="SotaMode_Click" ToolTip="Switch to SOTA logging mode"
                                 Style="{StaticResource SidebarButtonStyle}">
                             <emoji:TextBlock Text="{Binding QsoLog.PickerModeTabs[2].Label, StringFormat='⛰️ {0}'}"/>
                         </Button>
 
-                        <Button Name="PotaModeButton" Click="PotaMode_Click"
+                        <Button Name="PotaModeButton" Click="PotaMode_Click" ToolTip="Switch to POTA logging mode"
                                 Style="{StaticResource SidebarButtonStyle}">
                             <emoji:TextBlock Text="{Binding QsoLog.PickerModeTabs[3].Label, StringFormat='🪑 {0}'}"/>
                         </Button>
 
-                        <Button Name="AllModeButton" Click="AllMode_Click"
+                        <Button Name="AllModeButton" Click="AllMode_Click" ToolTip="Show QSOs from every mode combined"
                                 Style="{StaticResource SidebarButtonStyle}">
                             <emoji:TextBlock Text="📊 All"/>
                         </Button>
@@ -179,7 +179,7 @@
                         <Separator Height="2" Margin="0,20,0,20" Background="#666666"/>
 
                         <!-- Award Progress Button -->
-                        <Button Name="AwardButton" Click="AwardsMenuItem_Click"
+                        <Button Name="AwardButton" Click="AwardsMenuItem_Click" ToolTip="View DXCC/WAS/SOTA/POTA award progress"
                                 Style="{StaticResource SidebarButtonStyle}">
                             <emoji:TextBlock Text="🏅 Award"/>
                         </Button>
@@ -230,7 +230,7 @@
                                  Settings, see QsoEntryViewModel.ToggleCatConnectionAsync). The sidebar's CAT
                                  button is a separate, complementary action: it opens CatControlWindow to
                                  configure which backend/credentials to use, not to connect/disconnect. -->
-                            <Button Name="CatConnectButton" Command="{Binding QsoEntry.ToggleCatConnectionCommand}"
+                            <Button Name="CatConnectButton" Command="{Binding QsoEntry.ToggleCatConnectionCommand}" ToolTip="Connect or disconnect radio CAT control"
                                    Style="{StaticResource RibbonButtonStyle}" Background="#3498db">
                                 <emoji:TextBlock Text="{Binding QsoEntry.CatConnectButtonLabel}" FontSize="13" Foreground="White"/>
                             </Button>
@@ -240,14 +240,14 @@
                         <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                             <!-- Start Time Button: freezes Date/Time UTC at the current instant (see
                                  QsoEntryViewModel.SetStartTime). Local Time keeps live-ticking independently. -->
-                            <Button Command="{Binding QsoEntry.SetStartTimeCommand}"
+                            <Button Command="{Binding QsoEntry.SetStartTimeCommand}" ToolTip="Freeze the current time into Date/Time (UTC)"
                                    Style="{StaticResource RibbonButtonStyle}" Background="#2E7D32" Margin="0,0,15,0">
                                 <emoji:TextBlock Text="▶️ Start Clock" FontSize="13" Foreground="White"/>
                             </Button>
 
                             <!-- End Time Button: stamps the current instant into Time Off (UTC) (see
                                  QsoEntryViewModel.SetEndTime). -->
-                            <Button Command="{Binding QsoEntry.SetEndTimeCommand}"
+                            <Button Command="{Binding QsoEntry.SetEndTimeCommand}" ToolTip="Stamp the current time into Time Off (UTC)"
                                    Style="{StaticResource RibbonButtonStyle}" Background="#c0392b">
                                 <emoji:TextBlock Text="⏹️ End Clock" FontSize="13" Foreground="White"/>
                             </Button>
@@ -258,11 +258,11 @@
                              form's bottom (see QsoEntryView.xaml) so they're reachable regardless of how
                              the form's fields scroll or how tall the current mode's layout gets. -->
                         <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <Button Content="Call Lookup" Command="{Binding QsoEntry.LookupCommand}"
+                            <Button Content="Call Lookup" Command="{Binding QsoEntry.LookupCommand}" ToolTip="Look up the entered callsign online"
                                    Style="{StaticResource RibbonButtonStyle}" Background="#3498db" Margin="0,0,15,0"/>
-                            <Button Content="Log QSO" Command="{Binding QsoEntry.LogQsoCommand}"
+                            <Button Content="Log QSO" Command="{Binding QsoEntry.LogQsoCommand}" ToolTip="Save this contact to the log"
                                    Style="{StaticResource RibbonButtonStyle}" Background="#2E7D32" Margin="0,0,15,0"/>
-                            <Button Name="GridColumnsButton" Click="GridColumnsButton_Click"
+                            <Button Name="GridColumnsButton" Click="GridColumnsButton_Click" ToolTip="Choose which fields and columns are shown"
                                    Style="{StaticResource RibbonButtonStyle}" Background="#3498db">
                                 <emoji:TextBlock Text="⚙️ Columns" FontSize="13" Foreground="White"/>
                             </Button>

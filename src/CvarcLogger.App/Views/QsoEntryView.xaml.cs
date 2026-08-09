@@ -123,6 +123,19 @@ public partial class QsoEntryView : UserControl
             ApplyFieldLayout();
     }
 
+    // Enter-to-log is scoped to just the Callsign field (not every field on the form) so it can't collide
+    // with a dropdown field's own Enter-closes-dropdown behavior (Band/Mode/Sub-Mode). Text bindings
+    // default to UpdateSourceTrigger=LostFocus, which never fires here since focus never actually leaves
+    // the box on Enter -- UpdateSource() flushes the just-typed callsign into the ViewModel first so
+    // LogQsoCommand sees it instead of whatever was there before this keystroke.
+    private void CallsignTextBox_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Enter) return;
+        CallsignTextBox.GetBindingExpression(TextBox.TextProperty)?.UpdateSource();
+        if (_subscribedViewModel?.LogQsoCommand.CanExecute(null) == true)
+            _subscribedViewModel.LogQsoCommand.Execute(null);
+    }
+
     // Reads the current mode's saved field positions (SettingsService.GetEntryFormFieldPositions, via
     // the ViewModel) and places each field in FieldsGrid accordingly. A field with no saved position
     // (never dragged in this mode) uses its DefaultPositions fallback -- unless that cell is contested
@@ -184,6 +197,12 @@ public partial class QsoEntryView : UserControl
             var cell = resolved[key];
             Grid.SetRow(element, cell.Row - 1);
             Grid.SetColumn(element, cell.Position - 1);
+
+            // Tab order otherwise follows FieldElements()'s fixed declaration order regardless of where
+            // a field has been dragged to, so Tab visibly jumps around once the visual grid no longer
+            // matches that order. Row*1000+Position is just a unique sortable key in (Row, Position)
+            // order -- 1000 comfortably exceeds any real column count, it isn't a literal index.
+            KeyboardNavigation.SetTabIndex(element, cell.Row * 1000 + cell.Position);
         }
     }
 

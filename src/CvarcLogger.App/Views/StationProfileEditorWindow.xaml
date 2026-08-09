@@ -42,7 +42,7 @@
                             </Style>
                         </ListBox.ItemContainerStyle>
                     </ListBox>
-                    <Button Content="+ New Profile" Command="{Binding NewProfileCommand}"
+                    <Button Content="+ New Profile" Command="{Binding NewProfileCommand}" ToolTip="Create a new station profile"
                             Background="#3498db" Foreground="White" BorderThickness="0"
                             Margin="0,10,0,0" Padding="8" FontSize="13" FontWeight="SemiBold"/>
                 </StackPanel>
@@ -94,15 +94,15 @@
                               FontSize="13" Foreground="#000000" Margin="0,0,0,16"/>
 
                     <StackPanel Orientation="Horizontal">
-                        <Button Command="{Binding SaveCommand}" Background="#2E7D32" Foreground="White"
+                        <Button Command="{Binding SaveCommand}" ToolTip="Save this station profile" Background="#2E7D32" Foreground="White"
                                 BorderThickness="0" Padding="16,10" FontSize="14" FontWeight="SemiBold" Margin="0,0,10,0">
                             <emoji:TextBlock Text="💾 Save" FontSize="14" Foreground="White"/>
                         </Button>
-                        <Button Command="{Binding DeleteCommand}" Background="#3498db" Foreground="White"
+                        <Button Command="{Binding DeleteCommand}" ToolTip="Delete this station profile" Background="#3498db" Foreground="White"
                                 BorderThickness="0" Padding="16,10" FontSize="14" FontWeight="SemiBold" Margin="0,0,10,0">
                             <emoji:TextBlock Text="🗑️ Delete" FontSize="14" Foreground="White"/>
                         </Button>
-                        <Button Content="Close" Click="Close_Click" Background="#666666" Foreground="White"
+                        <Button Content="Close" Click="Close_Click" ToolTip="Close this window" Background="#666666" Foreground="White"
                                 BorderThickness="0" Padding="16,10" FontSize="14" FontWeight="SemiBold"/>
                     </StackPanel>
 

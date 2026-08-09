@@ -69,7 +69,7 @@
                 </ListBox.ItemTemplate>
             </ListBox>
 
-            <Button Content="Rename Tab..." Click="RenameTab_Click"
+            <Button Content="Rename Tab..." Click="RenameTab_Click" ToolTip="Rename this mode's tab label"
                     IsEnabled="{Binding SelectedPickerModeTab.IsRenameable}"
                     Background="#7f8c8d" Foreground="White" BorderThickness="0"
                     Padding="12,8" FontSize="12" FontWeight="SemiBold"/>
@@ -77,10 +77,10 @@
 
         <!-- All / None buttons -->
         <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,0,0,15">
-            <Button Content="All" Command="{Binding SelectAllColumnsCommand}"
+            <Button Content="All" Command="{Binding SelectAllColumnsCommand}" ToolTip="Show every field for this mode"
                     Background="#3498db" Foreground="White" BorderThickness="0"
                     Padding="16" FontSize="14" FontWeight="SemiBold" Width="150" Margin="0,0,10,0"/>
-            <Button Content="None" Command="{Binding SelectNoColumnsCommand}"
+            <Button Content="None" Command="{Binding SelectNoColumnsCommand}" ToolTip="Hide every field for this mode"
                     Background="#3498db" Foreground="White" BorderThickness="0"
                     Padding="16" FontSize="14" FontWeight="SemiBold" Width="150"/>
         </StackPanel>
@@ -115,7 +115,7 @@
 
         <!-- Done button -->
         <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
-            <Button Content="Done" Click="Close_Click"
+            <Button Content="Done" Click="Close_Click" ToolTip="Close this window"
                     Background="#2E7D32" Foreground="White" BorderThickness="0"
                     Padding="20,10" FontSize="13" FontWeight="SemiBold"/>
         </StackPanel>
