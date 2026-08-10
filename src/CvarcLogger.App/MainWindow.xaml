@@ -110,7 +110,7 @@
         <!-- MAIN CONTENT WITH SIDEBAR -->
         <Grid Background="#404040">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="300"/>
+                <ColumnDefinition Width="240"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
