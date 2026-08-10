@@ -69,6 +69,10 @@ public partial class MainViewModel : ObservableObject
             "Contest" => QsoEntryMode.Contest,
             "SOTA" => QsoEntryMode.Sota,
             "POTA" => QsoEntryMode.Pota,
+            "Net" => QsoEntryMode.Net,
+            "Custom1" => QsoEntryMode.Custom1,
+            "Custom2" => QsoEntryMode.Custom2,
+            "Custom3" => QsoEntryMode.Custom3,
             "All" => QsoEntryMode.All,
             _ => QsoEntryMode.Normal
         };

@@ -12,6 +12,14 @@ public enum QsoEntryMode
     Pota,
     Net,
     All,
+
+    // Undefined-purpose sidebar toggle-tab slots (CvarcLogger/WPF only -- not part of the shared preset
+    // table below, which CvarcCellLog also reads; see QsoEntryViewModel's per-field IsFieldVisible for why
+    // that's fine). Field visibility/layout for these is entirely operator-configured via the per-mode
+    // Columns/Tabs picker and drag-and-drop, same as every other mode -- there's no fixed preset for them.
+    Custom1,
+    Custom2,
+    Custom3,
 }
 
 /// <summary>Callsign, Local Time, RST/S, RST/R, Freq (MHz), Mode, and Name are always shown regardless of
@@ -79,7 +87,10 @@ public static class QsoEntryModeOptions
         new QsoEntryModeOption(QsoEntryMode.Contest, "Contest"),
         new QsoEntryModeOption(QsoEntryMode.Sota, "SOTA"),
         new QsoEntryModeOption(QsoEntryMode.Pota, "POTA"),
-        new QsoEntryModeOption(QsoEntryMode.Net, "Net"),
+        new QsoEntryModeOption(QsoEntryMode.Net, "Undef-1"),
+        new QsoEntryModeOption(QsoEntryMode.Custom1, "Undef-2"),
+        new QsoEntryModeOption(QsoEntryMode.Custom2, "Undef-3"),
+        new QsoEntryModeOption(QsoEntryMode.Custom3, "Undef-4"),
         new QsoEntryModeOption(QsoEntryMode.All, "All"),
     };
 

@@ -5,6 +5,15 @@ build meant to reach the user (see AppVersion.cs) -- before running publish.ps1.
 
 Versions before 1.17 predate this changelog and are not documented here.
 
+2.02
+----
+- Net roll-call markers: a checkbox on every log row (before the row number) lets a net controller track which stations have already been called on for their statement. Clear Net Markers resets everything for the next net. Session-only -- not saved to the database or ADIF.
+- Sidebar rebuilt around toggle tabs: Normal/Contest and SOTA/POTA now share one button each -- click to switch to it, click again while active to flip between its two modes. Two new fully customizable tabs added (Undef-1/Undef-2, Undef-3/Undef-4, backed by 3 new QsoEntryMode values), renameable and configurable in the Columns/Tabs window exactly like every other mode.
+- "Columns" renamed to "Columns/Tabs" throughout (sidebar, ribbon, and the picker window itself).
+- Rename Tab dialog now sizes itself to its content (SizeToContent) so its Save/Cancel buttons can never get clipped by a fixed window height.
+- Sidebar toggle tab labels now update live when a mode is renamed via Columns/Tabs (previously showed static "X/Y" text regardless of renames).
+- User manual: full accuracy pass -- rewrote the Log Modes section to walk through the toggle-tab mechanic, added a Net Roll-Call Markers section, updated every Columns/Tabs, Delete button, and Enter-key reference to match current behavior.
+
 2.01
 ----
 - Restored the Delete button (bulk-delete selected QSOs from the log grid) to the ribbon -- it had been

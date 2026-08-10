@@ -102,7 +102,11 @@ public partial class QsoLogViewModel : ObservableObject
         foreach (var (key, _, defaultVisible) in _columnDefinitions)
             _settings.EnsureLogColumnDefault(key, defaultVisible);
 
-        foreach (var mode in new[] { QsoEntryMode.Normal, QsoEntryMode.Contest, QsoEntryMode.Sota, QsoEntryMode.Pota })
+        foreach (var mode in new[]
+                 {
+                     QsoEntryMode.Normal, QsoEntryMode.Contest, QsoEntryMode.Sota, QsoEntryMode.Pota,
+                     QsoEntryMode.Net, QsoEntryMode.Custom1, QsoEntryMode.Custom2, QsoEntryMode.Custom3,
+                 })
         {
             var modeKey = mode.ToString();
             PickerModeTabs.Add(new ColumnPickerModeTab(mode, _settings.GetModeTabLabel(modeKey, DefaultTabLabel(mode)), isRenameable: true));
@@ -116,6 +120,10 @@ public partial class QsoLogViewModel : ObservableObject
     {
         QsoEntryMode.Sota => "SOTA",
         QsoEntryMode.Pota => "POTA",
+        QsoEntryMode.Net => "Undef-1",
+        QsoEntryMode.Custom1 => "Undef-2",
+        QsoEntryMode.Custom2 => "Undef-3",
+        QsoEntryMode.Custom3 => "Undef-4",
         _ => mode.ToString(),
     };
 
@@ -256,6 +264,29 @@ public partial class QsoLogViewModel : ObservableObject
     /// recently logged one. Stable across sorting/filtering the grid, since it's keyed off the QSO's own
     /// timestamp rather than its current position in the view.</summary>
     public int GetLogNumber(Qso qso) => _logNumbersByQsoId.TryGetValue(qso.Id, out var n) ? n : 0;
+
+    /// <summary>Net roll-call marker: which QSOs the net controller has already called on for their
+    /// statement, so a pause/interruption doesn't lose their place going down the list. Deliberately
+    /// in-memory only, not persisted to the database or settings -- this is transient net-session state,
+    /// not real QSO data, and Clear Net Markers (below) is meant to reset it for the next net without
+    /// leaving stale flags sitting in the log forever.</summary>
+    private readonly HashSet<int> _netCalledQsoIds = new();
+
+    public bool IsNetCalled(Qso qso) => _netCalledQsoIds.Contains(qso.Id);
+    public void MarkNetCalled(Qso qso) => _netCalledQsoIds.Add(qso.Id);
+    public void UnmarkNetCalled(Qso qso) => _netCalledQsoIds.Remove(qso.Id);
+
+    /// <summary>Raised after Clear Net Markers so the grid can re-sync every visible row's checkbox --
+    /// the markers live outside the bound Qso collection, so nothing else would tell the grid to redraw
+    /// them.</summary>
+    public event EventHandler? NetCalledCleared;
+
+    [RelayCommand]
+    private void ClearNetCalled()
+    {
+        _netCalledQsoIds.Clear();
+        NetCalledCleared?.Invoke(this, EventArgs.Empty);
+    }
 
     [RelayCommand]
     private async Task DeleteSelectedAsync()

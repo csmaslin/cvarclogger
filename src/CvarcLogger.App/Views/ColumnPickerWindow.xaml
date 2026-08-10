@@ -4,7 +4,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         mc:Ignorable="d"
-        Title="Column Visibility" Icon="/Assets/AppIcon.ico" Height="650" Width="900" WindowStartupLocation="CenterOwner"
+        Title="Columns/Tabs" Icon="/Assets/AppIcon.ico" Height="650" Width="900" WindowStartupLocation="CenterOwner"
         ShowInTaskbar="False" Background="White">
     <Grid Margin="30">
         <Grid.RowDefinitions>
@@ -18,7 +18,7 @@
 
         <!-- Modal Title -->
         <Border Grid.Row="0" BorderThickness="0,0,0,2" BorderBrush="#e0e0e0" Padding="0,0,0,10" Margin="0,0,0,15">
-            <TextBlock Text="Column Visibility" FontSize="18" FontWeight="Bold" Foreground="#000000"/>
+            <TextBlock Text="Columns/Tabs" FontSize="18" FontWeight="Bold" Foreground="#000000"/>
         </Border>
 
         <!-- Info note -->
