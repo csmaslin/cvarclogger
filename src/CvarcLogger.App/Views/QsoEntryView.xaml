@@ -11,7 +11,7 @@
              (Visibility=Collapsed) takes zero space in a WrapPanel, so the remaining visible fields
              naturally pack left/up to fill the gap instead of leaving a blank hole. -->
         <Style x:Key="FieldBox" TargetType="StackPanel">
-            <Setter Property="Width" Value="260"/>
+            <Setter Property="Width" Value="215"/>
             <Setter Property="Margin" Value="0,0,15,15"/>
         </Style>
     </UserControl.Resources>
@@ -51,6 +51,7 @@
                       DragOver="FieldsGrid_DragOver"
                       Drop="FieldsGrid_Drop">
                     <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>

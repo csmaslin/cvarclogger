@@ -16,7 +16,8 @@ namespace CvarcLogger.App.Views;
 public partial class QsoEntryView : UserControl
 {
     // Fallback row/position (1-based) for any field the operator hasn't dragged yet -- matches the
-    // hand-tuned layout the GUI redesign settled on (5 fields max per row). The persisted-override
+    // hand-tuned layout the GUI redesign settled on (6 fields max per row, widened from 5 to make room
+    // for another field per row -- see FieldsGrid.ColumnDefinitions in the XAML). The persisted-override
     // side is SettingsService.GetEntryFormFieldPositions / EntryFormFieldPosition.
     private static readonly Dictionary<string, (int Row, int Position)> DefaultPositions = new()
     {
@@ -99,7 +100,7 @@ public partial class QsoEntryView : UserControl
     private static (int Row, int Position) FindNextFreeCell(HashSet<(int Row, int Position)> occupied)
     {
         for (var row = 1; row <= 200; row++)
-            for (var position = 1; position <= 5; position++)
+            for (var position = 1; position <= 6; position++)
                 if (!occupied.Contains((row, position)))
                     return (row, position);
 

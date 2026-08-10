@@ -5,6 +5,29 @@ build meant to reach the user (see AppVersion.cs) -- before running publish.ps1.
 
 Versions before 1.17 predate this changelog and are not documented here.
 
+2.01
+----
+- Restored the Delete button (bulk-delete selected QSOs from the log grid) to the ribbon -- it had been
+  lost from the UI during a redesign despite its underlying command still working.
+- Ribbon reworked so all 8 buttons/indicators space out evenly instead of 3 uneven groups (adding Delete
+  had made one group visibly overflow into its neighbor).
+- Entry form widened from 5 to 6 fields per row (fields and the sidebar both narrowed to make room).
+- Tab order fix, take 2: the previous KeyboardNavigation.TabIndex approach didn't reliably work: Tab now
+  follows each field's actual on-screen position by reordering the underlying element collection
+  directly, which is what WPF's own default Tab navigation actually follows.
+- Enter now logs the QSO from anywhere on the form (previously Callsign-field-only), still using
+  whatever's currently typed rather than a stale value.
+- Entry-form field drag-and-drop can now start from anywhere on a field, including inside its
+  TextBox/ComboBox, not just the label -- a plain click still focuses/types normally.
+- Edit QSO's Callsign field no longer forces uppercase while typing (still uppercases on save).
+- Comment field explicitly left-aligned in both the entry form and Edit QSO window.
+- QSO log grid: added a "Station Log" title to the search bar; column headers recolored to the entry
+  form's pale blue.
+- Awards window: all four grids (DXCC, WAS, Mountain Goat, Parks on the Air) now alternate row shading,
+  matching the QSO log grid.
+- Banner: added "Conejo Valley Amateur Radio Club" as a subtitle under the main title.
+- Default keyboard focus lands on the first field (top-left) on load and on every Log Mode switch.
+
 2.0
 ----
 - UI restructure to locked-in design rules: All Rows 1-3 now maintain same vertical height with consistent font sizes and button heights. Row 1 remains fixed in place through all Log Mode changes (Log Mode, Station, Callsign always visible) and collapses left as fields are hidden. Rows 2-3 collapse when all fields are hidden. All margins set to 50 pixels from window edges on both sides. Hidden items allow remaining row entities to shift left. Startup check for Hamlib with on-demand installation option via download page link.
