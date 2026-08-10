@@ -4,7 +4,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d"
-             d:DesignHeight="300" d:DesignWidth="800">
+             d:DesignHeight="300" d:DesignWidth="800"
+             KeyDown="QsoEntryView_KeyDown">
     <UserControl.Resources>
         <!-- Fixed width per field, shared by every row via this one style: a hidden field
              (Visibility=Collapsed) takes zero space in a WrapPanel, so the remaining visible fields
@@ -91,7 +92,7 @@
                         <TextBlock Text="CALLSIGN" FontSize="12" FontWeight="Bold" Foreground="#555555"
                                   Margin="0,0,0,5"/>
                         <TextBox x:Name="CallsignTextBox" Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
-                                Text="{Binding Callsign, Mode=TwoWay}" Tag="W5XYZ" KeyDown="CallsignTextBox_KeyDown"/>
+                                Text="{Binding Callsign, Mode=TwoWay}" Tag="W5XYZ"/>
                     </StackPanel>
 
                     <!-- Date/Time UTC -->
@@ -106,7 +107,7 @@
                     <StackPanel x:Name="BandField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowBandField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
                             <TextBlock Text="BAND" FontSize="12" FontWeight="Bold" Foreground="#555555"/>
-                            <CheckBox Content="static" FontSize="10" Foreground="#999999" VerticalAlignment="Bottom" Margin="6,0,0,0"
+                            <CheckBox Content="static" IsTabStop="False" FontSize="10" Foreground="#999999" VerticalAlignment="Bottom" Margin="6,0,0,0"
                                      IsChecked="{Binding BandIsStatic, Mode=TwoWay}"/>
                         </StackPanel>
                         <ComboBox Background="#ecf0f1" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
@@ -118,7 +119,7 @@
                     <StackPanel x:Name="FreqField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowFreqField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
                             <TextBlock Text="FREQ (MHZ)" FontSize="12" FontWeight="Bold" Foreground="#555555"/>
-                            <CheckBox Content="static" FontSize="10" Foreground="#999999" VerticalAlignment="Bottom" Margin="6,0,0,0"
+                            <CheckBox Content="static" IsTabStop="False" FontSize="10" Foreground="#999999" VerticalAlignment="Bottom" Margin="6,0,0,0"
                                      IsChecked="{Binding FreqIsStatic, Mode=TwoWay}"/>
                         </StackPanel>
                         <TextBox Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
@@ -129,7 +130,7 @@
                     <StackPanel x:Name="ModeField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowModeField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
                             <TextBlock Text="MODE" FontSize="12" FontWeight="Bold" Foreground="#555555"/>
-                            <CheckBox Content="static" FontSize="10" Foreground="#999999" VerticalAlignment="Bottom" Margin="6,0,0,0"
+                            <CheckBox Content="static" IsTabStop="False" FontSize="10" Foreground="#999999" VerticalAlignment="Bottom" Margin="6,0,0,0"
                                      IsChecked="{Binding ModeIsStatic, Mode=TwoWay}"/>
                         </StackPanel>
                         <ComboBox Background="#ecf0f1" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
@@ -141,7 +142,7 @@
                     <StackPanel x:Name="SubModeField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowSubModeField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
                             <TextBlock Text="SUB-MODE" FontSize="12" FontWeight="Bold" Foreground="#555555"/>
-                            <CheckBox Content="static" FontSize="10" Foreground="#999999" VerticalAlignment="Bottom" Margin="6,0,0,0"
+                            <CheckBox Content="static" IsTabStop="False" FontSize="10" Foreground="#999999" VerticalAlignment="Bottom" Margin="6,0,0,0"
                                      IsChecked="{Binding SubModeIsStatic, Mode=TwoWay}"/>
                         </StackPanel>
                         <ComboBox Background="#ecf0f1" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
@@ -169,7 +170,7 @@
                     <StackPanel x:Name="RstSentField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowRstField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
                             <TextBlock Text="RST SENT" FontSize="12" FontWeight="Bold" Foreground="#555555"/>
-                            <CheckBox Content="static" FontSize="10" Foreground="#999999" VerticalAlignment="Bottom" Margin="6,0,0,0"
+                            <CheckBox Content="static" IsTabStop="False" FontSize="10" Foreground="#999999" VerticalAlignment="Bottom" Margin="6,0,0,0"
                                      IsChecked="{Binding RstSentIsStatic, Mode=TwoWay}"/>
                         </StackPanel>
                         <TextBox Background="#ecf0f1" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
@@ -180,7 +181,7 @@
                     <StackPanel x:Name="RstRcvdField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowRstField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
                             <TextBlock Text="RST RCVD" FontSize="12" FontWeight="Bold" Foreground="#555555"/>
-                            <CheckBox Content="static" FontSize="10" Foreground="#999999" VerticalAlignment="Bottom" Margin="6,0,0,0"
+                            <CheckBox Content="static" IsTabStop="False" FontSize="10" Foreground="#999999" VerticalAlignment="Bottom" Margin="6,0,0,0"
                                      IsChecked="{Binding RstRcvdIsStatic, Mode=TwoWay}"/>
                         </StackPanel>
                         <TextBox Background="#ecf0f1" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
@@ -264,14 +265,14 @@
                         <TextBlock Text="COMMENT" FontSize="12" FontWeight="Bold" Foreground="#555555"
                                   Margin="0,0,0,5"/>
                         <TextBox Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
-                                Text="{Binding Comment, Mode=TwoWay}" Tag="Strong signal"/>
+                                TextAlignment="Left" Text="{Binding Comment, Mode=TwoWay}" Tag="Strong signal"/>
                     </StackPanel>
 
                     <!-- Operator -->
                     <StackPanel x:Name="OpField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowOpField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
                             <TextBlock Text="OP" FontSize="12" FontWeight="Bold" Foreground="#555555"/>
-                            <CheckBox Content="static" FontSize="10" Foreground="#999999" VerticalAlignment="Bottom" Margin="6,0,0,0"
+                            <CheckBox Content="static" IsTabStop="False" FontSize="10" Foreground="#999999" VerticalAlignment="Bottom" Margin="6,0,0,0"
                                      IsChecked="{Binding OpIsStatic, Mode=TwoWay}"/>
                         </StackPanel>
                         <TextBox Background="#ecf0f1" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
@@ -282,7 +283,7 @@
                     <StackPanel x:Name="TxPowerField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowTxPowerField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
                             <TextBlock Text="TX(W)" FontSize="12" FontWeight="Bold" Foreground="#555555"/>
-                            <CheckBox Content="static" FontSize="10" Foreground="#999999" VerticalAlignment="Bottom" Margin="6,0,0,0"
+                            <CheckBox Content="static" IsTabStop="False" FontSize="10" Foreground="#999999" VerticalAlignment="Bottom" Margin="6,0,0,0"
                                      IsChecked="{Binding TxPowerIsStatic, Mode=TwoWay}"/>
                         </StackPanel>
                         <TextBox Background="#ecf0f1" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
@@ -319,7 +320,7 @@
                     <StackPanel x:Name="MyGridField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowMyGridField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
                             <TextBlock Text="MY GRID" FontSize="12" FontWeight="Bold" Foreground="#555555"/>
-                            <CheckBox Content="static" FontSize="10" Foreground="#999999" VerticalAlignment="Bottom" Margin="6,0,0,0"
+                            <CheckBox Content="static" IsTabStop="False" FontSize="10" Foreground="#999999" VerticalAlignment="Bottom" Margin="6,0,0,0"
                                      IsChecked="{Binding MyGridIsStatic, Mode=TwoWay}"/>
                         </StackPanel>
                         <TextBox Background="#ecf0f1" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
@@ -330,7 +331,7 @@
                     <StackPanel x:Name="MyStateField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowMyStateField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
                             <TextBlock Text="MY STATE" FontSize="12" FontWeight="Bold" Foreground="#555555"/>
-                            <CheckBox Content="static" FontSize="10" Foreground="#999999" VerticalAlignment="Bottom" Margin="6,0,0,0"
+                            <CheckBox Content="static" IsTabStop="False" FontSize="10" Foreground="#999999" VerticalAlignment="Bottom" Margin="6,0,0,0"
                                      IsChecked="{Binding MyStateIsStatic, Mode=TwoWay}"/>
                         </StackPanel>
                         <TextBox Background="#ecf0f1" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
@@ -425,7 +426,7 @@
                     <StackPanel x:Name="MySotaField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowMySotaField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
                             <TextBlock Text="MY SOTA" FontSize="12" FontWeight="Bold" Foreground="#555555"/>
-                            <CheckBox Content="static" FontSize="10" Foreground="#999999" VerticalAlignment="Bottom" Margin="6,0,0,0"
+                            <CheckBox Content="static" IsTabStop="False" FontSize="10" Foreground="#999999" VerticalAlignment="Bottom" Margin="6,0,0,0"
                                      IsChecked="{Binding MySotaIsStatic, Mode=TwoWay}"/>
                         </StackPanel>
                         <TextBox Background="#ecf0f1" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
@@ -462,7 +463,7 @@
                     <StackPanel x:Name="MyPotaField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowMyPotaField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
                             <TextBlock Text="MY POTA" FontSize="12" FontWeight="Bold" Foreground="#555555"/>
-                            <CheckBox Content="static" FontSize="10" Foreground="#999999" VerticalAlignment="Bottom" Margin="6,0,0,0"
+                            <CheckBox Content="static" IsTabStop="False" FontSize="10" Foreground="#999999" VerticalAlignment="Bottom" Margin="6,0,0,0"
                                      IsChecked="{Binding MyPotaIsStatic, Mode=TwoWay}"/>
                         </StackPanel>
                         <TextBox Background="#ecf0f1" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"

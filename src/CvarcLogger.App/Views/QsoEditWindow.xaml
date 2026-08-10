@@ -100,7 +100,7 @@
             <StackPanel Margin="0,0,10,8" Width="100">
                 <TextBlock Text="Callsign"/>
                 <TextBox Text="{Binding Callsign, UpdateSourceTrigger=PropertyChanged}"
-                         CharacterCasing="Upper" FontWeight="Bold"/>
+                         FontWeight="Bold"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="65">
                 <TextBlock Text="Band"/>
@@ -224,7 +224,7 @@
         <WrapPanel>
             <StackPanel Margin="0,0,0,8" Width="500">
                 <TextBlock Text="Comment"/>
-                <TextBox Text="{Binding Comment, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBox TextAlignment="Left" Text="{Binding Comment, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
         </WrapPanel>
 
