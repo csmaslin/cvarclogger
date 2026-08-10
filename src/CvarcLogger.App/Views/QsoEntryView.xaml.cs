@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 using CvarcLogger.App.Services;
 using CvarcLogger.App.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -41,9 +42,10 @@ public partial class QsoEntryView : UserControl
     };
 
     // Custom drag data format, distinct from the default string format -- a plain string format would
-    // collide with WPF's own built-in "drag text out of a TextBox" gesture, which also carries a string
-    // payload. Field drags never start from inside a TextBox/ComboBox anyway (see IsInputControl), but
-    // keeping the format name distinct removes any ambiguity in the Drop handler regardless.
+    // collide with WPF's own built-in "drag selected text out of a TextBox" gesture, which also carries a
+    // string payload. Field drags can now start from inside a TextBox/ComboBox too (see
+    // FieldsGrid_PreviewMouseLeftButtonDown), so this distinct format is what keeps the Drop handler from
+    // ever mistaking one gesture for the other.
     private const string FieldDragFormat = "CvarcLogger.QsoEntryFieldKey";
 
     private QsoEntryViewModel? _subscribedViewModel;
@@ -115,25 +117,54 @@ public partial class QsoEntryView : UserControl
             _subscribedViewModel.PropertyChanged += ViewModel_PropertyChanged;
 
         ApplyFieldLayout();
+        FocusFirstField();
     }
 
     private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(QsoEntryViewModel.SelectedEntryModeOption))
+        {
             ApplyFieldLayout();
+            FocusFirstField();
+        }
     }
 
-    // Enter-to-log is scoped to just the Callsign field (not every field on the form) so it can't collide
-    // with a dropdown field's own Enter-closes-dropdown behavior (Band/Mode/Sub-Mode). Text bindings
-    // default to UpdateSourceTrigger=LostFocus, which never fires here since focus never actually leaves
-    // the box on Enter -- UpdateSource() flushes the just-typed callsign into the ViewModel first so
-    // LogQsoCommand sees it instead of whatever was there before this keystroke.
-    private void CallsignTextBox_KeyDown(object sender, KeyEventArgs e)
+    // Gives Tab navigation a predictable starting point on first load and on every mode switch (a fresh
+    // set of visible fields deserves a fresh starting point) -- otherwise nothing has focus until the
+    // operator clicks somewhere first. Doesn't run on every drag-drop reposition (FieldsGrid_Drop calls
+    // ApplyFieldLayout too, deliberately not this) since stealing focus right after a drag would be
+    // disruptive. Deferred to Background priority because the just-applied Grid.Row/Column/Visibility
+    // changes haven't been through a layout pass yet when this is called -- MoveFocus needs the target
+    // to already be arranged, or it silently no-ops.
+    private void FocusFirstField()
+    {
+        Dispatcher.BeginInvoke(new Action(() =>
+        {
+            var key = FindKeyAtCell(1, 1);
+            var element = key is null ? null : FieldElements().FirstOrDefault(f => f.Key == key).Element;
+            element?.MoveFocus(new TraversalRequest(FocusNavigationDirection.First));
+        }), DispatcherPriority.Background);
+    }
+
+    // Enter logs the QSO from anywhere on the form, not just the Callsign field -- LogQsoCommand's own
+    // CanExecute/validation already requires a non-empty Callsign (see QsoEntryViewModel.LogQsoAsync), so
+    // that's the only gate needed here. Wired as a plain (bubbling) KeyDown on the UserControl root rather
+    // than a UserControl.InputBindings/KeyBinding, so it fires *after* whichever control currently has
+    // focus handles Enter itself first -- an editable ComboBox (Band/Mode/Sub-Mode) with its dropdown open
+    // closes the dropdown on the first Enter and only lets a second Enter reach here, a known/accepted
+    // quirk (see memory). Text bindings default to UpdateSourceTrigger=LostFocus, which never fires here
+    // since focus never actually leaves the currently-focused box on Enter -- UpdateSource() flushes
+    // whatever's currently focused into the ViewModel first so LogQsoCommand sees it instead of whatever
+    // was there before this keystroke, generalizing what used to be a Callsign-only fix to every field.
+    private void QsoEntryView_KeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key != Key.Enter) return;
-        CallsignTextBox.GetBindingExpression(TextBox.TextProperty)?.UpdateSource();
-        if (_subscribedViewModel?.LogQsoCommand.CanExecute(null) == true)
-            _subscribedViewModel.LogQsoCommand.Execute(null);
+        if (Keyboard.FocusedElement is TextBox focused)
+            focused.GetBindingExpression(TextBox.TextProperty)?.UpdateSource();
+
+        if (_subscribedViewModel?.LogQsoCommand.CanExecute(null) != true) return;
+        _subscribedViewModel.LogQsoCommand.Execute(null);
+        e.Handled = true;
     }
 
     // Reads the current mode's saved field positions (SettingsService.GetEntryFormFieldPositions, via
@@ -197,12 +228,20 @@ public partial class QsoEntryView : UserControl
             var cell = resolved[key];
             Grid.SetRow(element, cell.Row - 1);
             Grid.SetColumn(element, cell.Position - 1);
+        }
 
-            // Tab order otherwise follows FieldElements()'s fixed declaration order regardless of where
-            // a field has been dragged to, so Tab visibly jumps around once the visual grid no longer
-            // matches that order. Row*1000+Position is just a unique sortable key in (Row, Position)
-            // order -- 1000 comfortably exceeds any real column count, it isn't a literal index.
-            KeyboardNavigation.SetTabIndex(element, cell.Row * 1000 + cell.Position);
+        // WPF's default Tab navigation follows each element's position in FieldsGrid.Children (i.e.
+        // declaration order), not Grid.Row/Column -- so without this, Tab visibly jumps around once a
+        // field's visual position no longer matches its declaration order (e.g. after a drag). An earlier
+        // attempt set KeyboardNavigation.TabIndex per element instead of reordering Children directly;
+        // that did not actually change Tab order in testing, so it's been removed rather than left in
+        // place alongside this. Moving each element to the end of Children, visited in ascending
+        // (Row, Position) order, re-sorts the whole collection in one pass -- Tab then visits fields left
+        // to right, one row at a time, matching what's on screen.
+        foreach (var (_, element) in FieldElements().OrderBy(f => resolved[f.Key].Row).ThenBy(f => resolved[f.Key].Position))
+        {
+            FieldsGrid.Children.Remove(element);
+            FieldsGrid.Children.Add(element);
         }
     }
 
@@ -257,19 +296,16 @@ public partial class QsoEntryView : UserControl
     private Dictionary<FrameworkElement, string> KeyByElement =>
         _keyByElement ??= FieldElements().ToDictionary(f => f.Element, f => f.Key);
 
-    // Stage 3: drag-and-drop rearrangement. A drag can only start from a field's label/background, never
-    // from inside its TextBox/ComboBox/PasswordBox (see IsInputControl) -- otherwise clicking into a
-    // field to type or open a dropdown would get hijacked into a reorder gesture instead.
+    // Stage 3: drag-and-drop rearrangement. A drag can start anywhere on a field, including inside its
+    // TextBox/ComboBox/PasswordBox -- not just the label, so the whole field acts as its own handle
+    // rather than requiring the operator to aim for a thin label strip. This doesn't hijack ordinary
+    // clicking/typing: PreviewMouseMove below only calls DoDragDrop once the mouse has actually moved
+    // past the OS's own minimum drag distance, so a plain click still focuses the field, positions the
+    // text cursor, or opens a dropdown exactly as before -- only a genuine drag gesture reroutes into a
+    // reorder instead of (for a TextBox) starting a text selection.
     private void FieldsGrid_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         var source = e.OriginalSource as DependencyObject;
-        if (IsInputControl(source))
-        {
-            _dragStartPoint = null;
-            _dragCandidateKey = null;
-            return;
-        }
-
         _dragStartPoint = e.GetPosition(FieldsGrid);
         _dragCandidateKey = FindFieldKeyAt(source);
     }
@@ -380,16 +416,5 @@ public partial class QsoEntryView : UserControl
             current = VisualTreeHelper.GetParent(current);
         }
         return null;
-    }
-
-    private static bool IsInputControl(DependencyObject? source)
-    {
-        var current = source;
-        while (current is not null && current is not Grid { Name: "FieldsGrid" })
-        {
-            if (current is Control) return true;
-            current = VisualTreeHelper.GetParent(current);
-        }
-        return false;
     }
 }
