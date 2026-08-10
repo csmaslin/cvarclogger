@@ -30,15 +30,26 @@ public partial class QsoLogGridView : UserControl
     private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
     {
         if (e.OldValue is QsoLogViewModel oldViewModel)
+        {
             oldViewModel.ColumnVisibilityChanged -= OnColumnVisibilityChanged;
+            oldViewModel.NetCalledCleared -= OnNetCalledCleared;
+        }
 
         if (e.NewValue is QsoLogViewModel newViewModel)
+        {
             newViewModel.ColumnVisibilityChanged += OnColumnVisibilityChanged;
+            newViewModel.NetCalledCleared += OnNetCalledCleared;
+        }
 
         ApplyColumnVisibility();
         ApplyColumnOrder();
         ApplyColumnWidths();
     }
+
+    // Net markers live outside the bound Qso collection (see QsoLogViewModel._netCalledQsoIds), so
+    // clearing them doesn't otherwise tell the grid anything changed -- Items.Refresh() forces every row
+    // container to regenerate, which re-fires LoadingRow and rebuilds each checkbox unchecked.
+    private void OnNetCalledCleared(object? sender, EventArgs e) => LogDataGrid.Items.Refresh();
 
     /// <summary>Restores each column's saved pixel width. Columns without a saved width (never resized,
     /// or added in a later app version) keep their XAML-declared default.</summary>
@@ -193,11 +204,43 @@ public partial class QsoLogGridView : UserControl
 
     private static Visibility ToVisibility(bool visible) => visible ? Visibility.Visible : Visibility.Collapsed;
 
+    // Row header now shows a net roll-call marker checkbox to the left of the log number, in the same
+    // spot the number alone used to occupy -- built imperatively here (rather than a RowHeaderTemplate
+    // bound declaratively) so it can keep reusing GetLogNumber/IsNetCalled straight off the ViewModel
+    // without fighting DataGridRow.Header's default DataContext behavior. Re-fires for every visible row
+    // on ItemsSource/CollectionView refresh, which is what re-syncs the checkboxes after Clear Net
+    // Markers (see LogDataGrid_Loaded's NetCalledCleared subscription).
     private void LogDataGrid_LoadingRow(object sender, DataGridRowEventArgs e)
     {
-        e.Row.Header = DataContext is QsoLogViewModel viewModel && e.Row.Item is Qso qso
-            ? viewModel.GetLogNumber(qso).ToString()
-            : (e.Row.GetIndex() + 1).ToString();
+        if (DataContext is not QsoLogViewModel viewModel || e.Row.Item is not Qso qso)
+        {
+            e.Row.Header = (e.Row.GetIndex() + 1).ToString();
+            return;
+        }
+
+        var marker = new CheckBox
+        {
+            IsChecked = viewModel.IsNetCalled(qso),
+            VerticalAlignment = VerticalAlignment.Center,
+            Margin = new Thickness(2, 0, 4, 0),
+            ToolTip = "Net roll call: mark this station as already called on for their statement",
+        };
+        marker.Checked += (_, _) => viewModel.MarkNetCalled(qso);
+        marker.Unchecked += (_, _) => viewModel.UnmarkNetCalled(qso);
+
+        e.Row.Header = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            Children =
+            {
+                marker,
+                new TextBlock
+                {
+                    Text = viewModel.GetLogNumber(qso).ToString(),
+                    VerticalAlignment = VerticalAlignment.Center,
+                },
+            },
+        };
     }
 
     private void LogDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)

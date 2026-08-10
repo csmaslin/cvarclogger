@@ -42,6 +42,85 @@ public partial class QsoEntryView : UserControl
         ["QslVia"] = (10, 1),
     };
 
+    // Per-mode default layout, baked in from the developer's own live drag-arranged positions (extracted
+    // from settings.json's EntryFormFieldPositionsByMode) so new users/fresh installs start from a
+    // refined arrangement instead of the generic grid-order defaults above -- confirmed with the operator
+    // before shipping as-is despite looking scattered (heavy drag-testing during development, not a
+    // deliberately "tidy" layout, but the one they wanted). Only covers fields actually repositioned in
+    // that mode; anything a mode doesn't list here falls through to DefaultPositions above. Net had
+    // nothing to extract (never dragged), so it reuses Normal's arrangement instead of a distinct one.
+    private static readonly Dictionary<string, Dictionary<string, (int Row, int Position)>> ModeDefaultPositions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["Normal"] = new()
+        {
+            ["Band"] = (2, 1), ["Name"] = (1, 3), ["SubMode"] = (4, 1), ["Mode"] = (2, 2), ["RstSent"] = (2, 4),
+            ["LotwQslSent"] = (5, 5), ["LotwQslRcvd"] = (6, 3), ["County"] = (3, 6), ["ArrlSection"] = (4, 3),
+            ["FreqRx"] = (5, 1), ["City"] = (3, 2), ["Grid"] = (3, 1), ["TxPower"] = (2, 5), ["MyPota"] = (7, 4),
+            ["MySota"] = (7, 3), ["Precedence"] = (6, 6), ["Check"] = (7, 1), ["Class"] = (7, 2), ["Comment"] = (1, 4),
+            ["LocalTime"] = (2, 6), ["Callsign"] = (1, 2), ["TimeOff"] = (4, 6), ["UtcTime"] = (1, 6), ["Freq"] = (1, 5),
+            ["MyGrid"] = (5, 4), ["Op"] = (5, 6), ["MySkcc"] = (4, 5), ["ItuZone"] = (9, 1), ["MyState"] = (3, 3),
+            ["State"] = (6, 5), ["RstRcvd"] = (2, 3), ["CqZone"] = (4, 2), ["MyCounty"] = (3, 4), ["Country"] = (3, 5),
+            ["Qth"] = (4, 4), ["Continent"] = (5, 2), ["Skcc"] = (6, 1), ["QslSent"] = (6, 2), ["QslRcvd"] = (6, 4),
+            ["QslVia"] = (7, 5), ["Sota"] = (7, 6), ["Pota"] = (5, 3), ["Sequence"] = (9, 2),
+        },
+        // Net has never been dragged (0 saved positions in settings.json -- nothing to extract), so it
+        // starts from the same complete, collision-free arrangement as Normal rather than the sparser
+        // generic DefaultPositions fallback. Independent copy, not a shared reference, so the two can
+        // diverge later without surprise.
+        ["Net"] = new()
+        {
+            ["Band"] = (2, 1), ["Name"] = (1, 3), ["SubMode"] = (4, 1), ["Mode"] = (2, 2), ["RstSent"] = (2, 4),
+            ["LotwQslSent"] = (5, 5), ["LotwQslRcvd"] = (6, 3), ["County"] = (3, 6), ["ArrlSection"] = (4, 3),
+            ["FreqRx"] = (5, 1), ["City"] = (3, 2), ["Grid"] = (3, 1), ["TxPower"] = (2, 5), ["MyPota"] = (7, 4),
+            ["MySota"] = (7, 3), ["Precedence"] = (6, 6), ["Check"] = (7, 1), ["Class"] = (7, 2), ["Comment"] = (1, 4),
+            ["LocalTime"] = (2, 6), ["Callsign"] = (1, 2), ["TimeOff"] = (4, 6), ["UtcTime"] = (1, 6), ["Freq"] = (1, 5),
+            ["MyGrid"] = (5, 4), ["Op"] = (5, 6), ["MySkcc"] = (4, 5), ["ItuZone"] = (9, 1), ["MyState"] = (3, 3),
+            ["State"] = (6, 5), ["RstRcvd"] = (2, 3), ["CqZone"] = (4, 2), ["MyCounty"] = (3, 4), ["Country"] = (3, 5),
+            ["Qth"] = (4, 4), ["Continent"] = (5, 2), ["Skcc"] = (6, 1), ["QslSent"] = (6, 2), ["QslRcvd"] = (6, 4),
+            ["QslVia"] = (7, 5), ["Sota"] = (7, 6), ["Pota"] = (5, 3), ["Sequence"] = (9, 2),
+        },
+        ["Contest"] = new()
+        {
+            ["Continent"] = (3, 2), ["UtcTime"] = (6, 3), ["Comment"] = (2, 2), ["TxPower"] = (1, 6),
+            ["TimeOff"] = (5, 5), ["Skcc"] = (2, 1), ["RstSent"] = (8, 1), ["Grid"] = (1, 5), ["Band"] = (4, 5),
+            ["Sequence"] = (2, 6), ["ArrlSection"] = (2, 5), ["SubMode"] = (3, 1), ["Mode"] = (1, 4),
+            ["Precedence"] = (2, 4), ["Class"] = (2, 3), ["LocalTime"] = (8, 5), ["Freq"] = (1, 3),
+        },
+        ["Sota"] = new()
+        {
+            ["RstSent"] = (4, 1), ["RstRcvd"] = (4, 2), ["Continent"] = (7, 5), ["County"] = (5, 5), ["Check"] = (5, 4),
+            ["Op"] = (3, 5), ["Class"] = (9, 1), ["TxPower"] = (4, 3), ["State"] = (7, 3), ["FreqRx"] = (8, 1),
+            ["ItuZone"] = (3, 1), ["LotwQslSent"] = (9, 4), ["Band"] = (9, 2), ["LotwQslRcvd"] = (2, 4),
+            ["ArrlSection"] = (8, 5), ["CqZone"] = (9, 3), ["TimeOff"] = (5, 1), ["Comment"] = (2, 5), ["Name"] = (2, 2),
+            ["City"] = (8, 3), ["LocalTime"] = (1, 4), ["SubMode"] = (2, 3), ["MyCounty"] = (3, 2), ["MyGrid"] = (3, 3),
+            ["Grid"] = (10, 1), ["MyPota"] = (3, 4), ["MySkcc"] = (8, 4), ["MySota"] = (4, 5), ["Freq"] = (2, 1),
+            ["MyState"] = (5, 3), ["UtcTime"] = (1, 5), ["Pota"] = (6, 1), ["Qth"] = (7, 1), ["Precedence"] = (6, 2),
+            ["QslRcvd"] = (6, 3), ["QslSent"] = (6, 4), ["QslVia"] = (6, 5), ["Sequence"] = (5, 2), ["Skcc"] = (7, 2),
+            ["Sota"] = (1, 3), ["Mode"] = (7, 4),
+        },
+        ["Pota"] = new()
+        {
+            ["Band"] = (2, 4), ["Name"] = (9, 3), ["Freq"] = (1, 3), ["LocalTime"] = (2, 6), ["Mode"] = (1, 4),
+            ["SubMode"] = (9, 4), ["RstSent"] = (3, 2), ["RstRcvd"] = (6, 3), ["Comment"] = (1, 5), ["UtcTime"] = (1, 6),
+            ["Continent"] = (2, 1), ["Pota"] = (2, 3), ["MySota"] = (5, 5), ["TxPower"] = (2, 2), ["MyPota"] = (2, 5),
+        },
+        ["All"] = new()
+        {
+            ["Name"] = (2, 4), ["Grid"] = (2, 5), ["Country"] = (3, 4), ["ArrlSection"] = (3, 5), ["Op"] = (4, 4),
+            ["TxPower"] = (4, 5), ["MyGrid"] = (5, 4), ["MyState"] = (5, 5), ["MyCounty"] = (6, 4),
+            ["LotwQslRcvd"] = (7, 1), ["LotwQslSent"] = (6, 5), ["Check"] = (8, 4), ["QslVia"] = (7, 4),
+            ["Pota"] = (6, 6), ["MyPota"] = (5, 6), ["Sota"] = (4, 6), ["MySota"] = (3, 6), ["Class"] = (7, 5),
+            ["Sequence"] = (8, 5),
+        },
+    };
+
+    // Resolution order for a field with no explicit saved position in the current mode: this mode's own
+    // baked-in default (ModeDefaultPositions) first, then the generic cross-mode fallback (DefaultPositions).
+    private static (int Row, int Position) GetDefaultPosition(string mode, string key) =>
+        ModeDefaultPositions.TryGetValue(mode, out var modeDefaults) && modeDefaults.TryGetValue(key, out var cell)
+            ? cell
+            : DefaultPositions[key];
+
     // Custom drag data format, distinct from the default string format -- a plain string format would
     // collide with WPF's own built-in "drag selected text out of a TextBox" gesture, which also carries a
     // string payload. Field drags can now start from inside a TextBox/ComboBox too (see
@@ -56,7 +135,8 @@ public partial class QsoEntryView : UserControl
 
     // Every mode that has its own saved field-position map, independent of whether it's reachable from
     // the sidebar yet (Net isn't -- see QsoEntryModeOptions -- but still gets a settings slot).
-    private static readonly string[] AllModeNames = { "Normal", "Contest", "Sota", "Pota", "Net", "All" };
+    private static readonly string[] AllModeNames =
+        { "Normal", "Contest", "Sota", "Pota", "Net", "Custom1", "Custom2", "Custom3", "All" };
 
     public QsoEntryView()
     {
@@ -84,7 +164,7 @@ public partial class QsoEntryView : UserControl
 
             foreach (var key in orderedKeys)
             {
-                var cell = positions.TryGetValue(key, out var p) ? (p.Row, p.Position) : DefaultPositions[key];
+                var cell = positions.TryGetValue(key, out var p) ? (p.Row, p.Position) : GetDefaultPosition(mode, key);
                 if (occupied.Add(cell)) continue;
 
                 var freeCell = FindNextFreeCell(occupied);
@@ -186,10 +266,11 @@ public partial class QsoEntryView : UserControl
     {
         if (_subscribedViewModel is null) return;
         var saved = _subscribedViewModel.GetEntryFormFieldPositions();
+        var mode = _subscribedViewModel.SelectedEntryModeOption.Value.ToString();
 
         var natural = new Dictionary<string, (int Row, int Position)>();
         foreach (var key in FieldElements().Select(f => f.Key))
-            natural[key] = saved.TryGetValue(key, out var p) ? (p.Row, p.Position) : DefaultPositions[key];
+            natural[key] = saved.TryGetValue(key, out var p) ? (p.Row, p.Position) : GetDefaultPosition(mode, key);
 
         var occupied = new HashSet<(int Row, int Position)>();
         var resolved = new Dictionary<string, (int Row, int Position)>();

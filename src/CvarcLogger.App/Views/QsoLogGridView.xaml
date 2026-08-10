@@ -22,6 +22,9 @@
                 </StackPanel>
                 <TextBlock Text="Station Log" FontSize="15" FontWeight="Bold" Foreground="#333333"
                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <Button Content="Clear Net Markers" Command="{Binding ClearNetCalledCommand}"
+                        ToolTip="Unmark every station's net roll-call checkbox, ready for the next net"
+                        HorizontalAlignment="Right" Padding="12,4" VerticalAlignment="Center"/>
             </Grid>
         </Border>
 
@@ -29,7 +32,7 @@
                   AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="All" VerticalGridLinesBrush="#BBBBBB"
                   CanUserAddRows="False" SelectionMode="Extended" SelectionUnit="FullRow"
                   CanUserResizeColumns="True"
-                  HeadersVisibility="All" RowHeaderWidth="36"
+                  HeadersVisibility="All" RowHeaderWidth="64"
                   AlternationCount="2" AlternatingRowBackground="WhiteSmoke"
                   MouseDoubleClick="DataGrid_MouseDoubleClick"
                   LoadingRow="LogDataGrid_LoadingRow"

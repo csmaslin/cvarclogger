@@ -108,13 +108,56 @@ public partial class MainWindow : Window
         _columnPickerWindow.Show();
     }
 
-    private void NormalMode_Click(object sender, RoutedEventArgs e) => SwitchMode("Normal");
+    // Remembers which half of each toggle tab was last shown, so switching to a toggle tab from
+    // somewhere else (the other toggle tab, All, or the Column Visibility picker) restores whichever
+    // mode it was last left on instead of always resetting to the first one. Kept in sync with the live
+    // mode from *any* source (not just these two click handlers) inside UpdateModeButtonStyles.
+    private QsoEntryMode _normalContestLastMode = QsoEntryMode.Normal;
+    private QsoEntryMode _sotaPotaLastMode = QsoEntryMode.Sota;
+    private QsoEntryMode _undef1Undef2LastMode = QsoEntryMode.Net;
+    private QsoEntryMode _undef3Undef4LastMode = QsoEntryMode.Custom2;
 
-    private void ContestMode_Click(object sender, RoutedEventArgs e) => SwitchMode("Contest");
+    // Toggle tabs: clicking the tab that's already active flips between its two modes; clicking it while
+    // a *different* tab is active just switches to it, showing whichever of its two modes was last shown.
+    private void NormalContestToggle_Click(object sender, RoutedEventArgs e)
+    {
+        var current = _viewModel.QsoEntry.SelectedEntryModeOption.Value;
+        var isActive = current is QsoEntryMode.Normal or QsoEntryMode.Contest;
+        var target = isActive
+            ? (current == QsoEntryMode.Normal ? QsoEntryMode.Contest : QsoEntryMode.Normal)
+            : _normalContestLastMode;
+        SwitchMode(target == QsoEntryMode.Normal ? "Normal" : "Contest");
+    }
 
-    private void SotaMode_Click(object sender, RoutedEventArgs e) => SwitchMode("SOTA");
+    private void SotaPotaToggle_Click(object sender, RoutedEventArgs e)
+    {
+        var current = _viewModel.QsoEntry.SelectedEntryModeOption.Value;
+        var isActive = current is QsoEntryMode.Sota or QsoEntryMode.Pota;
+        var target = isActive
+            ? (current == QsoEntryMode.Sota ? QsoEntryMode.Pota : QsoEntryMode.Sota)
+            : _sotaPotaLastMode;
+        SwitchMode(target == QsoEntryMode.Sota ? "SOTA" : "POTA");
+    }
 
-    private void PotaMode_Click(object sender, RoutedEventArgs e) => SwitchMode("POTA");
+    private void Undef1Undef2Toggle_Click(object sender, RoutedEventArgs e)
+    {
+        var current = _viewModel.QsoEntry.SelectedEntryModeOption.Value;
+        var isActive = current is QsoEntryMode.Net or QsoEntryMode.Custom1;
+        var target = isActive
+            ? (current == QsoEntryMode.Net ? QsoEntryMode.Custom1 : QsoEntryMode.Net)
+            : _undef1Undef2LastMode;
+        SwitchMode(target == QsoEntryMode.Net ? "Net" : "Custom1");
+    }
+
+    private void Undef3Undef4Toggle_Click(object sender, RoutedEventArgs e)
+    {
+        var current = _viewModel.QsoEntry.SelectedEntryModeOption.Value;
+        var isActive = current is QsoEntryMode.Custom2 or QsoEntryMode.Custom3;
+        var target = isActive
+            ? (current == QsoEntryMode.Custom2 ? QsoEntryMode.Custom3 : QsoEntryMode.Custom2)
+            : _undef3Undef4LastMode;
+        SwitchMode(target == QsoEntryMode.Custom2 ? "Custom2" : "Custom3");
+    }
 
     private void AllMode_Click(object sender, RoutedEventArgs e) => SwitchMode("All");
 
@@ -129,10 +172,19 @@ public partial class MainWindow : Window
 
     private void UpdateModeButtonStyles(QsoEntryMode mode)
     {
-        NormalModeButton.Style = mode == QsoEntryMode.Normal ? Resources["SidebarButtonActiveStyle"] as Style : Resources["SidebarButtonStyle"] as Style;
-        ContestModeButton.Style = mode == QsoEntryMode.Contest ? Resources["SidebarButtonActiveStyle"] as Style : Resources["SidebarButtonStyle"] as Style;
-        SotaModeButton.Style = mode == QsoEntryMode.Sota ? Resources["SidebarButtonActiveStyle"] as Style : Resources["SidebarButtonStyle"] as Style;
-        PotaModeButton.Style = mode == QsoEntryMode.Pota ? Resources["SidebarButtonActiveStyle"] as Style : Resources["SidebarButtonStyle"] as Style;
+        if (mode is QsoEntryMode.Normal or QsoEntryMode.Contest) _normalContestLastMode = mode;
+        if (mode is QsoEntryMode.Sota or QsoEntryMode.Pota) _sotaPotaLastMode = mode;
+        if (mode is QsoEntryMode.Net or QsoEntryMode.Custom1) _undef1Undef2LastMode = mode;
+        if (mode is QsoEntryMode.Custom2 or QsoEntryMode.Custom3) _undef3Undef4LastMode = mode;
+
+        NormalContestToggleButton.Style = mode is QsoEntryMode.Normal or QsoEntryMode.Contest
+            ? Resources["SidebarButtonActiveStyle"] as Style : Resources["SidebarButtonStyle"] as Style;
+        SotaPotaToggleButton.Style = mode is QsoEntryMode.Sota or QsoEntryMode.Pota
+            ? Resources["SidebarButtonActiveStyle"] as Style : Resources["SidebarButtonStyle"] as Style;
+        Undef1Undef2ToggleButton.Style = mode is QsoEntryMode.Net or QsoEntryMode.Custom1
+            ? Resources["SidebarButtonActiveStyle"] as Style : Resources["SidebarButtonStyle"] as Style;
+        Undef3Undef4ToggleButton.Style = mode is QsoEntryMode.Custom2 or QsoEntryMode.Custom3
+            ? Resources["SidebarButtonActiveStyle"] as Style : Resources["SidebarButtonStyle"] as Style;
         AllModeButton.Style = mode == QsoEntryMode.All ? Resources["SidebarButtonActiveStyle"] as Style : Resources["SidebarButtonStyle"] as Style;
     }
 

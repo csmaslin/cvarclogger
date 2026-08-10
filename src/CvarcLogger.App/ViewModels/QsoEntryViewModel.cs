@@ -415,6 +415,10 @@ public partial class QsoEntryViewModel : ObservableObject
     {
         QsoEntryMode.Sota => "SOTA",
         QsoEntryMode.Pota => "POTA",
+        QsoEntryMode.Net => "Undef-1",
+        QsoEntryMode.Custom1 => "Undef-2",
+        QsoEntryMode.Custom2 => "Undef-3",
+        QsoEntryMode.Custom3 => "Undef-4",
         _ => mode.ToString(),
     };
 

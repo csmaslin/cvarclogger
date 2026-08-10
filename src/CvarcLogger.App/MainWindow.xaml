@@ -5,12 +5,14 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:views="clr-namespace:CvarcLogger.App.Views"
         xmlns:emoji="clr-namespace:Emoji.Wpf;assembly=Emoji.Wpf"
+        xmlns:conv="clr-namespace:CvarcLogger.App.Converters"
         mc:Ignorable="d"
         Title="CVARC Logger" Icon="/Assets/AppIcon.ico" Height="820" Width="1450"
         Loaded="Window_Loaded"
         Background="#f5f5f5">
 
     <Window.Resources>
+        <conv:TogglePairLabelConverter x:Key="TogglePairLabelConverter"/>
         <Color x:Key="DoveGrey">#404040</Color>
         <Color x:Key="LightBlue">#34495e</Color>
         <Color x:Key="BlueAccent">#3498db</Color>
@@ -145,34 +147,73 @@
                         <!-- Column Visibility Button -->
                         <Button Name="ColumnsButton" Click="ColumnsButton_Click" ToolTip="Choose which fields and columns are shown"
                                 Style="{StaticResource SidebarButtonStyle}">
-                            <emoji:TextBlock Text="⚙️ Columns"/>
+                            <emoji:TextBlock Text="⚙️ Columns/Tabs"/>
                         </Button>
 
                         <!-- Divider -->
                         <Separator Height="2" Margin="0,20,0,20" Background="#666666"/>
 
-                        <!-- Mode Selection Buttons. Labels are bound (not hardcoded) so a rename from the
-                             Column Visibility picker's Rename Tab feature (see ColumnPickerWindow /
-                             QsoLogViewModel.PickerModeTabs) shows up here too. Indices 0-3 match how
-                             PickerModeTabs is built (Normal, Contest, Sota, Pota, then static "All"). -->
-                        <Button Name="NormalModeButton" Click="NormalMode_Click" ToolTip="Switch to Normal logging mode"
+                        <!-- Mode Selection Buttons: two toggle tabs (each covering 2 modes; click again
+                             to flip between them) plus All. Replaces the previous 1-button-per-mode
+                             layout (Normal/Contest/Sota/Pota/Net/All, 6 buttons) down to 4 toggle-style
+                             tabs plus All. Undef-1..4 (QsoEntryMode.Net/Custom1/Custom2/Custom3) are
+                             placeholder slots with no fixed purpose; naming them and choosing which
+                             fields/columns they show both happen in the Columns/Tabs window (see
+                             ColumnPickerWindow), same as every other mode. See NormalContestToggle_Click
+                             /SotaPotaToggle_Click/Undef1Undef2Toggle_Click/Undef3Undef4Toggle_Click in
+                             the code-behind for the toggle mechanic. Labels are static "X/Y" text rather
+                             than bound to PickerModeTabs' renameable labels; a future pass could stitch
+                             the two together if the rename feature needs to reach these too. -->
+                        <Button Name="NormalContestToggleButton" Click="NormalContestToggle_Click"
+                                ToolTip="Normal / Contest: click again to switch between the two"
                                 Style="{StaticResource SidebarButtonActiveStyle}">
-                            <emoji:TextBlock Text="{Binding QsoLog.PickerModeTabs[0].Label, StringFormat='📝 {0}'}"/>
+                            <emoji:TextBlock>
+                                <emoji:TextBlock.Text>
+                                    <MultiBinding Converter="{StaticResource TogglePairLabelConverter}" ConverterParameter="📝 ">
+                                        <Binding Path="QsoLog.PickerModeTabs[0].Label"/>
+                                        <Binding Path="QsoLog.PickerModeTabs[1].Label"/>
+                                    </MultiBinding>
+                                </emoji:TextBlock.Text>
+                            </emoji:TextBlock>
                         </Button>
 
-                        <Button Name="ContestModeButton" Click="ContestMode_Click" ToolTip="Switch to Contest logging mode"
+                        <Button Name="SotaPotaToggleButton" Click="SotaPotaToggle_Click"
+                                ToolTip="SOTA / POTA: click again to switch between the two"
                                 Style="{StaticResource SidebarButtonStyle}">
-                            <emoji:TextBlock Text="{Binding QsoLog.PickerModeTabs[1].Label, StringFormat='🏆 {0}'}"/>
+                            <emoji:TextBlock>
+                                <emoji:TextBlock.Text>
+                                    <MultiBinding Converter="{StaticResource TogglePairLabelConverter}" ConverterParameter="⛰️ ">
+                                        <Binding Path="QsoLog.PickerModeTabs[2].Label"/>
+                                        <Binding Path="QsoLog.PickerModeTabs[3].Label"/>
+                                    </MultiBinding>
+                                </emoji:TextBlock.Text>
+                            </emoji:TextBlock>
                         </Button>
 
-                        <Button Name="SotaModeButton" Click="SotaMode_Click" ToolTip="Switch to SOTA logging mode"
+                        <Button Name="Undef1Undef2ToggleButton" Click="Undef1Undef2Toggle_Click"
+                                ToolTip="Undef-1 / Undef-2: click again to switch between the two. Rename and configure fields in Columns/Tabs."
                                 Style="{StaticResource SidebarButtonStyle}">
-                            <emoji:TextBlock Text="{Binding QsoLog.PickerModeTabs[2].Label, StringFormat='⛰️ {0}'}"/>
+                            <emoji:TextBlock>
+                                <emoji:TextBlock.Text>
+                                    <MultiBinding Converter="{StaticResource TogglePairLabelConverter}" ConverterParameter="🔷 ">
+                                        <Binding Path="QsoLog.PickerModeTabs[4].Label"/>
+                                        <Binding Path="QsoLog.PickerModeTabs[5].Label"/>
+                                    </MultiBinding>
+                                </emoji:TextBlock.Text>
+                            </emoji:TextBlock>
                         </Button>
 
-                        <Button Name="PotaModeButton" Click="PotaMode_Click" ToolTip="Switch to POTA logging mode"
+                        <Button Name="Undef3Undef4ToggleButton" Click="Undef3Undef4Toggle_Click"
+                                ToolTip="Undef-3 / Undef-4: click again to switch between the two. Rename and configure fields in Columns/Tabs."
                                 Style="{StaticResource SidebarButtonStyle}">
-                            <emoji:TextBlock Text="{Binding QsoLog.PickerModeTabs[3].Label, StringFormat='🪑 {0}'}"/>
+                            <emoji:TextBlock>
+                                <emoji:TextBlock.Text>
+                                    <MultiBinding Converter="{StaticResource TogglePairLabelConverter}" ConverterParameter="🔶 ">
+                                        <Binding Path="QsoLog.PickerModeTabs[6].Label"/>
+                                        <Binding Path="QsoLog.PickerModeTabs[7].Label"/>
+                                    </MultiBinding>
+                                </emoji:TextBlock.Text>
+                            </emoji:TextBlock>
                         </Button>
 
                         <Button Name="AllModeButton" Click="AllMode_Click" ToolTip="Show QSOs from every mode combined"
@@ -261,7 +302,7 @@
                                Style="{StaticResource RibbonButtonStyle}" Background="#2E7D32" HorizontalAlignment="Center"/>
                         <Button Name="GridColumnsButton" Click="GridColumnsButton_Click" ToolTip="Choose which fields and columns are shown"
                                Style="{StaticResource RibbonButtonStyle}" Background="#3498db" HorizontalAlignment="Center">
-                            <emoji:TextBlock Text="⚙️ Columns" FontSize="13" Foreground="White"/>
+                            <emoji:TextBlock Text="⚙️ Columns/Tabs" FontSize="13" Foreground="White"/>
                         </Button>
 
                         <!-- Delete acts on the log grid's current selection (QsoLog.SelectedQsos, falling
