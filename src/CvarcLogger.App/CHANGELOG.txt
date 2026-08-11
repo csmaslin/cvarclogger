@@ -5,6 +5,16 @@ build meant to reach the user (see AppVersion.cs) -- before running publish.ps1.
 
 Versions before 1.17 predate this changelog and are not documented here.
 
+2.04
+----
+- Internal cleanup of the 2.03 SKCC feature, no user-visible behavior change except the Awards Progress
+  SKCC tab's tier labels now also show how many contacts remain (e.g. "0 / 100 (100 remaining)").
+- Performance: SKCC award-progress calculation (Awards Progress > SKCC tab) now resolves every member
+  name/award-date lookup in a handful of batched database queries instead of one query per unique
+  member -- noticeably faster to load for an active SKCC log.
+- Code structure: the SKCC roster and Centurion/Tribune/Senator award-list downloaders now share a
+  common base instead of each duplicating the same file-parsing logic.
+
 2.03
 ----
 - SKCC # field now resolves live against a local, downloadable SKCC member roster: type a member's

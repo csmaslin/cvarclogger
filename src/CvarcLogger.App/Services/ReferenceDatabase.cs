@@ -151,6 +151,45 @@ public abstract class ReferenceDatabase
         }, ct).ConfigureAwait(false);
     }
 
+    /// <summary>Batched version of LookupAsync: opens the connection once and resolves every reference
+    /// in a single pass, instead of one new SqliteConnection per call. Prefer this over calling
+    /// LookupAsync in a loop for anything beyond a handful of lookups -- a caller resolving hundreds of
+    /// references (e.g. cross-referencing every unique member in a QSO log) would otherwise open and
+    /// tear down hundreds of connections sequentially.</summary>
+    public async Task<Dictionary<string, RefInfo>> LookupManyAsync(IEnumerable<string> references, CancellationToken ct = default)
+    {
+        var result = new Dictionary<string, RefInfo>(StringComparer.OrdinalIgnoreCase);
+        if (!IsAvailable) return result;
+
+        var distinctRefs = references
+            .Where(r => !string.IsNullOrWhiteSpace(r))
+            .Select(r => r.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        if (distinctRefs.Count == 0) return result;
+
+        await Task.Run(() =>
+        {
+            using var db = new SqliteConnection($"Data Source={DbPath};Mode=ReadOnly");
+            db.Open();
+            using var cmd = db.CreateCommand();
+            cmd.CommandText = "SELECT ref, name, detail FROM records WHERE ref = $r COLLATE NOCASE LIMIT 1";
+            var param = cmd.CreateParameter();
+            param.ParameterName = "$r";
+            cmd.Parameters.Add(param);
+
+            foreach (var reference in distinctRefs)
+            {
+                param.Value = reference;
+                using var reader = cmd.ExecuteReader();
+                if (reader.Read())
+                    result[reference] = new RefInfo(reader.GetString(0), reader.GetString(1), reader.GetString(2));
+            }
+        }, ct).ConfigureAwait(false);
+
+        return result;
+    }
+
     /// <summary>"181,406 records, updated 2026-07-31" for status display, or null if no db yet.</summary>
     public async Task<string?> GetInfoAsync(CancellationToken ct = default)
     {
