@@ -204,43 +204,28 @@ public partial class QsoLogGridView : UserControl
 
     private static Visibility ToVisibility(bool visible) => visible ? Visibility.Visible : Visibility.Collapsed;
 
-    // Row header now shows a net roll-call marker checkbox to the left of the log number, in the same
-    // spot the number alone used to occupy -- built imperatively here (rather than a RowHeaderTemplate
-    // bound declaratively) so it can keep reusing GetLogNumber/IsNetCalled straight off the ViewModel
-    // without fighting DataGridRow.Header's default DataContext behavior. Re-fires for every visible row
-    // on ItemsSource/CollectionView refresh, which is what re-syncs the checkboxes after Clear Net
-    // Markers (see LogDataGrid_Loaded's NetCalledCleared subscription).
+    // Row header shows only the net roll-call marker checkbox now (the log number lives in its own
+    // sortable "#" column) -- built imperatively here (rather than a RowHeaderTemplate bound
+    // declaratively) so it can keep reusing IsNetCalled straight off the ViewModel without fighting
+    // DataGridRow.Header's default DataContext behavior. Re-fires for every visible row on
+    // ItemsSource/CollectionView refresh, which is what re-syncs the checkboxes after Clear Net Markers
+    // (see LogDataGrid_Loaded's NetCalledCleared subscription).
     private void LogDataGrid_LoadingRow(object sender, DataGridRowEventArgs e)
     {
-        if (DataContext is not QsoLogViewModel viewModel || e.Row.Item is not Qso qso)
-        {
-            e.Row.Header = (e.Row.GetIndex() + 1).ToString();
-            return;
-        }
+        if (DataContext is not QsoLogViewModel viewModel || e.Row.Item is not Qso qso) return;
 
         var marker = new CheckBox
         {
             IsChecked = viewModel.IsNetCalled(qso),
             VerticalAlignment = VerticalAlignment.Center,
-            Margin = new Thickness(2, 0, 4, 0),
+            HorizontalAlignment = HorizontalAlignment.Center,
+            Margin = new Thickness(2, 0, 2, 0),
             ToolTip = "Net roll call: mark this station as already called on for their statement",
         };
         marker.Checked += (_, _) => viewModel.MarkNetCalled(qso);
         marker.Unchecked += (_, _) => viewModel.UnmarkNetCalled(qso);
 
-        e.Row.Header = new StackPanel
-        {
-            Orientation = Orientation.Horizontal,
-            Children =
-            {
-                marker,
-                new TextBlock
-                {
-                    Text = viewModel.GetLogNumber(qso).ToString(),
-                    VerticalAlignment = VerticalAlignment.Center,
-                },
-            },
-        };
+        e.Row.Header = marker;
     }
 
     private void LogDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -254,6 +239,32 @@ public partial class QsoLogGridView : UserControl
         }
 
         if (LogDataGrid.SelectedItem is Qso current) _rangeAnchorQso = current;
+    }
+
+    // The DataGrid's built-in top-left corner button (sits above the row-header numbers, to the left of
+    // the first real column header) selects every row in one click -- genuinely useful here (bulk-delete
+    // a whole day's/event's log at once), but WPF's own corner button has no way to then deselect again.
+    // Detected by position (top-left RowHeaderWidth x header-row-height rectangle) rather than by
+    // hunting for the corner button's internal part name -- that name isn't consistent enough across WPF
+    // versions to rely on (confirmed: an earlier attempt using "PART_TopLeftCornerHeader" silently never
+    // matched anything here). Toggles instead of just selecting: first click selects every row, a second
+    // click on the same corner clears the selection -- otherwise there was no way back to "nothing
+    // selected" once triggered.
+    private void LogDataGrid_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        var headerPresenter = FindVisualChildren<System.Windows.Controls.Primitives.DataGridColumnHeadersPresenter>(LogDataGrid).FirstOrDefault();
+        if (headerPresenter is null) return;
+
+        var headerBounds = headerPresenter.TransformToAncestor(LogDataGrid).TransformBounds(new Rect(headerPresenter.RenderSize));
+        var pos = e.GetPosition(LogDataGrid);
+        bool inCornerRegion = pos.X <= LogDataGrid.RowHeaderWidth && pos.Y >= headerBounds.Top && pos.Y <= headerBounds.Bottom;
+        if (!inCornerRegion) return;
+
+        e.Handled = true;
+        if (LogDataGrid.Items.Count > 0 && LogDataGrid.SelectedItems.Count == LogDataGrid.Items.Count)
+            LogDataGrid.UnselectAll();
+        else
+            LogDataGrid.SelectAll();
     }
 
     /// <summary>Ctrl-right-click toggles a single row into/out of the multi-selection; Shift-right-click

@@ -30,6 +30,7 @@ public partial class QsoEntryViewModel : ObservableObject
     private readonly GridTrackerBroadcastService _gridTrackerBroadcast;
     private readonly SotaRefDatabase _sotaRefDb;
     private readonly PotaRefDatabase _potaRefDb;
+    private readonly SkccRefDatabase _skccRefDb;
     private readonly DispatcherTimer _catPollTimer;
     private readonly DispatcherTimer _liveClockTimer;
     private string? _lastLookedUpCallsign;
@@ -175,6 +176,13 @@ public partial class QsoEntryViewModel : ObservableObject
     }
 
     [ObservableProperty] private string callsign = string.Empty;
+
+    /// <summary>Dupe Check checkbox above the Callsign field. While checked, MainViewModel mirrors every
+    /// keystroke in Callsign into QsoLog.SearchText (via CallsignChanged below), so the log grid filters
+    /// live as you type -- lets the operator spot a duplicate before logging. Off by default: unlike the
+    /// always-on mirroring this replaced, an operator who's manually searching for something else
+    /// shouldn't have it yanked away by typing a callsign unless they've opted in.</summary>
+    [ObservableProperty] private bool dupeCheckEnabled;
     [ObservableProperty] private string qsoDateTimeUtcText = string.Empty;
     [ObservableProperty] private string qsoDateTimeLocalText = string.Empty;
     [ObservableProperty] private string? qsoDateTimeOffUtcText;
@@ -326,6 +334,53 @@ public partial class QsoEntryViewModel : ObservableObject
     [ObservableProperty] private string? check;
     [ObservableProperty] private string? qsoClass;
 
+    // SKCC member lookup: same "type a code, confirm it locally" pattern as SotaRef/SigInfo above -- the
+    // SKCC number is what the other station reads out over the air, so resolving it locally against the
+    // downloaded roster (SkccRefDatabase, "⟳" button on the entry form) confirms a mis-copied digit
+    // immediately instead of only surfacing it later in an award/export tool.
+    [ObservableProperty] private string? skccLookupText;
+    public Visibility ShowSkccLookupText => string.IsNullOrEmpty(SkccLookupText) ? Visibility.Collapsed : Visibility.Visible;
+
+    partial void OnSkccNrChanged(string? value)
+    {
+        if (value is not null && value != value.ToUpperInvariant()) { SkccNr = value.ToUpperInvariant(); return; }
+        _ = ResolveSkccNrAsync(value);
+    }
+
+    private async Task ResolveSkccNrAsync(string? value)
+    {
+        SkccLookupText = null;
+        OnPropertyChanged(nameof(ShowSkccLookupText));
+        if (string.IsNullOrWhiteSpace(value)) return;
+
+        var info = await _skccRefDb.LookupAsync(value);
+        if (value != SkccNr) return; // the field changed again while this lookup was in flight
+
+        SkccLookupText = info?.Display;
+        OnPropertyChanged(nameof(ShowSkccLookupText));
+    }
+
+    [ObservableProperty] private bool isUpdatingSkccDb;
+
+    /// <summary>"⟳" button beside the SKCC # field: downloads/rebuilds the local SKCC roster (see
+    /// SkccRefDatabase.UpdateAsync) so the member lookup above works offline and doesn't depend on a
+    /// per-QSO network request.</summary>
+    [RelayCommand]
+    private async Task UpdateSkccDbAsync()
+    {
+        IsUpdatingSkccDb = true;
+        try
+        {
+            int count = await _skccRefDb.UpdateAsync();
+            if (count > 0) _dialogService.ShowInfo($"SKCC reference database updated: {count:N0} members.");
+            else _dialogService.ShowError("Could not update the SKCC reference database. Check your connection and try again.");
+        }
+        finally
+        {
+            IsUpdatingSkccDb = false;
+        }
+    }
+
     // MySkccNr describes the operator's own setup, same sticky rationale (and profile-seed/override
     // pattern) as MyGridSquare/MyState/MyCounty -- see SeedStationDefaults.
     [ObservableProperty] private string? mySkccNr;
@@ -392,6 +447,7 @@ public partial class QsoEntryViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(ShowCommentField))]
     [NotifyPropertyChangedFor(nameof(ShowRow3))]
     [NotifyPropertyChangedFor(nameof(EntryFormTitle))]
+    [NotifyPropertyChangedFor(nameof(LockFieldsForCurrentMode))]
     private QsoEntryModeOption selectedEntryModeOption = QsoEntryModeOptions.For(QsoEntryMode.Normal);
 
     public ObservableCollection<QsoEntryModeOption> EntryModeOptions { get; } = new(QsoEntryModeOptions.All);
@@ -410,6 +466,22 @@ public partial class QsoEntryViewModel : ObservableObject
     /// ModeLabelsChanged via MainViewModel, same pattern as NotifyFieldVisibilityChanged).</summary>
     public string EntryFormTitle =>
         $"Entry Form - {_settings.GetModeTabLabel(SelectedEntryModeOption.Value.ToString(), DefaultModeLabel(SelectedEntryModeOption.Value))} Mode (Fields are movable within tabs)";
+
+    /// <summary>Lock Fields checkbox on the entry form's title line. Checked, it stops drag-and-drop from
+    /// starting for the current mode (see QsoEntryView.FieldsGrid_PreviewMouseLeftButtonDown) so a field
+    /// can't be nudged out of place by an accidental drag -- separate per mode (SettingsService.
+    /// GetModeFieldsLocked/SetModeFieldsLocked), so a carefully-arranged mode can stay locked while
+    /// another one is still being actively rearranged. Refreshes on mode switch via the
+    /// NotifyPropertyChangedFor attribute above SelectedEntryModeOption.</summary>
+    public bool LockFieldsForCurrentMode
+    {
+        get => _settings.GetModeFieldsLocked(SelectedEntryModeOption.Value.ToString());
+        set
+        {
+            _settings.SetModeFieldsLocked(SelectedEntryModeOption.Value.ToString(), value);
+            OnPropertyChanged();
+        }
+    }
 
     private static string DefaultModeLabel(QsoEntryMode mode) => mode switch
     {
@@ -603,7 +675,8 @@ public partial class QsoEntryViewModel : ObservableObject
         IClock clock,
         GridTrackerBroadcastService gridTrackerBroadcast,
         SotaRefDatabase sotaRefDb,
-        PotaRefDatabase potaRefDb)
+        PotaRefDatabase potaRefDb,
+        SkccRefDatabase skccRefDb)
     {
         _qsoRepository = qsoRepository;
         _stationProfileRepository = stationProfileRepository;
@@ -618,6 +691,7 @@ public partial class QsoEntryViewModel : ObservableObject
         _gridTrackerBroadcast = gridTrackerBroadcast;
         _sotaRefDb = sotaRefDb;
         _potaRefDb = potaRefDb;
+        _skccRefDb = skccRefDb;
 
         bandIsStatic = _settings.IsFieldStatic("Band");
         freqIsStatic = _settings.IsFieldStatic("Freq");
@@ -698,8 +772,16 @@ public partial class QsoEntryViewModel : ObservableObject
 
     /// <summary>Lets MainViewModel drive the log grid's search filter from this field, so the operator
     /// sees prior contacts with a station (duplicate check, history) as they type — mirrors how
-    /// QsoLogged already drives QsoLog.RefreshAsync from here.</summary>
+    /// QsoLogged already drives QsoLog.RefreshAsync from here. MainViewModel only acts on this while
+    /// DupeCheckEnabled is checked.</summary>
     partial void OnCallsignChanged(string value) => CallsignChanged?.Invoke(this, value);
+
+    /// <summary>Checking Dupe Check syncs immediately with whatever's already typed, rather than waiting
+    /// for the next keystroke to populate the search box.</summary>
+    partial void OnDupeCheckEnabledChanged(bool value)
+    {
+        if (value) CallsignChanged?.Invoke(this, Callsign);
+    }
 
     /// <summary>Hours to add to a UTC time to get the selected station's local time (DST-adjusted) --
     /// same basis as Qso.LocalDateTimeOn, just computed ahead of save time so the entry form can show
