@@ -23,8 +23,17 @@
 
         <!-- Form Title -->
         <Border Grid.Row="0" BorderThickness="0,0,0,1" BorderBrush="#e0e0e0" Padding="0,0,0,10" Margin="0,0,0,15">
-            <TextBlock Text="{Binding EntryFormTitle}"
-                      FontSize="16" FontWeight="Bold" Foreground="#000000"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="{Binding EntryFormTitle}"
+                          FontSize="16" FontWeight="Bold" Foreground="#000000" VerticalAlignment="Center"/>
+                <CheckBox Grid.Column="1" Content="Lock Fields" IsChecked="{Binding LockFieldsForCurrentMode, Mode=TwoWay}"
+                         FontSize="13" Foreground="#000000" VerticalAlignment="Center"
+                         ToolTip="Checked, fields on this mode's entry form can't be dragged to a new position: prevents an accidental drag from nudging one out of place"/>
+            </Grid>
         </Border>
 
         <!-- Form Content: no ScrollViewer here. MainWindow.xaml already wraps this whole UserControl in
@@ -90,10 +99,18 @@
 
                     <!-- Callsign -->
                     <StackPanel x:Name="CallsignField" Style="{StaticResource FieldBox}">
-                        <TextBlock Text="CALLSIGN" FontSize="12" FontWeight="Bold" Foreground="#555555"
-                                  Margin="0,0,0,5"/>
+                        <Grid Margin="0,0,0,5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="CALLSIGN" FontSize="12" FontWeight="Bold" Foreground="#555555" VerticalAlignment="Center"/>
+                            <CheckBox Grid.Column="1" Content="Dupe Check" IsChecked="{Binding DupeCheckEnabled, Mode=TwoWay}"
+                                     FontSize="11" Foreground="#555555" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                     ToolTip="While checked, whatever you type in Callsign is copied live into the log grid's search box, so you can spot a duplicate before logging"/>
+                        </Grid>
                         <TextBox x:Name="CallsignTextBox" Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
-                                Text="{Binding Callsign, Mode=TwoWay}" Tag="W5XYZ"/>
+                                Text="{Binding Callsign, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Tag="W5XYZ"/>
                     </StackPanel>
 
                     <!-- Date/Time UTC -->
@@ -380,12 +397,23 @@
                                  ItemsSource="{Binding QslStatuses}" SelectedItem="{Binding LotwQslRcvd, Mode=TwoWay}"/>
                     </StackPanel>
 
-                    <!-- SKCC # -->
+                    <!-- SKCC #: per-QSO, same narrowed-field-plus-refresh-button layout as SOTA/POTA
+                         above. Resolves against the local SKCC roster (SkccRefDatabase) as you type, so a
+                         mis-copied digit is obvious immediately instead of only surfacing later. -->
                     <StackPanel x:Name="SkccField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowSkccField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <TextBlock Text="SKCC #" FontSize="12" FontWeight="Bold" Foreground="#555555"
                                   Margin="0,0,0,5"/>
-                        <TextBox Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
-                                Text="{Binding SkccNr, Mode=TwoWay}" Tag="12345"/>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBox Width="185" Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
+                                    Text="{Binding SkccNr, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Tag="12345"/>
+                            <Button Content="⟳" Command="{Binding UpdateSkccDbCommand}" FontSize="16"
+                                   ToolTip="Update the local SKCC member database" Width="34" Padding="0"
+                                   Background="#3498db" Foreground="White" BorderThickness="0" Margin="8,0,0,0" Cursor="Hand"/>
+                        </StackPanel>
+                        <!-- Resolved callsign/name/location from the local SKCC database (see
+                             QsoEntryViewModel.ResolveSkccNrAsync). -->
+                        <TextBlock Text="{Binding SkccLookupText}" FontSize="10" Foreground="#2980b9"
+                                  Margin="0,3,0,0" TextWrapping="Wrap" Visibility="{Binding ShowSkccLookupText}"/>
                     </StackPanel>
 
                     <!-- My SKCC #: sticky, same rationale as QTH above. -->

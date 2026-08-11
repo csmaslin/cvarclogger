@@ -387,6 +387,16 @@ public partial class QsoEntryView : UserControl
     // reorder instead of (for a TextBox) starting a text selection.
     private void FieldsGrid_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
+        // Lock Fields (see QsoEntryViewModel.LockFieldsForCurrentMode) stops a drag from ever starting
+        // for the current mode -- leaving _dragCandidateKey null makes PreviewMouseMove below a no-op
+        // regardless of how far the mouse then moves, without touching normal click/focus/type behavior.
+        if (_subscribedViewModel?.LockFieldsForCurrentMode == true)
+        {
+            _dragStartPoint = null;
+            _dragCandidateKey = null;
+            return;
+        }
+
         var source = e.OriginalSource as DependencyObject;
         _dragStartPoint = e.GetPosition(FieldsGrid);
         _dragCandidateKey = FindFieldKeyAt(source);

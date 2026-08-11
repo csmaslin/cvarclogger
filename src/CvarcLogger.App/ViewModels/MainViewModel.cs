@@ -21,7 +21,14 @@ public partial class MainViewModel : ObservableObject
         _wsjtxListener = wsjtxListener;
 
         QsoEntry.QsoLogged += async (_, _) => await QsoLog.RefreshAsync();
-        QsoEntry.CallsignChanged += (_, callsign) => QsoLog.SearchText = callsign;
+
+        // Dupe Check checkbox (QsoEntryViewModel.DupeCheckEnabled) gates this -- only mirror Callsign
+        // into the log grid's search box while the operator has explicitly opted in, so someone using
+        // the search box for something unrelated doesn't have it yanked away by typing a callsign.
+        QsoEntry.CallsignChanged += (_, callsign) =>
+        {
+            if (QsoEntry.DupeCheckEnabled) QsoLog.SearchText = callsign;
+        };
         ImportExport.ImportCompleted += async (_, _) => await QsoLog.RefreshAsync();
         _wsjtxListener.QsoLogged += async (_, _) => await QsoLog.RefreshAsync();
         QsoLog.ColumnVisibilityChanged += (_, _) => QsoEntry.NotifyFieldVisibilityChanged();

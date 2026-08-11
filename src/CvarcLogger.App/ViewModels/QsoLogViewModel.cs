@@ -24,10 +24,6 @@ public partial class QsoLogViewModel : ObservableObject
     public ObservableCollection<Qso> Qsos { get; } = new();
     public ICollectionView QsosView { get; }
 
-    /// <summary>Qso.Id -> chronological log entry number (oldest QSO is 1, most recently logged is the
-    /// highest number), independent of the grid's current sort/filter -- see GetLogNumber.</summary>
-    private readonly Dictionary<int, int> _logNumbersByQsoId = new();
-
     /// <summary>Every QSO currently multi-selected in the log grid (Ctrl/Shift-right-click), kept in
     /// sync from the view's DataGrid.SelectedItems. Falls back to SelectedQso for actions when this is
     /// empty, so a plain single click still works for Delete.</summary>
@@ -254,16 +250,10 @@ public partial class QsoLogViewModel : ObservableObject
 
         // Recompute chronological log numbers from this same set -- GetAllAsync returns newest-first,
         // but the log number the grid shows should count up from the oldest QSO, not the display order.
-        _logNumbersByQsoId.Clear();
         int number = 1;
         foreach (var q in all.OrderBy(q => q.QsoDateTimeOnUtc).ThenBy(q => q.Id))
-            _logNumbersByQsoId[q.Id] = number++;
+            q.LogNumber = number++;
     }
-
-    /// <summary>Row header number shown in the log grid: 1 for the oldest QSO, counting up to the most
-    /// recently logged one. Stable across sorting/filtering the grid, since it's keyed off the QSO's own
-    /// timestamp rather than its current position in the view.</summary>
-    public int GetLogNumber(Qso qso) => _logNumbersByQsoId.TryGetValue(qso.Id, out var n) ? n : 0;
 
     /// <summary>Net roll-call marker: which QSOs the net controller has already called on for their
     /// statement, so a pause/interruption doesn't lose their place going down the list. Deliberately

@@ -31,13 +31,14 @@
         <DataGrid x:Name="LogDataGrid" Grid.Row="1" ItemsSource="{Binding QsosView}" SelectedItem="{Binding SelectedQso}"
                   AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="All" VerticalGridLinesBrush="#BBBBBB"
                   CanUserAddRows="False" SelectionMode="Extended" SelectionUnit="FullRow"
-                  CanUserResizeColumns="True"
-                  HeadersVisibility="All" RowHeaderWidth="64"
+                  CanUserResizeColumns="True" CanUserSortColumns="True"
+                  HeadersVisibility="All" RowHeaderWidth="28"
                   AlternationCount="2" AlternatingRowBackground="WhiteSmoke"
                   MouseDoubleClick="DataGrid_MouseDoubleClick"
                   LoadingRow="LogDataGrid_LoadingRow"
                   ColumnReordered="LogDataGrid_ColumnReordered"
                   SelectionChanged="LogDataGrid_SelectionChanged"
+                  PreviewMouseLeftButtonDown="LogDataGrid_PreviewMouseLeftButtonDown"
                   PreviewMouseRightButtonDown="LogDataGrid_PreviewMouseRightButtonDown"
                   PreviewKeyDown="LogDataGrid_PreviewKeyDown">
             <DataGrid.CellStyle>
@@ -100,13 +101,16 @@
                 </Style>
             </DataGrid.ColumnHeaderStyle>
             <DataGrid.Columns>
+                <!-- Not in the column picker's catalog (always visible, can't be hidden), but does carry
+                     a ColumnKey so a user-dragged position/width still persists like any other column. -->
+                <DataGridTextColumn x:Name="LogNumberColumn" local:ColumnKey.Key="LogNumber" Header="#" Binding="{Binding LogNumber}" Width="45" MinWidth="35" ElementStyle="{StaticResource CenteredCellText}"/>
                 <DataGridTextColumn x:Name="UtcTimeColumn" local:ColumnKey.Key="UtcTime" Header="Date/Time (UTC)" Binding="{Binding QsoDateTimeOnUtc, StringFormat='yyyy-MM-dd HH:mm'}" Width="140" MinWidth="110" ElementStyle="{StaticResource CenteredCellText}"/>
                 <DataGridTextColumn x:Name="LocalTimeColumn" local:ColumnKey.Key="LocalTime" Header="Local Time" Binding="{Binding LocalDateTimeOn, StringFormat='yyyy-MM-dd HH:mm'}" Width="140" MinWidth="90" ElementStyle="{StaticResource CenteredCellText}"/>
                 <DataGridTextColumn local:ColumnKey.Key="Callsign" Header="Callsign" Binding="{Binding Callsign}" Width="90" MinWidth="75" ElementStyle="{StaticResource CenteredCellText}"/>
                 <DataGridTextColumn x:Name="BandColumn" local:ColumnKey.Key="Band" Header="Band" Binding="{Binding Band}" Width="55" MinWidth="40" ElementStyle="{StaticResource CenteredCellText}"/>
                 <DataGridTextColumn x:Name="ModeColumn" local:ColumnKey.Key="Mode" Header="Mode" Binding="{Binding Mode}" Width="70" MinWidth="45" ElementStyle="{StaticResource CenteredCellText}"/>
                 <DataGridTextColumn x:Name="FreqColumn" local:ColumnKey.Key="Freq" Header="Freq" Binding="{Binding FrequencyMhz}" Width="65" MinWidth="45" ElementStyle="{StaticResource CenteredCellText}"/>
-                <DataGridTextColumn x:Name="RstColumn" local:ColumnKey.Key="Rst" Header="RST S/R" Width="65" MinWidth="50" ElementStyle="{StaticResource CenteredCellText}">
+                <DataGridTextColumn x:Name="RstColumn" local:ColumnKey.Key="Rst" Header="RST S/R" Width="65" MinWidth="50" ElementStyle="{StaticResource CenteredCellText}" SortMemberPath="RstSent">
                     <DataGridTextColumn.Binding>
                         <MultiBinding StringFormat="{}{0}/{1}">
                             <Binding Path="RstSent"/>
@@ -127,7 +131,7 @@
                 <DataGridTextColumn x:Name="SubModeColumn" local:ColumnKey.Key="SubMode" Header="Sub Mode" Binding="{Binding SubMode}" Width="80" MinWidth="55" ElementStyle="{StaticResource CenteredCellText}"/>
                 <DataGridTextColumn x:Name="FreqRxColumn" local:ColumnKey.Key="FreqRx" Header="Freq Rx" Binding="{Binding FrequencyRxMhz}" Width="70" MinWidth="50" ElementStyle="{StaticResource CenteredCellText}"/>
                 <DataGridTextColumn x:Name="TxPowerColumn" local:ColumnKey.Key="TxPower" Header="TX Power" Binding="{Binding TxPowerWatts}" Width="70" MinWidth="55" ElementStyle="{StaticResource CenteredCellText}"/>
-                <DataGridTextColumn x:Name="QslColumn" local:ColumnKey.Key="Qsl" Header="QSL S/R" Width="80" MinWidth="55" ElementStyle="{StaticResource CenteredCellText}">
+                <DataGridTextColumn x:Name="QslColumn" local:ColumnKey.Key="Qsl" Header="QSL S/R" Width="80" MinWidth="55" ElementStyle="{StaticResource CenteredCellText}" SortMemberPath="QslSent">
                     <DataGridTextColumn.Binding>
                         <MultiBinding StringFormat="{}{0}/{1}">
                             <Binding Path="QslSent"/>
@@ -135,7 +139,7 @@
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
-                <DataGridTextColumn x:Name="LotwColumn" local:ColumnKey.Key="Lotw" Header="LoTW S/R" Width="80" MinWidth="60" ElementStyle="{StaticResource CenteredCellText}">
+                <DataGridTextColumn x:Name="LotwColumn" local:ColumnKey.Key="Lotw" Header="LoTW S/R" Width="80" MinWidth="60" ElementStyle="{StaticResource CenteredCellText}" SortMemberPath="LotwQslSent">
                     <DataGridTextColumn.Binding>
                         <MultiBinding StringFormat="{}{0}/{1}">
                             <Binding Path="LotwQslSent"/>

@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace CvarcLogger.Core.Models;
 
 /// <summary>A single logged contact (QSO). Field names mirror ADIF tags where a direct mapping exists.</summary>
@@ -105,4 +107,12 @@ public class Qso
 
     public DateTime CreatedAtUtc { get; set; }
     public DateTime ModifiedAtUtc { get; set; }
+
+    /// <summary>Chronological log number shown in the log grid (oldest QSO = 1), assigned by
+    /// QsoLogViewModel.RefreshAsync from the full log so it stays stable regardless of the grid's
+    /// current sort/filter -- same rationale as LocalDateTimeOn above, but this one needs a setter
+    /// (it depends on the other QSOs around it, not just this one's own fields), so [NotMapped] is
+    /// required here to keep EF Core from trying to persist it as a real column.</summary>
+    [NotMapped]
+    public int LogNumber { get; set; }
 }

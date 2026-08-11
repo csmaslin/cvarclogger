@@ -221,6 +221,19 @@ public class SettingsService
         Save();
     }
 
+    /// <summary>Whether the entry form's fields are locked against drag-and-drop repositioning for one
+    /// specific Log Entry Mode -- independent per mode, so e.g. a carefully-arranged SOTA layout can be
+    /// locked down while a Custom tab someone's still experimenting with stays freely draggable. Default
+    /// false (unlocked), matching drag-and-drop's original always-on behavior.</summary>
+    public bool GetModeFieldsLocked(string mode) =>
+        _data.ModeFieldsLocked.TryGetValue(mode, out var locked) && locked;
+
+    public void SetModeFieldsLocked(string mode, bool locked)
+    {
+        _data.ModeFieldsLocked[mode] = locked;
+        Save();
+    }
+
     /// <summary>Saved (Row, Position) for each entry-form field, independently per Log Entry Mode --
     /// what the click-and-drag layout editor writes to. A field missing from a mode's map (never
     /// dragged, or added in a later app version) falls back to its XAML-declared default row/position.
@@ -368,6 +381,7 @@ public class SettingsService
         public Dictionary<string, HashSet<string>> HiddenColumnsByMode { get; set; } = new(StringComparer.OrdinalIgnoreCase);
         public Dictionary<string, Dictionary<string, EntryFormFieldPosition>> EntryFormFieldPositionsByMode { get; set; } = new(StringComparer.OrdinalIgnoreCase);
         public Dictionary<string, string> ModeTabLabels { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, bool> ModeFieldsLocked { get; set; } = new(StringComparer.OrdinalIgnoreCase);
         public HashSet<string> NonStaticFields { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
         public bool CatEnabled { get; set; }

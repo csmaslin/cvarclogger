@@ -5,6 +5,32 @@ build meant to reach the user (see AppVersion.cs) -- before running publish.ps1.
 
 Versions before 1.17 predate this changelog and are not documented here.
 
+2.03
+----
+- SKCC # field now resolves live against a local, downloadable SKCC member roster: type a member's
+  number and their callsign/name/location shows underneath, confirming you copied it right during the
+  exchange. "Update SKCC Award Lists" refreshes the offline roster (skcc-ref.db) from skccgroup.com.
+- New "SKCC" tab in Awards Progress, tracking Centurion (100 unique members), Tribune (50 members already
+  Centurion+ at contact time), and Senator (200 members already Tribune+ at contact time, after your own
+  running count first reaches 400 qualifying Tribune contacts) -- computed live from CW QSOs with an
+  SKCC # logged, cross-referenced against the official Centurion/Tribune/Senator award-date lists. A
+  best-effort estimate, not the official submission tool -- the app can't verify manual-key usage, which
+  SKCC's own rules require.
+- Log grid: row/log number is now its own sortable, draggable "#" column instead of static row-header
+  text -- click its header to sort by it like any other column.
+- Log grid: RST, QSL, and LoTW columns can now be sorted by clicking their headers (previously had no
+  effect since those columns combine two fields and WPF couldn't infer a sort key on its own).
+- Log grid: the top-left corner control is now a real select-all/clear-all toggle -- first click selects
+  every row (handy for bulk-deleting a recurring event's daily log), second click clears the selection.
+- New "Dupe Check" checkbox next to Callsign: when checked, mirrors what you type live into the log
+  grid's search box so a duplicate contact turns up as you type, not after you've already logged it.
+- New "Lock Fields" checkbox on the entry form title bar (per Log Mode): prevents accidentally dragging a
+  field out of place while filling out the form.
+- Manual: replaced every "Elecraft K4" reference for the Internet Control (CAT) feature with generic
+  "internet TCP/IP capable radio(s)" wording; Appendix A's Version History table narrowed its Version
+  column so Highlights has more room, shortening the table; Introduction and Quick Start sections
+  rewritten to be more detailed and reader-friendly.
+
 2.02
 ----
 - Net roll-call markers: a checkbox on every log row (before the row number) lets a net controller track which stations have already been called on for their statement. Clear Net Markers resets everything for the next net. Session-only -- not saved to the database or ADIF.

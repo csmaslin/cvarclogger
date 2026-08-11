@@ -97,6 +97,10 @@ public partial class App : Application
                 services.AddHttpClient<PotaParkLookupService>();
                 services.AddHttpClient<SotaRefDatabase>();
                 services.AddHttpClient<PotaRefDatabase>();
+                services.AddHttpClient<SkccRefDatabase>();
+                services.AddHttpClient<SkccCenturionListDatabase>();
+                services.AddHttpClient<SkccTribuneListDatabase>();
+                services.AddHttpClient<SkccSenatorListDatabase>();
 
                 services.AddSingleton<IRigControlService, RigctldClient>();
                 services.AddSingleton<RigctldProcessManager>();
@@ -117,6 +121,7 @@ public partial class App : Application
                 services.AddTransient<DxccViewModel>();
                 services.AddTransient<MountainGoatViewModel>();
                 services.AddTransient<ParksOnTheAirViewModel>();
+                services.AddTransient<SkccViewModel>();
                 services.AddTransient<SettingsViewModel>();
                 services.AddTransient<StationProfileViewModel>();
                 services.AddTransient<QsoEditViewModel>();
