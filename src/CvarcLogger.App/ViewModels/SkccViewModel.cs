@@ -23,7 +23,7 @@ public record SkccTierStatus(string TierName, int Required, int CurrentCount, st
 {
     public bool Achieved => CurrentCount >= Required;
     public int Remaining => Math.Max(0, Required - CurrentCount);
-    public string Display => $"{CurrentCount} / {Required}" + (Achieved ? " -- Achieved" : "");
+    public string Display => Achieved ? $"{CurrentCount} / {Required} -- Achieved" : $"{CurrentCount} / {Required} ({Remaining} remaining)";
     public bool HasNote => !string.IsNullOrEmpty(Note);
 }
 
@@ -48,6 +48,13 @@ public record SkccTierStatus(string TierName, int Required, int CurrentCount, st
 /// would require them to already be registered there for real).</summary>
 public partial class SkccViewModel : ObservableObject
 {
+    // SKCC's own tier requirements -- the single source of truth every count/display/eligibility check
+    // below derives from, instead of the four separate literal 100/50/200/400s this replaced.
+    private const int CenturionRequired = 100;
+    private const int TributeRequired = 50;
+    private const int SenatorRequired = 200;
+    private const int Tx8QualifyingContacts = TributeRequired * 8;
+
     private readonly IQsoRepository _qsoRepository;
     private readonly SkccCenturionListDatabase _centurionDb;
     private readonly SkccTribuneListDatabase _tribuneDb;
@@ -96,6 +103,18 @@ public partial class SkccViewModel : ObservableObject
     private static bool TryParseSkccDate(string text, out DateTime date) =>
         DateTime.TryParseExact(text.Trim(), "dd MMM yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out date);
 
+    /// <summary>Batch-looks-up every given SKCC number in one award list and returns only the ones that
+    /// resolved to a parseable award date, keyed by number. One connection total (via
+    /// ReferenceDatabase.LookupManyAsync) regardless of how many numbers are passed in.</summary>
+    private static async Task<Dictionary<string, DateTime>> ResolveAwardDatesAsync(ReferenceDatabase awardListDb, IEnumerable<string> skccNumbers)
+    {
+        var infos = await awardListDb.LookupManyAsync(skccNumbers);
+        var dates = new Dictionary<string, DateTime>(StringComparer.OrdinalIgnoreCase);
+        foreach (var (nr, info) in infos)
+            if (TryParseSkccDate(info.Detail, out var date)) dates[nr] = date;
+        return dates;
+    }
+
     [RelayCommand]
     public async Task LoadAsync()
     {
@@ -112,25 +131,16 @@ public partial class SkccViewModel : ObservableObject
                 .ToList();
 
             var uniqueNumbers = candidates.Select(x => x.BaseNr!).Distinct().ToList();
-            var centurionDates = new Dictionary<string, DateTime>(StringComparer.OrdinalIgnoreCase);
-            var tribuneDates = new Dictionary<string, DateTime>(StringComparer.OrdinalIgnoreCase);
-            foreach (var nr in uniqueNumbers)
-            {
-                var c = await _centurionDb.LookupAsync(nr);
-                if (c is not null && TryParseSkccDate(c.Detail, out var cd)) centurionDates[nr] = cd;
+            var centurionDates = await ResolveAwardDatesAsync(_centurionDb, uniqueNumbers);
+            var tribuneDates = await ResolveAwardDatesAsync(_tribuneDb, uniqueNumbers);
 
-                var t = await _tribuneDb.LookupAsync(nr);
-                if (t is not null && TryParseSkccDate(t.Detail, out var td)) tribuneDates[nr] = td;
-            }
-
-            var rows = new List<SkccMemberRow>();
-
-            // Centurion: every unique member worked counts, first QSO with them is the counted one.
+            // Phase 1: pure in-memory pass (no I/O) deciding which QSOs count toward which tier. Roster
+            // names are deliberately not resolved here -- see phase 2 -- so this stays a single cheap
+            // pass over the candidate list instead of one database round trip per counted contact.
             var centurionSeen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-            // Tribune: only QSOs where the contact had already reached Centurion+ at contact time.
             var tribuneSeen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var tribuneQualifyingDatesInOrder = new List<DateTime>();
+            var counted = new List<(string BaseNr, string Callsign, DateTime QsoDateUtc, bool Centurion, bool Tribune)>();
 
             foreach (var (qso, baseNr) in candidates)
             {
@@ -144,19 +154,17 @@ public partial class SkccViewModel : ObservableObject
                 }
 
                 if (countsCenturion || countsTribune)
-                {
-                    var roster = await _rosterDb.LookupAsync(baseNr!);
-                    rows.Add(new SkccMemberRow(baseNr!, qso.Callsign, roster?.Name, qso.QsoDateTimeOnUtc,
-                        countsCenturion, countsTribune, false));
-                }
+                    counted.Add((baseNr!, qso.Callsign, qso.QsoDateTimeOnUtc, countsCenturion, countsTribune));
             }
 
-            // Tx8 (400 qualifying Tribune contacts) is derived from the operator's own chronology, not
-            // looked up externally -- see the class doc comment for why.
-            DateTime? myTx8Date = tribuneQualifyingDatesInOrder.Count >= 400 ? tribuneQualifyingDatesInOrder[399] : null;
+            // Tx8 is derived from the operator's own chronology, not looked up externally -- see the
+            // class doc comment for why.
+            DateTime? myTx8Date = tribuneQualifyingDatesInOrder.Count >= Tx8QualifyingContacts
+                ? tribuneQualifyingDatesInOrder[Tx8QualifyingContacts - 1]
+                : null;
 
             var senatorSeen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            var senatorRows = new List<SkccMemberRow>();
+            var senatorCounted = new List<(string BaseNr, string Callsign, DateTime QsoDateUtc)>();
             if (myTx8Date is DateTime tx8)
             {
                 foreach (var (qso, baseNr) in candidates)
@@ -165,24 +173,30 @@ public partial class SkccViewModel : ObservableObject
                     if (!tribuneDates.TryGetValue(baseNr!, out var tribuneDate) || qso.QsoDateTimeOnUtc < tribuneDate) continue;
                     if (!senatorSeen.Add(baseNr!)) continue;
 
-                    var roster = await _rosterDb.LookupAsync(baseNr!);
-                    senatorRows.Add(new SkccMemberRow(baseNr!, qso.Callsign, roster?.Name, qso.QsoDateTimeOnUtc,
-                        false, false, true));
+                    senatorCounted.Add((baseNr!, qso.Callsign, qso.QsoDateTimeOnUtc));
                 }
             }
 
-            Members.Clear();
-            foreach (var row in rows.Concat(senatorRows).OrderByDescending(r => r.QsoDateUtc)) Members.Add(row);
+            // Phase 2: one more connection resolves every counted member's roster name at once.
+            var neededNumbers = counted.Select(c => c.BaseNr).Concat(senatorCounted.Select(c => c.BaseNr));
+            var roster = await _rosterDb.LookupManyAsync(neededNumbers);
 
-            int tribuneTier = tribuneSeen.Count / 50;
-            int senatorTier = senatorSeen.Count / 200;
+            Members.Clear();
+            var allRows = counted
+                .Select(c => new SkccMemberRow(c.BaseNr, c.Callsign, roster.GetValueOrDefault(c.BaseNr)?.Name, c.QsoDateUtc, c.Centurion, c.Tribune, false))
+                .Concat(senatorCounted.Select(c => new SkccMemberRow(c.BaseNr, c.Callsign, roster.GetValueOrDefault(c.BaseNr)?.Name, c.QsoDateUtc, false, false, true)))
+                .OrderByDescending(r => r.QsoDateUtc);
+            foreach (var row in allRows) Members.Add(row);
+
+            int tribuneTier = tribuneSeen.Count / TributeRequired;
+            int senatorTier = senatorSeen.Count / SenatorRequired;
 
             Tiers.Clear();
-            Tiers.Add(new SkccTierStatus("Centurion", 100, centurionSeen.Count, null));
-            Tiers.Add(new SkccTierStatus("Tribune", 50, tribuneSeen.Count,
-                tribuneTier > 0 ? $"Tx{tribuneTier} reached" : centurionSeen.Count < 100 ? "Requires Centurion first" : null));
-            Tiers.Add(new SkccTierStatus("Senator", 200, senatorSeen.Count,
-                senatorTier > 0 ? $"Sx{senatorTier} reached" : myTx8Date is null ? "Requires Tribune x8 (400 qualifying contacts) first" : null));
+            Tiers.Add(new SkccTierStatus("Centurion", CenturionRequired, centurionSeen.Count, null));
+            Tiers.Add(new SkccTierStatus("Tribune", TributeRequired, tribuneSeen.Count,
+                tribuneTier > 0 ? $"Tx{tribuneTier} reached" : centurionSeen.Count < CenturionRequired ? "Requires Centurion first" : null));
+            Tiers.Add(new SkccTierStatus("Senator", SenatorRequired, senatorSeen.Count,
+                senatorTier > 0 ? $"Sx{senatorTier} reached" : myTx8Date is null ? $"Requires Tribune x8 ({Tx8QualifyingContacts} qualifying contacts) first" : null));
         }
         catch (Exception ex)
         {
