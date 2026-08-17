@@ -75,8 +75,10 @@
                        HorizontalAlignment="Center" TextAlignment="Center"/>
         </Border>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="14,10,14,10" DockPanel.Dock="Bottom">
-            <Button Content="Lookup" Command="{Binding LookupCommand}" ToolTip="Look up this callsign online" Padding="14,4" Margin="0,0,8,0"
+            <Button x:Name="LookupButton" Content="Lookup" Command="{Binding LookupCommand}" ToolTip="Look up this callsign online" Padding="14,4" Margin="0,0,8,0"
                     Background="#3498db" Foreground="White" BorderThickness="0" FontWeight="SemiBold" Cursor="Hand"/>
+            <Button x:Name="ClearLookupButton" Content="Clear &amp; Lookup" Click="ClearLookup_Click" ToolTip="Clear lookup fields and look up this callsign fresh" Padding="14,4" Margin="0,0,8,0"
+                    Background="#1976d2" Foreground="White" BorderThickness="0" FontWeight="SemiBold" Cursor="Hand"/>
             <Button Content="Cancel" Click="Cancel_Click" ToolTip="Discard changes and close" Padding="14,4" Margin="0,0,8,0"
                     Background="#7f8c8d" Foreground="White" BorderThickness="0" FontWeight="SemiBold" Cursor="Hand"/>
             <Button Content="Save" Command="{Binding SaveCommand}" ToolTip="Save changes to this QSO" Padding="14,4"
