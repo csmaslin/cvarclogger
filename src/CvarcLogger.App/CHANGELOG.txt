@@ -7,11 +7,17 @@ Versions before 1.17 predate this changelog and are not documented here.
 
 2.05
 ----
-- Fix: Lookup button now responds in the QSO Edit window (was silently unbound in XAML; manually wired
-  in code-behind as fallback). Lookup only fills blank fields by design -- doesn't overwrite existing data.
-- UX: Added "Clear & Lookup" button in QSO Edit window to clear lookup fields (Name, Grid, Country,
-  State, County, City, ARRL Section, CQ/ITU zones, Continent) and re-populate them fresh. Solves the
-  usability issue of needing to manually clear fields when correcting a callsign typo and re-looking it up.
+- The entry form and the contact log grid can now be resized against each other: drag the grey handle
+  just below the button ribbon up or down to give either one more room. Starts at an even split, and
+  remembers where you left it the next time the program opens. Saved as a proportion rather than a
+  fixed height, so the layout still makes sense if you reopen on a different window size or monitor.
+- Fix: the Lookup button in the Edit QSO window did nothing when clicked. It now works.
+- Edit QSO gains a "Clear & Lookup" button next to Lookup. Plain Lookup only fills fields that are
+  already empty, so it deliberately won't overwrite anything you've typed -- which meant that after
+  correcting a mistyped callsign, looking it up again appeared to do nothing, because every field was
+  already filled from the old call. "Clear & Lookup" empties the looked-up fields (Name, Grid, Country,
+  State, County, City, ARRL Section, CQ/ITU zones, Continent) and fetches them fresh for the callsign
+  now in the box. Anything you typed yourself is left alone, so you can correct one field and save.
 
 2.04
 ----
