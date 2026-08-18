@@ -9,6 +9,7 @@
         mc:Ignorable="d"
         Title="CVARC Logger" Icon="/Assets/AppIcon.ico" Height="820" Width="1450"
         Loaded="Window_Loaded"
+        Closing="Window_Closing"
         Background="#f5f5f5">
 
     <Window.Resources>
@@ -18,6 +19,44 @@
         <Color x:Key="BlueAccent">#3498db</Color>
         <Color x:Key="StickyBg">#ecf0f1</Color>
         <SolidColorBrush x:Key="DoveGreyBrush" Color="#404040"/>
+
+        <!-- Entry form / log grid drag handle. A plain filled GridSplitter just reads as a divider line,
+             so this templates in the two stacked grip lines people already recognize as "grab me", and
+             lights the whole bar up in the app's accent blue on hover and while dragging. The accent
+             also confirms the grab landed, which matters because the bar sits in a narrow gap and a
+             near miss would otherwise be silent. -->
+        <Style x:Key="EntryLogSplitterStyle" TargetType="GridSplitter">
+            <Setter Property="Background" Value="#6e6e6e"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="GridSplitter">
+                        <Border x:Name="SplitterBar" Background="{TemplateBinding Background}"
+                                BorderBrush="#909090" BorderThickness="1" CornerRadius="6">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Rectangle x:Name="GripLineTop" Width="70" Height="2" RadiusX="1" RadiusY="1"
+                                           Fill="#dcdcdc" Margin="0,0,0,3"/>
+                                <Rectangle x:Name="GripLineBottom" Width="70" Height="2" RadiusX="1" RadiusY="1"
+                                           Fill="#dcdcdc"/>
+                            </StackPanel>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="SplitterBar" Property="Background" Value="#3498db"/>
+                                <Setter TargetName="SplitterBar" Property="BorderBrush" Value="#5dade2"/>
+                                <Setter TargetName="GripLineTop" Property="Fill" Value="White"/>
+                                <Setter TargetName="GripLineBottom" Property="Fill" Value="White"/>
+                            </Trigger>
+                            <Trigger Property="IsDragging" Value="True">
+                                <Setter TargetName="SplitterBar" Property="Background" Value="#2E7D32"/>
+                                <Setter TargetName="SplitterBar" Property="BorderBrush" Value="#4caf50"/>
+                                <Setter TargetName="GripLineTop" Property="Fill" Value="White"/>
+                                <Setter TargetName="GripLineBottom" Property="Fill" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
         <SolidColorBrush x:Key="LightBlueBrush" Color="#34495e"/>
         <SolidColorBrush x:Key="BlueAccentBrush" Color="#3498db"/>
         <SolidColorBrush x:Key="BackgroundBrush" Color="#f5f5f5"/>
@@ -236,9 +275,15 @@
             <!-- CONTENT AREA -->
             <Grid Grid.Column="1" Background="#404040" Margin="20">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="60*" MinHeight="150"/>
+                    <!-- Entry form and log grid split the leftover vertical space between them, an even
+                         50/50 on a fresh install. Both are star sized so the GridSplitter below the
+                         ribbon can trade height between them; MainWindow's Window_Loaded restores the
+                         operator's last saved split and Window_Closing writes it back. MinHeight on each
+                         keeps a drag to either extreme from collapsing a pane past the point where its
+                         own splitter edge is still grabbable. -->
+                    <RowDefinition x:Name="EntryFormRow" Height="1*" MinHeight="150"/>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="40*" MinHeight="100"/>
+                    <RowDefinition x:Name="LogGridRow" Height="1*" MinHeight="100"/>
                 </Grid.RowDefinitions>
 
                 <!-- ENTRY FORM -->
@@ -312,6 +357,20 @@
                                Style="{StaticResource RibbonButtonStyle}" Background="#c0392b" HorizontalAlignment="Center"/>
                     </UniformGrid>
                 </Border>
+
+                <!-- Drag handle for the entry form / log grid split. It shares row 1 with the ribbon
+                     rather than occupying a row of its own, sitting bottom aligned inside the 15px gap
+                     the ribbon Border already reserves below itself, so the button bar keeps its exact
+                     position and nothing shifts. Living in row 1 is also what makes the resize work:
+                     PreviousAndNext then targets rows 0 and 2, the two star sized panes, instead of the
+                     Auto sized ribbon row a splitter placed anywhere else would try to stretch. Grabbing
+                     it reads as dragging the button bar itself up or down, which is the intent. -->
+                <GridSplitter Grid.Row="1" Height="13" Margin="0,0,0,2"
+                              HorizontalAlignment="Stretch" VerticalAlignment="Bottom"
+                              ResizeDirection="Rows" ResizeBehavior="PreviousAndNext"
+                              DragCompleted="EntryLogSplitter_DragCompleted"
+                              ToolTip="Drag up or down to resize the entry form and the log grid"
+                              Style="{StaticResource EntryLogSplitterStyle}"/>
 
                 <!-- CONTACT LOG GRID -->
                 <Border Grid.Row="2" Background="White" BorderBrush="#cccccc" BorderThickness="2" CornerRadius="4">

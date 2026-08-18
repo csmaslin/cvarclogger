@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.IO;
 using System.Windows;
+using System.Windows.Controls.Primitives;
 using CvarcLogger.App.Services;
 using CvarcLogger.App.ViewModels;
 using CvarcLogger.App.Views;
@@ -43,9 +44,45 @@ public partial class MainWindow : Window
 
     private async void Window_Loaded(object sender, RoutedEventArgs e)
     {
+        // Before InitializeAsync rather than after: restoring the split is pure layout and shouldn't
+        // wait behind the database load, otherwise the panes visibly jump from the 50/50 default to the
+        // saved position once the log finishes loading.
+        RestoreEntryLogSplit();
         await _viewModel.InitializeAsync();
         // TODO: Uncomment Hamlib check when SettingsService.IsHamlibAvailable() resolves compile issue
         // CheckHamlibAvailability();
+    }
+
+    private void Window_Closing(object sender, CancelEventArgs e) => SaveEntryLogSplit();
+
+    /// <summary>Also saves on drag release, not just on exit, so a crash or a forced kill doesn't cost
+    /// the operator the layout they just set up.</summary>
+    private void EntryLogSplitter_DragCompleted(object sender, DragCompletedEventArgs e) => SaveEntryLogSplit();
+
+    /// <summary>Applies the saved entry form / log grid split. A fresh install has nothing saved, which
+    /// leaves the even 50/50 split declared in XAML.</summary>
+    private void RestoreEntryLogSplit()
+    {
+        if (App.Services.GetRequiredService<SettingsService>().EntryFormSplitRatio is not double ratio) return;
+
+        EntryFormRow.Height = new GridLength(ratio, GridUnitType.Star);
+        LogGridRow.Height = new GridLength(1 - ratio, GridUnitType.Star);
+    }
+
+    /// <summary>Records the split as the entry form's share of the two panes' combined height, measured
+    /// from what's actually on screen rather than from the rows' star weights, so it stays correct even
+    /// when MinHeight has clamped a pane to something other than the weight asked for.</summary>
+    private void SaveEntryLogSplit()
+    {
+        double entryHeight = EntryFormRow.ActualHeight;
+        double gridHeight = LogGridRow.ActualHeight;
+        double total = entryHeight + gridHeight;
+
+        // Zero total means the rows were never laid out (closed while minimized, or shut down before the
+        // first render). Saving that would persist a meaningless ratio over a good one.
+        if (total <= 0) return;
+
+        App.Services.GetRequiredService<SettingsService>().SaveEntryFormSplitRatio(entryHeight / total);
     }
 
     private void ExitMenuItem_Click(object sender, RoutedEventArgs e) => Close();
