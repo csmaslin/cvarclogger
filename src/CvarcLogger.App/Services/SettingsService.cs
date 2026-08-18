@@ -190,6 +190,22 @@ public class SettingsService
         Save();
     }
 
+    /// <summary>The entry form's share of the vertical space it splits with the log grid, as a fraction
+    /// between 0 and 1 (0.5 = an even split, the default for a fresh install). Stored as a ratio rather
+    /// than a pixel height so the saved layout still makes sense when the app reopens on a different
+    /// window size or monitor -- a pixel height saved on a maximized window would swallow the whole
+    /// grid on a smaller one. Null until the operator first drags the splitter.</summary>
+    public double? EntryFormSplitRatio => _data.EntryFormSplitRatio;
+
+    /// <summary>Persists the splitter position. Values are clamped to leave both panes usable, so a
+    /// drag that pins the splitter to one extreme can't save a state the operator can't drag back out
+    /// of on the next launch.</summary>
+    public void SaveEntryFormSplitRatio(double ratio)
+    {
+        _data.EntryFormSplitRatio = Math.Clamp(ratio, 0.15, 0.85);
+        Save();
+    }
+
     /// <summary>Keys of columns/fields hidden for one specific Log Entry Mode (Normal/Contest/Sota/Pota/
     /// Net/All each get their own independent set, keyed by QsoEntryMode.ToString()) -- shared by both
     /// the QSO log grid and the entry form, so switching mode changes what's visible in both places
@@ -374,6 +390,7 @@ public class SettingsService
         public HashSet<string> SeenLogColumnKeys { get; set; } = new(StringComparer.OrdinalIgnoreCase);
         public Dictionary<string, int> LogColumnOrder { get; set; } = new(StringComparer.OrdinalIgnoreCase);
         public Dictionary<string, double> LogColumnWidths { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+        public double? EntryFormSplitRatio { get; set; }
 
         // Keyed by QsoEntryMode.ToString() ("Normal", "Contest", "Sota", "Pota", "Net", "All") so each
         // Log Entry Mode's column/field visibility and entry-form layout are each fully independent --
