@@ -1,19 +1,18 @@
-# CVARC Logger User Manual
+# CVARC Logger
+
+> **Latest Release: v2.05** | [View all releases](https://github.com/csmaslin/cvarclogger/releases)
+>
+> **📥 Download Now:**
+>
+> ⬇️ **[CvarcLogger-Setup-2.05.exe](https://github.com/csmaslin/cvarclogger/releases/download/v2.05/CvarcLogger-Setup-2.05.exe)** (Windows Installer, 59.9 MB)
+>
+> ⬇️ **[CvarcLogger.V2.05.zip](https://github.com/csmaslin/cvarclogger/releases/download/v2.05/CvarcLogger.V2.05.zip)** (Portable ZIP, 60.1 MB)
+
+---
 
 **Version 2.05**  
 Conejo Valley Amateur Radio Club  
 Program by W6CSM
-
----
-
-## Download
-
-**Latest Release: v2.05**
-
-- **[CvarcLogger-Setup-2.05.exe](https://github.com/csmaslin/cvarclogger/releases/download/v2.05/CvarcLogger-Setup-2.05.exe)** — Windows Installer
-- **[CvarcLogger.V2.05.zip](https://github.com/csmaslin/cvarclogger/releases/download/v2.05/CvarcLogger.V2.05.zip)** — Portable ZIP
-
-[View all releases →](https://github.com/csmaslin/cvarclogger/releases)
 
 ---
 
