@@ -1,3 +1,5 @@
+![CVARC Logo](BannerLogo.png)
+
 # CVARC Logger
 
 > **Latest Release: v2.05** | [View all releases](https://github.com/csmaslin/cvarclogger/releases)
