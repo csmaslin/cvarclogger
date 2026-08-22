@@ -27,6 +27,16 @@ public partial class RadioProfileEditorViewModel : ObservableObject
     /// Windows currently enumerates, refreshed each time the Settings window opens.</summary>
     public ObservableCollection<string> AvailableComPorts { get; }
 
+    /// <summary>Standard baud rates for serial communication.</summary>
+    public ObservableCollection<string> AvailableBaudRates { get; } = new()
+    {
+        "9600",
+        "19200",
+        "38400",
+        "57600",
+        "115200"
+    };
+
     [ObservableProperty] private string hamlibModelId;
     [ObservableProperty] private string comPort;
     [ObservableProperty] private string baudRate;
