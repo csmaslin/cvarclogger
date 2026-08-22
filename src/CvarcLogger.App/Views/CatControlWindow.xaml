@@ -163,7 +163,10 @@
                                             </StackPanel>
                                             <StackPanel Margin="0,0,10,0" Width="110">
                                                 <TextBlock Text="BAUD RATE" FontSize="12" FontWeight="Bold" Foreground="#000000" Margin="0,0,0,4"/>
-                                                <TextBox Text="{Binding BaudRate, UpdateSourceTrigger=PropertyChanged}" Padding="8" FontSize="14"/>
+                                                <ComboBox ItemsSource="{Binding AvailableBaudRates}"
+                                                          SelectedItem="{Binding BaudRate}"
+                                                          IsEditable="True" IsTextSearchEnabled="True"
+                                                          Padding="8" FontSize="14"/>
                                             </StackPanel>
                                             <StackPanel Width="110">
                                                 <TextBlock Text="MAX POWER (W)" FontSize="12" FontWeight="Bold" Foreground="#000000" Margin="0,0,0,4"/>
