@@ -19,8 +19,40 @@
                 <TextBox x:Name="CallsignBox" Padding="6" Margin="0,0,0,10"/>
 
                 <TextBlock Text="CONTEST *" FontWeight="Bold" Margin="0,0,0,4"/>
-                <TextBox x:Name="ContestBox" Padding="6" Margin="0,0,0,10"
-                         ToolTip="Contest identifier (e.g. ARRL-DX-CW, CQ-WW-SSB, ARRL-FIELD-DAY)"/>
+                <ComboBox x:Name="ContestBox" Padding="6" Margin="0,0,0,10" IsEditable="True"
+                          ToolTip="Contest identifier. Pick from the list or type your own.">
+                    <ComboBoxItem>ARRL-DX-CW</ComboBoxItem>
+                    <ComboBoxItem>ARRL-DX-SSB</ComboBoxItem>
+                    <ComboBoxItem>ARRL-FIELD-DAY</ComboBoxItem>
+                    <ComboBoxItem>ARRL-10-METER</ComboBoxItem>
+                    <ComboBoxItem>ARRL-160-METER</ComboBoxItem>
+                    <ComboBoxItem>ARRL-VHF-JAN</ComboBoxItem>
+                    <ComboBoxItem>ARRL-VHF-JUN</ComboBoxItem>
+                    <ComboBoxItem>ARRL-VHF-SEP</ComboBoxItem>
+                    <ComboBoxItem>ARRL-RTTY</ComboBoxItem>
+                    <ComboBoxItem>ARRL-SS-CW</ComboBoxItem>
+                    <ComboBoxItem>ARRL-SS-SSB</ComboBoxItem>
+                    <ComboBoxItem>ARRL-DIGI</ComboBoxItem>
+                    <ComboBoxItem>CA-QSO-PARTY</ComboBoxItem>
+                    <ComboBoxItem>CQ-160-CW</ComboBoxItem>
+                    <ComboBoxItem>CQ-160-SSB</ComboBoxItem>
+                    <ComboBoxItem>CQ-WPX-CW</ComboBoxItem>
+                    <ComboBoxItem>CQ-WPX-RTTY</ComboBoxItem>
+                    <ComboBoxItem>CQ-WPX-SSB</ComboBoxItem>
+                    <ComboBoxItem>CQ-WW-CW</ComboBoxItem>
+                    <ComboBoxItem>CQ-WW-RTTY</ComboBoxItem>
+                    <ComboBoxItem>CQ-WW-SSB</ComboBoxItem>
+                    <ComboBoxItem>CQ-WW-VHF</ComboBoxItem>
+                    <ComboBoxItem>IARU-HF</ComboBoxItem>
+                    <ComboBoxItem>NAQP-CW</ComboBoxItem>
+                    <ComboBoxItem>NAQP-RTTY</ComboBoxItem>
+                    <ComboBoxItem>NAQP-SSB</ComboBoxItem>
+                    <ComboBoxItem>NA-SPRINT-CW</ComboBoxItem>
+                    <ComboBoxItem>NA-SPRINT-SSB</ComboBoxItem>
+                    <ComboBoxItem>WAE-DX-CW</ComboBoxItem>
+                    <ComboBoxItem>WAE-DX-RTTY</ComboBoxItem>
+                    <ComboBoxItem>WAE-DX-SSB</ComboBoxItem>
+                </ComboBox>
 
                 <TextBlock Text="CATEGORY-OPERATOR" FontWeight="Bold" Margin="0,0,0,4"/>
                 <ComboBox x:Name="CategoryOperatorBox" Padding="6" Margin="0,0,0,10" IsEditable="True">
