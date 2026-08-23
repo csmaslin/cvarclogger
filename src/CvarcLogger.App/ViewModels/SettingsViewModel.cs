@@ -75,12 +75,14 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(InternetRadioStatusText))]
     private bool isInternetRadioConfigured;
+    [ObservableProperty] private InternetRadioType internetRadioType;
 
     public string InternetRadioStatusText => IsInternetRadioConfigured ? "Configured" : "Not Configured";
 
     public ObservableCollection<RadioProfileEditorViewModel> RadioProfileEditors { get; } = new();
     public ObservableCollection<HamlibRigInfo> AvailableRigs { get; } = new();
     public ObservableCollection<string> AvailableComPorts { get; } = new();
+    public ObservableCollection<InternetRadioType> AvailableInternetRadioTypes { get; } = new();
 
     public SettingsViewModel(
         SettingsService settings,
@@ -120,6 +122,12 @@ public partial class SettingsViewModel : ObservableObject
 
         internetRadioHost = _settings.InternetRadioHost;
         internetRadioPortText = _settings.InternetRadioPort.ToString();
+        internetRadioType = _settings.InternetRadioType;
+
+        foreach (var radioType in Enum.GetValues(typeof(InternetRadioType)).Cast<InternetRadioType>())
+        {
+            AvailableInternetRadioTypes.Add(radioType);
+        }
 
         for (int i = 0; i < _settings.RadioProfiles.Count; i++)
         {
@@ -386,6 +394,8 @@ public partial class SettingsViewModel : ObservableObject
     }
 
     partial void OnGridTrackerEnabledChanged(bool value) => _settings.GridTrackerEnabled = value;
+
+    partial void OnInternetRadioTypeChanged(InternetRadioType value) => _settings.InternetRadioType = value;
 
     /// <summary>Unlike CAT (which only connects when the user later clicks "Connect"), this checkbox
     /// takes effect immediately -- there's no separate connect step for a UDP listener.</summary>
