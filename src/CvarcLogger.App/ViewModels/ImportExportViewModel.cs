@@ -26,13 +26,25 @@ public partial class ImportExportViewModel : ObservableObject
 
     private void ReportProgress(string message) => ProgressChanged?.Invoke(this, message);
 
+    // Cached once per process. Path.GetInvalidFileNameChars() itself allocates a new array on each
+    // call (documented behavior), and ToHashSet() over the concatenation used to run on every export.
+    private static readonly HashSet<char> InvalidFilenameChars =
+        new HashSet<char>(Path.GetInvalidFileNameChars()) { ' ' };
+
     /// <summary>Strip characters Windows won't allow in a filename plus whitespace, so callsigns/contest
     /// names go straight into a suggested Save-As name without producing an invalid path.</summary>
     private static string SanitizeForFilename(string value)
     {
         if (string.IsNullOrWhiteSpace(value)) return string.Empty;
-        var invalid = Path.GetInvalidFileNameChars().Concat(new[] { ' ' }).ToHashSet();
-        return new string(value.Where(c => !invalid.Contains(c)).ToArray());
+
+        // Single-pass StringBuilder avoids the LINQ Where + ToArray double-allocation and lets us skip
+        // the copy entirely when nothing needs stripping.
+        var sb = new System.Text.StringBuilder(value.Length);
+        foreach (char c in value)
+        {
+            if (!InvalidFilenameChars.Contains(c)) sb.Append(c);
+        }
+        return sb.Length == value.Length ? value : sb.ToString();
     }
 
     public ImportExportViewModel(
