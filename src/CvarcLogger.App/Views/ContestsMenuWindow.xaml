@@ -3,110 +3,160 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:emoji="clr-namespace:Emoji.Wpf;assembly=Emoji.Wpf"
         Title="Contests" Icon="/Assets/AppIcon.ico"
-        Height="480" Width="720"
+        Height="820" Width="1250" MinHeight="600" MinWidth="1000"
         Background="#f5f5f5" WindowStartupLocation="CenterOwner"
-        ShowInTaskbar="False" ResizeMode="CanResize" MinHeight="360" MinWidth="560">
+        ShowInTaskbar="False" ResizeMode="CanResize">
 
     <Window.Resources>
-        <!-- Dark left-panel button matching the main window's SidebarButtonStyle look -->
-        <Style x:Key="DarkTileButton" TargetType="Button">
+        <!-- Sidebar-styled tab item: dark row, accent stripe when selected. Mirrors AwardsWindow. -->
+        <Style x:Key="SidebarTabItem" TargetType="TabItem">
             <Setter Property="Background" Value="#404040"/>
             <Setter Property="Foreground" Value="#ecf0f1"/>
-            <Setter Property="BorderBrush" Value="#999999"/>
-            <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="16,14"/>
-            <Setter Property="Margin" Value="0,0,0,10"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="FontFamily" Value="Segoe UI, Roboto, sans-serif"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
             <Setter Property="Template">
                 <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="4" Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                    <ControlTemplate TargetType="TabItem">
+                        <Border x:Name="TabBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="Transparent" BorderThickness="4,0,0,0"
+                                Padding="{TemplateBinding Padding}" Margin="0,0,0,2">
+                            <ContentPresenter ContentSource="Header"
+                                              HorizontalAlignment="Left" VerticalAlignment="Center"
+                                              RecognizesAccessKey="True"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#4a4a4a"/>
-                                <Setter Property="BorderBrush" Value="#3498db"/>
+                                <Setter TargetName="TabBorder" Property="Background" Value="#4a4a4a"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="TabBorder" Property="Background" Value="#34495e"/>
+                                <Setter TargetName="TabBorder" Property="BorderBrush" Value="#3498db"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
-                                <Setter Property="Background" Value="#2a2a2a"/>
+                                <Setter TargetName="TabBorder" Property="Background" Value="#2a2a2a"/>
                                 <Setter Property="Foreground" Value="#666666"/>
-                                <Setter Property="BorderBrush" Value="#444444"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
-        <Style x:Key="ActionButton" TargetType="Button">
+
+        <Style x:Key="SidebarTabControl" TargetType="TabControl">
+            <Setter Property="TabStripPlacement" Value="Left"/>
+            <Setter Property="Background" Value="#f5f5f5"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabControl">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="0" Background="#404040" MinWidth="200">
+                                <DockPanel>
+                                    <StackPanel DockPanel.Dock="Top" Margin="16,20,16,20">
+                                        <TextBlock Text="🏆" FontSize="42" HorizontalAlignment="Center"
+                                                   Foreground="White" Margin="0,0,0,6"/>
+                                        <TextBlock Text="Contests" FontSize="18" FontWeight="Bold"
+                                                   Foreground="White" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="Score your log" FontSize="11" Foreground="#bdc3c7"
+                                                   HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                                    </StackPanel>
+                                    <TabPanel IsItemsHost="True" Background="#404040"/>
+                                </DockPanel>
+                            </Border>
+                            <Border Grid.Column="1" Background="#f5f5f5" Padding="24">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    <Border Grid.Row="0" BorderThickness="0,0,0,2" BorderBrush="#e0e0e0"
+                                            Padding="0,0,0,10" Margin="0,0,0,15">
+                                        <TextBlock Text="Contest Scoring" FontSize="18" FontWeight="Bold"
+                                                   Foreground="#000000"/>
+                                    </Border>
+                                    <Border Grid.Row="1" Background="White" BorderBrush="#dddddd"
+                                            BorderThickness="1" CornerRadius="4">
+                                        <ContentPresenter x:Name="PART_SelectedContentHost"
+                                                          ContentSource="SelectedContent" Margin="12"/>
+                                    </Border>
+                                </Grid>
+                            </Border>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="ItemContainerStyle" Value="{StaticResource SidebarTabItem}"/>
+        </Style>
+
+        <Style x:Key="PrimaryButton" TargetType="Button">
             <Setter Property="Padding" Value="20,10"/>
-            <Setter Property="Background" Value="#3498db"/>
+            <Setter Property="Background" Value="#2E7D32"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="FontSize" Value="13"/>
-            <Setter Property="FontFamily" Value="Segoe UI, Roboto, sans-serif"/>
+        </Style>
+
+        <Style x:Key="ComingSoonPanel" TargetType="StackPanel">
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="40"/>
         </Style>
     </Window.Resources>
 
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="180"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
-
-        <!-- Left dark rail: matches main window sidebar -->
-        <Border Grid.Column="0" Background="#404040">
-            <StackPanel Margin="16,20,16,16">
-                <emoji:TextBlock Text="🏆" FontSize="42" HorizontalAlignment="Center" Foreground="White" Margin="0,10,0,6"/>
-                <TextBlock Text="Contests" FontSize="18" FontWeight="Bold" Foreground="White"
-                           HorizontalAlignment="Center"/>
-                <TextBlock Text="Score your log" FontSize="11" Foreground="#bdc3c7"
-                           HorizontalAlignment="Center" Margin="0,4,0,0"/>
-            </StackPanel>
-        </Border>
-
-        <!-- Right content -->
-        <Grid Grid.Column="1" Margin="24">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-
-            <Border Grid.Row="0" BorderThickness="0,0,0,2" BorderBrush="#e0e0e0" Padding="0,0,0,10" Margin="0,0,0,15">
-                <TextBlock Text="Choose a Contest" FontSize="18" FontWeight="Bold" Foreground="#000000"/>
-            </Border>
-
-            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                <StackPanel>
-                    <Button Style="{StaticResource DarkTileButton}" Click="FieldDay_Click"
-                            ToolTip="ARRL Field Day scoring">
-                        <emoji:TextBlock Text="📻   ARRL Field Day" Foreground="#ecf0f1" FontSize="14"/>
-                    </Button>
-
-                    <Button Style="{StaticResource DarkTileButton}" IsEnabled="False"
-                            ToolTip="Not yet implemented">
-                        <emoji:TextBlock Text="🌐   ARRL Sweepstakes  (coming soon)" FontSize="14"/>
-                    </Button>
-                    <Button Style="{StaticResource DarkTileButton}" IsEnabled="False"
-                            ToolTip="Not yet implemented">
-                        <emoji:TextBlock Text="🌐   CQ WW  (coming soon)" FontSize="14"/>
-                    </Button>
-                    <Button Style="{StaticResource DarkTileButton}" IsEnabled="False"
-                            ToolTip="Not yet implemented">
-                        <emoji:TextBlock Text="🌐   NAQP  (coming soon)" FontSize="14"/>
-                    </Button>
+        <TabControl Style="{StaticResource SidebarTabControl}">
+            <TabItem>
+                <TabItem.Header>
+                    <emoji:TextBlock Text="📻  Field Day" FontSize="14"/>
+                </TabItem.Header>
+                <StackPanel Margin="20" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <emoji:TextBlock Text="📻" FontSize="64" HorizontalAlignment="Center" Foreground="#404040"/>
+                    <TextBlock Text="ARRL Field Day" FontSize="20" FontWeight="Bold"
+                               HorizontalAlignment="Center" Margin="0,10,0,6"/>
+                    <TextBlock Text="Score your Field Day log with per-mode QSO points, power multiplier, and bonus checklist."
+                               FontSize="13" Foreground="#666666" TextWrapping="Wrap"
+                               HorizontalAlignment="Center" Width="480" TextAlignment="Center" Margin="0,0,0,20"/>
+                    <Button Content="Open Field Day Scorer" Style="{StaticResource PrimaryButton}"
+                            HorizontalAlignment="Center" Click="FieldDay_Click"/>
                 </StackPanel>
-            </ScrollViewer>
+            </TabItem>
 
-            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
-                <Button Content="Close" Style="{StaticResource ActionButton}" Click="Close_Click"/>
-            </StackPanel>
-        </Grid>
+            <TabItem IsEnabled="False">
+                <TabItem.Header>
+                    <emoji:TextBlock Text="🌐  ARRL Sweepstakes" FontSize="14"/>
+                </TabItem.Header>
+                <StackPanel Style="{StaticResource ComingSoonPanel}">
+                    <TextBlock Text="Coming soon" FontSize="16" Foreground="#999999" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </TabItem>
+
+            <TabItem IsEnabled="False">
+                <TabItem.Header>
+                    <emoji:TextBlock Text="🌐  CQ WW" FontSize="14"/>
+                </TabItem.Header>
+                <StackPanel Style="{StaticResource ComingSoonPanel}">
+                    <TextBlock Text="Coming soon" FontSize="16" Foreground="#999999" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </TabItem>
+
+            <TabItem IsEnabled="False">
+                <TabItem.Header>
+                    <emoji:TextBlock Text="🌐  NAQP" FontSize="14"/>
+                </TabItem.Header>
+                <StackPanel Style="{StaticResource ComingSoonPanel}">
+                    <TextBlock Text="Coming soon" FontSize="16" Foreground="#999999" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </TabItem>
+        </TabControl>
     </Grid>
 </Window>

@@ -186,11 +186,33 @@ public partial class FieldDayScoringWindow : Window
 
     private static void AddRow(Panel host, string label, string value, bool isBold = false)
     {
-        var grid = new Grid { Margin = new Thickness(0, 2, 0, 2) };
-        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        // Three-column layout: label wraps in its own share, value hugs a fixed narrow column right
+        // next to it, and the third star column soaks up whatever space is left so the value never
+        // pushes into (or gets clipped by) the card's right border. Keeps points and labels visually
+        // adjacent instead of the value floating way off to the right.
+        var grid = new Grid { Margin = new Thickness(0, 2, 24, 2) };
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        var l = new TextBlock { Text = label, FontFamily = new FontFamily("Consolas"), FontSize = 13, FontWeight = isBold ? FontWeights.Bold : FontWeights.Normal, TextWrapping = TextWrapping.Wrap };
-        var v = new TextBlock { Text = value, FontFamily = new FontFamily("Consolas"), FontSize = 13, FontWeight = isBold ? FontWeights.Bold : FontWeights.Normal, HorizontalAlignment = HorizontalAlignment.Right };
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(180) });
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        var l = new TextBlock
+        {
+            Text = label,
+            FontFamily = new FontFamily("Consolas"),
+            FontSize = 13,
+            FontWeight = isBold ? FontWeights.Bold : FontWeights.Normal,
+            TextWrapping = TextWrapping.Wrap,
+            VerticalAlignment = VerticalAlignment.Center,
+        };
+        var v = new TextBlock
+        {
+            Text = value,
+            FontFamily = new FontFamily("Consolas"),
+            FontSize = 13,
+            FontWeight = isBold ? FontWeights.Bold : FontWeights.Normal,
+            HorizontalAlignment = HorizontalAlignment.Right,
+            VerticalAlignment = VerticalAlignment.Center,
+            Margin = new Thickness(12, 0, 0, 0),
+        };
         Grid.SetColumn(l, 0);
         Grid.SetColumn(v, 1);
         grid.Children.Add(l);

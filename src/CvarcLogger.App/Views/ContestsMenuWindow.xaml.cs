@@ -14,6 +14,4 @@ public partial class ContestsMenuWindow : Window
         var window = new FieldDayScoringWindow { Owner = this };
         window.Show();
     }
-
-    private void Close_Click(object sender, RoutedEventArgs e) => Close();
 }
