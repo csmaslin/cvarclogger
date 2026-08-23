@@ -452,7 +452,7 @@ public class SettingsService
         public HashSet<string> NonStaticFields { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
         public bool CatEnabled { get; set; }
-        public bool LaunchRigctldAutomatically { get; set; }
+        public bool LaunchRigctldAutomatically { get; set; } = true;
 
         public bool GridTrackerEnabled { get; set; }
         public string GridTrackerHost { get; set; } = "127.0.0.1";
