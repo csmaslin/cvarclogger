@@ -35,6 +35,7 @@ Compression=lzma2
 SolidCompression=yes
 UninstallDisplayIcon={app}\{#MyAppExeName}
 UninstallDisplayName={#MyAppName}
+SetupIconFile=src\CvarcLogger.App\Assets\AppIcon.ico
 WizardStyle=modern
 ; Let Windows Restart Manager detect and close a running CvarcLogger before its files are replaced, so an
 ; in-place upgrade (and the Fresh reset in [Code] below) never fails on a locked exe or a locked database.
