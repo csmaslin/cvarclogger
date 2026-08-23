@@ -69,6 +69,14 @@ public partial class QsoLogViewModel : ObservableObject
         QsosView = CollectionViewSource.GetDefaultView(Qsos);
         QsosView.Filter = FilterQso;
 
+        // Bump this whenever _columnDefinitions defaults change and existing users should adopt the
+        // new visibility. On mismatch, SettingsService.ResetLogColumnsToCurrentDefaults clears the
+        // stored per-mode hidden-column state so the new defaults seed cleanly on this launch.
+        // v1 = 2026-08-23: log-grid minimum defaults (UtcTime, Band, Mode, Freq, Name, Country only).
+        const int LogColumnDefaultsCodeVersion = 1;
+        if (_settings.LogColumnDefaultsVersion < LogColumnDefaultsCodeVersion)
+            _settings.ResetLogColumnsToCurrentDefaults(LogColumnDefaultsCodeVersion);
+
         // defaultVisible=false for every column added after the original 12 keeps existing users'
         // grids exactly as they were — SettingsService.EnsureLogColumnDefault only applies a column's
         // default the first time that key is ever seen for a given settings file.
