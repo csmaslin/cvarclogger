@@ -891,8 +891,7 @@ public partial class QsoEntryViewModel : ObservableObject
         foreach (var p in profiles) StationProfiles.Add(p);
 
         SelectedStationProfile = StationProfiles.FirstOrDefault(p => p.Id == _settings.LastUsedStationProfileId)
-            ?? StationProfiles.FirstOrDefault(p => p.IsDefault)
-            ?? StationProfiles.FirstOrDefault();
+            ?? StationProfiles.FirstOrDefault(p => p.IsDefault);
 
         _dateTimeManuallyEdited = false;
         _localTimeManuallyEdited = false;

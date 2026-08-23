@@ -454,13 +454,7 @@ public class SettingsService
         public string InternetRadioHost { get; set; } = string.Empty;
         public int InternetRadioPort { get; set; } = 9200;
 
-        public List<RadioProfile> RadioProfiles { get; set; } = new()
-        {
-            // Model IDs confirmed via `rigctld --list` against Hamlib 4.6.3.
-            new RadioProfile { Name = "Elecraft K4D", HamlibModelId = 2047, ComPort = "COM3", BaudRate = 38400 },
-            new RadioProfile { Name = "Yaesu FT-991A", HamlibModelId = 1035, ComPort = "COM4", BaudRate = 38400 },
-            new RadioProfile { Name = "Yaesu FT-920", HamlibModelId = 1014, ComPort = "COM7", BaudRate = 4800 },
-        };
+        public List<RadioProfile> RadioProfiles { get; set; } = new();
 
         /// <summary>Prefers the copy of rigctld.exe bundled alongside the app (vendor/hamlib/, copied
         /// into a "hamlib" subfolder next to the exe at build/publish time) so CAT control works out
