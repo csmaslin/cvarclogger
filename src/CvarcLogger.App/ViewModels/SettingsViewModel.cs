@@ -395,6 +395,29 @@ public partial class SettingsViewModel : ObservableObject
         _wsjtxListener.ApplyEnabledState();
     }
 
+    partial void OnWsjtxUseMulticastChanged(bool value)
+    {
+        _settings.WsjtxUseMulticast = value;
+        // Auto-adjust port based on mode: 2237 for multicast (direct from WSJT-X), 2238 for relay (GridTracker2)
+        WsjtxPort = value ? "2237" : "2238";
+        _settings.WsjtxPort = int.Parse(WsjtxPort);
+
+        if (_settings.WsjtxEnabled)
+            _wsjtxListener.ApplyEnabledState();
+    }
+
+    [RelayCommand]
+    private void SaveWsjtxSettings()
+    {
+        _settings.WsjtxPort = int.TryParse(WsjtxPort, out var port) ? port : _settings.WsjtxPort;
+        _settings.WsjtxMulticastAddress = string.IsNullOrWhiteSpace(WsjtxMulticastAddress) ? "224.0.0.1" : WsjtxMulticastAddress;
+
+        if (_settings.WsjtxEnabled)
+            _wsjtxListener.ApplyEnabledState();
+
+        _dialogService.ShowInfo("WSJT-X settings saved.");
+    }
+
     [RelayCommand]
     private void SaveGridTrackerSettings()
     {
