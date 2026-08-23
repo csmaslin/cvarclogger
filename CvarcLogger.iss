@@ -186,20 +186,26 @@ begin
   end;
 end;
 
-procedure DeinitializeUninstall();
+procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
 var
   DataDir: String;
+  InstallDir: String;
 begin
-  if RemoveDataRequested then
+  if RemoveDataRequested and (CurUninstallStep = usUninstalling) then
   begin
     DataDir := ExpandConstant('{localappdata}\CVARC Logger');
+    InstallDir := ExpandConstant('{app}');
+
+    if FileExists(DataDir + '\cvarclogger.db') then
+      DeleteFile(DataDir + '\cvarclogger.db');
+    if FileExists(DataDir + '\settings.json') then
+      DeleteFile(DataDir + '\settings.json');
+    if FileExists(DataDir + '\credentials.dpapi') then
+      DeleteFile(DataDir + '\credentials.dpapi');
+    if FileExists(InstallDir + '\backuplog.db') then
+      DeleteFile(InstallDir + '\backuplog.db');
+
     if DirExists(DataDir) then
-    begin
       DelTree(DataDir, True, True, True);
-    end;
-    if DirExists(ExpandConstant('{app}')) then
-    begin
-      DelTree(ExpandConstant('{app}'), True, True, True);
-    end;
   end;
 end;

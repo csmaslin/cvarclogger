@@ -456,10 +456,10 @@ public class SettingsService
 
         public List<RadioProfile> RadioProfiles { get; set; } = new()
         {
-            new RadioProfile { Name = string.Empty },
-            new RadioProfile { Name = string.Empty },
-            new RadioProfile { Name = string.Empty },
-            new RadioProfile { Name = string.Empty },
+            new RadioProfile { Name = "Radio 1" },
+            new RadioProfile { Name = "Radio 2" },
+            new RadioProfile { Name = "Radio 3" },
+            new RadioProfile { Name = "Radio 4" },
         };
 
         /// <summary>Prefers the copy of rigctld.exe bundled alongside the app (vendor/hamlib/, copied
