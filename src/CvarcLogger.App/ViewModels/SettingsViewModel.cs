@@ -62,6 +62,8 @@ public partial class SettingsViewModel : ObservableObject
 
     [ObservableProperty] private bool wsjtxEnabled;
     [ObservableProperty] private string wsjtxPort = "2238";
+    [ObservableProperty] private WsjtxMode wsjtxMode;
+    [ObservableProperty] private string wsjtxMulticastAddress = "224.0.0.1";
 
     // Internet Control (CAT): a network-reachable Elecraft K4 (its native TCP protocol, default port
     // 9200), distinct from the Hamlib/rigctld serial radios above. Password is optional (the K4 protocol
@@ -113,6 +115,8 @@ public partial class SettingsViewModel : ObservableObject
 
         wsjtxEnabled = _settings.WsjtxEnabled;
         wsjtxPort = _settings.WsjtxPort.ToString();
+        wsjtxMode = _settings.WsjtxMode;
+        wsjtxMulticastAddress = _settings.WsjtxMulticastAddress;
 
         internetRadioHost = _settings.InternetRadioHost;
         internetRadioPortText = _settings.InternetRadioPort.ToString();

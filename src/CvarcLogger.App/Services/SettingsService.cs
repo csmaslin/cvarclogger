@@ -14,6 +14,13 @@ public enum CatSource
     Internet
 }
 
+/// <summary>WSJT-X data reception mode: GridTracker2 relay or direct multicast.</summary>
+public enum WsjtxMode
+{
+    GridTracker2Relay,
+    Multicast
+}
+
 /// <summary>Simple JSON-file-backed app preferences (not QSO data, not credentials).</summary>
 public class SettingsService
 {
@@ -97,11 +104,25 @@ public class SettingsService
         set { _data.WsjtxEnabled = value; Save(); }
     }
 
-    /// <summary>UDP port for receiving WSJT-X logged QSOs relayed by GridTracker2.</summary>
+    /// <summary>UDP port for receiving WSJT-X logged QSOs relayed by GridTracker2 or direct multicast.</summary>
     public int WsjtxPort
     {
         get => _data.WsjtxPort;
         set { _data.WsjtxPort = value; Save(); }
+    }
+
+    /// <summary>WSJT-X reception mode: GridTracker2 relay or direct multicast.</summary>
+    public WsjtxMode WsjtxMode
+    {
+        get => _data.WsjtxMode;
+        set { _data.WsjtxMode = value; Save(); }
+    }
+
+    /// <summary>Multicast address for WSJT-X direct reception (default 224.0.0.1).</summary>
+    public string WsjtxMulticastAddress
+    {
+        get => _data.WsjtxMulticastAddress;
+        set { _data.WsjtxMulticastAddress = value; Save(); }
     }
 
     /// <summary>The stored path if it still points at a real file (respects an explicit user
@@ -416,6 +437,8 @@ public class SettingsService
         public int GridTrackerPort { get; set; } = 2240;
         public bool WsjtxEnabled { get; set; }
         public int WsjtxPort { get; set; } = 2238;
+        public WsjtxMode WsjtxMode { get; set; } = WsjtxMode.GridTracker2Relay;
+        public string WsjtxMulticastAddress { get; set; } = "224.0.0.1";
         public string RigctldExecutablePath { get; set; } = ResolveDefaultRigctldPath();
         public int RigctldTcpPort { get; set; } = 4532;
         public int ActiveRadioIndex { get; set; } = -1;
