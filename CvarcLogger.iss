@@ -186,12 +186,12 @@ begin
   end;
 end;
 
-procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+procedure DeinitializeUninstall();
 var
   DataDir: String;
   InstallDir: String;
 begin
-  if RemoveDataRequested and (CurUninstallStep = usUninstalling) then
+  if RemoveDataRequested then
   begin
     DataDir := ExpandConstant('{localappdata}\CVARC Logger');
     InstallDir := ExpandConstant('{app}');
@@ -207,5 +207,7 @@ begin
 
     if DirExists(DataDir) then
       DelTree(DataDir, True, True, True);
+    if DirExists(InstallDir) then
+      DelTree(InstallDir, True, True, True);
   end;
 end;
