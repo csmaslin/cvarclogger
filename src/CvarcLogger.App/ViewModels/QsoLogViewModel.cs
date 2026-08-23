@@ -75,10 +75,11 @@ public partial class QsoLogViewModel : ObservableObject
         _columnDefinitions = new[]
         {
             ("UtcTime", "Date/Time (UTC)", true),
-            ("LocalTime", "Local Time", true), ("Band", "Band", true), ("Mode", "Mode", true),
-            ("Freq", "Freq", true), ("Rst", "RST S/R", true), ("Name", "Name", true),
-            ("Grid", "Grid", true), ("City", "City", true), ("State", "State", true),
-            ("Country", "Country", true), ("Qsl", "QSL S/R", true),
+            ("LocalTime", "Local Time", false), ("Band", "Band", true), ("Mode", "Mode", true),
+            ("Freq", "Freq", true), ("Rst", "RST S/R", false), ("Name", "Name", true),
+            ("Grid", "Grid", false), ("City", "City", false), ("State", "State", false),
+            ("Country", "Country", true), ("Qsl", "QSL S/R", false),
+            ("Station", "Station Callsign", false),
             ("County", "County", false), ("ArrlSection", "ARRL Section", false),
             ("CqZone", "CQ Zone", false), ("ItuZone", "ITU Zone", false),
             ("Continent", "Continent", false), ("SubMode", "Sub Mode", false),

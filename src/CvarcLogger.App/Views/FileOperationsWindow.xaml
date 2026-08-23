@@ -75,5 +75,17 @@
                        Click="Close_Click"/>
             </StackPanel>
         </StackPanel>
+
+        <!-- Busy overlay: shown during import/export/save/load so the user sees the app is working. -->
+        <Border x:Name="BusyOverlay" Background="#B3000000" Visibility="Collapsed">
+            <Border Background="White" CornerRadius="6" Padding="30" HorizontalAlignment="Center" VerticalAlignment="Center"
+                    BorderBrush="#cccccc" BorderThickness="1">
+                <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                    <ProgressBar IsIndeterminate="True" Width="220" Height="14" Margin="0,0,0,15"/>
+                    <TextBlock x:Name="BusyMessage" Text="Working..." FontSize="14" FontWeight="Bold"
+                               HorizontalAlignment="Center" Foreground="#000000"/>
+                </StackPanel>
+            </Border>
+        </Border>
     </Grid>
 </Window>
