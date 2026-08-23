@@ -263,10 +263,10 @@
                         <!-- Divider -->
                         <Separator Height="2" Margin="0,20,0,20" Background="#666666"/>
 
-                        <!-- Award Progress Button -->
-                        <Button Name="AwardButton" Click="AwardsMenuItem_Click" ToolTip="View DXCC/WAS/SOTA/POTA award progress"
+                        <!-- Awards / Contests Toggle Button: 1st click = Awards, 2nd click = Contests menu -->
+                        <Button Name="AwardButton" Click="AwardsContestsButton_Click" ToolTip="1st click: Awards. 2nd click: Contest scoring."
                                 Style="{StaticResource SidebarButtonStyle}">
-                            <emoji:TextBlock Text="🏅 Award"/>
+                            <emoji:TextBlock Text="🏅 Awards/Contests"/>
                         </Button>
                     </StackPanel>
                 </ScrollViewer>
