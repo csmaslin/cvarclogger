@@ -110,7 +110,8 @@
                                      ToolTip="While checked, whatever you type in Callsign is copied live into the log grid's search box, so you can spot a duplicate before logging"/>
                         </Grid>
                         <TextBox x:Name="CallsignTextBox" Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
-                                Text="{Binding Callsign, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Tag="W5XYZ"/>
+                                Text="{Binding Callsign, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Tag="W5XYZ"
+                                PreviewKeyDown="CallsignField_PreviewKeyDown"/>
                     </StackPanel>
 
                     <!-- Date/Time UTC -->
