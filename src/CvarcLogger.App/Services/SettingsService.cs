@@ -454,7 +454,13 @@ public class SettingsService
         public string InternetRadioHost { get; set; } = string.Empty;
         public int InternetRadioPort { get; set; } = 9200;
 
-        public List<RadioProfile> RadioProfiles { get; set; } = new();
+        public List<RadioProfile> RadioProfiles { get; set; } = new()
+        {
+            new RadioProfile { Name = string.Empty },
+            new RadioProfile { Name = string.Empty },
+            new RadioProfile { Name = string.Empty },
+            new RadioProfile { Name = string.Empty },
+        };
 
         /// <summary>Prefers the copy of rigctld.exe bundled alongside the app (vendor/hamlib/, copied
         /// into a "hamlib" subfolder next to the exe at build/publish time) so CAT control works out
