@@ -10,6 +10,10 @@ namespace CvarcLogger.Core.Cabrillo;
 /// whitespace rather than fixed positions.</summary>
 public static class CabrilloReader
 {
+    // Hoisted separators to avoid allocating a fresh array on every ParseQsoLine / ApplyExchange call.
+    private static readonly char[] WhitespaceSeparators = { ' ', '\t' };
+    private static readonly char[] SpaceSeparator = { ' ' };
+
     public class ParseResult
     {
         public CabrilloContestInfo Info { get; set; } = new();
@@ -20,7 +24,10 @@ public static class CabrilloReader
     {
         var result = new ParseResult();
 
-        foreach (var line in File.ReadAllLines(filePath))
+        // File.ReadLines streams the file rather than loading every line into a string[] up front
+        // (File.ReadAllLines), which matters for very large contest logs. We also break on END-OF-LOG
+        // so the rest of the file is skipped entirely, not just parsed-and-ignored.
+        foreach (var line in File.ReadLines(filePath))
         {
             string trimmed = line.TrimEnd();
             if (string.IsNullOrWhiteSpace(trimmed)) continue;
@@ -80,9 +87,9 @@ public static class CabrilloReader
 
     private static Qso? ParseQsoLine(string line)
     {
-        // Remove "QSO:" prefix and split on whitespace.
+        // Remove "QSO:" prefix and split on whitespace using the hoisted separator.
         string body = line.Substring(4).Trim();
-        var tokens = body.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+        var tokens = body.Split(WhitespaceSeparators, StringSplitOptions.RemoveEmptyEntries);
         if (tokens.Length < 10) return null;
 
         // tokens[0] = freq (kHz), [1] = mode, [2] = date, [3] = time, [4] = sent_call,
@@ -131,9 +138,26 @@ public static class CabrilloReader
     private static void ApplyExchange(Qso qso, string exchange, bool sent)
     {
         if (string.IsNullOrWhiteSpace(exchange)) return;
-        var parts = exchange.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
-        // Pure numeric → serial number
+        // Fast path: no whitespace means a single token -- skip Split's array allocation entirely.
+        // This is the common case (contests where the exchange is just a serial or a state code).
+        if (exchange.IndexOf(' ') < 0)
+        {
+            if (int.TryParse(exchange, out int singleSerial))
+            {
+                if (sent) qso.StxSerial = singleSerial;
+                else qso.SrxSerial = singleSerial;
+            }
+            else
+            {
+                RouteLocationToken(qso, exchange, sent);
+            }
+            return;
+        }
+
+        var parts = exchange.Split(SpaceSeparator, StringSplitOptions.RemoveEmptyEntries);
+
+        // Pure numeric (also handled above, but keep for tab-separated / multi-space input)
         if (parts.Length == 1 && int.TryParse(parts[0], out int serial))
         {
             if (sent) qso.StxSerial = serial;
@@ -149,14 +173,13 @@ public static class CabrilloReader
             return;
         }
 
-        // Single token: could be state, section, or generic class
         if (parts.Length == 1)
         {
             RouteLocationToken(qso, parts[0], sent);
             return;
         }
 
-        // Multi-token with no recognizable class prefix: join back as Class so nothing is lost.
+        // Multi-token with no recognizable class prefix: keep the whole string as Class so nothing is lost.
         if (!sent) qso.Class = exchange.ToUpperInvariant();
     }
 
