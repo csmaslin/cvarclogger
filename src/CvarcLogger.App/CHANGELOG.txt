@@ -5,6 +5,19 @@ build meant to reach the user (see AppVersion.cs) -- before running publish.ps1.
 
 Versions before 1.17 predate this changelog and are not documented here.
 
+2.06
+----
+- WSJT-X multicast reception: receive logged QSOs directly from WSJT-X's multicast broadcasts
+  (224.0.0.1:2237) as an alternative to relaying through GridTracker2. Checkbox in Lookup Settings
+  toggles between multicast and relay modes; port automatically adjusts (2237 for multicast, 2238
+  for relay). Save button added to WSJT-X settings section for explicit confirmation.
+- CAT Control: baud rate is now a dropdown (9600, 19200, 38400, 57600, 115200) instead of a text box.
+- Tab key in the Callsign field now triggers automatic callsign lookup (same as clicking Lookup).
+- Installer: custom installation directory selection enabled in Inno Setup.
+- Entry form and log grid now split vertically with a draggable handle for adjusting space allocation.
+- Fix: default radio selection removed on fresh install (no pre-selected radio in the active radio dropdown).
+- GitHub documentation: added GitHub Pages site with manual, overview diagram, and download links.
+
 2.05
 ----
 - The entry form and the contact log grid can now be resized against each other: drag the grey handle
