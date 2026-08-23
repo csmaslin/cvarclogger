@@ -74,11 +74,32 @@ public class WsjtxUdpListenerService : IDisposable
         {
             _client = new UdpClient();
             _client.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-            _client.Client.Bind(new IPEndPoint(IPAddress.Any, _settings.WsjtxPort));
+
+            if (_settings.WsjtxMode == WsjtxMode.Multicast)
+            {
+                // Multicast mode: join the multicast group
+                if (IPAddress.TryParse(_settings.WsjtxMulticastAddress, out var multicastAddress))
+                {
+                    _client.Client.Bind(new IPEndPoint(IPAddress.Any, _settings.WsjtxPort));
+                    var multicastOption = new MulticastOption(multicastAddress);
+                    _client.Client.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, multicastOption);
+                    Log.Information("WSJT-X UDP: Joined multicast group {Address}:{Port}.", _settings.WsjtxMulticastAddress, _settings.WsjtxPort);
+                }
+                else
+                {
+                    throw new ArgumentException($"Invalid multicast address: {_settings.WsjtxMulticastAddress}");
+                }
+            }
+            else
+            {
+                // GridTracker2 relay mode: just bind to any address on the port
+                _client.Client.Bind(new IPEndPoint(IPAddress.Any, _settings.WsjtxPort));
+                Log.Information("WSJT-X UDP: Listening for GridTracker2 relay on port {Port}.", _settings.WsjtxPort);
+            }
         }
         catch (Exception ex)
         {
-            Log.Warning(ex, "Failed to bind the WSJT-X UDP listener on port {Port}.", _settings.WsjtxPort);
+            Log.Warning(ex, "Failed to start WSJT-X UDP listener (Mode={Mode}, Port={Port}).", _settings.WsjtxMode, _settings.WsjtxPort);
             _client?.Dispose();
             _client = null;
             return;
