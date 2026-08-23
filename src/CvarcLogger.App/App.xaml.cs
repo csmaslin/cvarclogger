@@ -81,6 +81,7 @@ public partial class App : Application
 
                 services.AddScoped<IQsoRepository, QsoRepository>();
                 services.AddScoped<IStationProfileRepository, StationProfileRepository>();
+                services.AddScoped<IContestSubmissionRepository, ContestSubmissionRepository>();
                 services.AddScoped<IDxccEntityRepository, DxccEntityRepository>();
                 services.AddScoped<ISotaActivationRepository, SotaActivationRepository>();
                 services.AddScoped<IPotaActivationRepository, PotaActivationRepository>();
