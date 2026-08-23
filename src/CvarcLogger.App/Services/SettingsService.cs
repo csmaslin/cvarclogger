@@ -343,6 +343,24 @@ public class SettingsService
         Save();
     }
 
+    /// <summary>Adopts the current code defaults for log columns across every mode by clearing the
+    /// stored per-mode hidden-column sets plus the "already seeded" markers. QsoLogViewModel calls this
+    /// once when it detects that LogColumnDefaultsVersion in settings.json is older than the code's
+    /// current version. User-specific column re-toggles made after this point are preserved.</summary>
+    public void ResetLogColumnsToCurrentDefaults(int newVersion)
+    {
+        _data.HiddenLogColumns.Clear();
+        _data.HiddenColumnsByMode.Clear();
+        _data.SeenLogColumnKeys.Clear();
+        _data.LogColumnDefaultsVersion = newVersion;
+        Save();
+    }
+
+    /// <summary>Current stored version of the column-defaults seed. Compared against the code-side
+    /// LogColumnDefaultsCodeVersion in QsoLogViewModel to decide whether ResetLogColumnsToCurrentDefaults
+    /// needs to run.</summary>
+    public int LogColumnDefaultsVersion => _data.LogColumnDefaultsVersion;
+
     /// <summary>Full path to the active QSO database, or null to use the default (see
     /// DefaultDatabasePath). Switching this takes effect on next launch — the DbContext's connection
     /// string is fixed for the process's lifetime.</summary>
@@ -450,6 +468,11 @@ public class SettingsService
         public Dictionary<string, string> ModeTabLabels { get; set; } = new(StringComparer.OrdinalIgnoreCase);
         public Dictionary<string, bool> ModeFieldsLocked { get; set; } = new(StringComparer.OrdinalIgnoreCase);
         public HashSet<string> NonStaticFields { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+
+        // Bump when the code's default column visibility changes and existing users should adopt the
+        // new defaults on next launch. QsoLogViewModel checks this against LogColumnDefaultsCodeVersion
+        // and, when they don't match, clears the per-mode hidden-column state so seeding re-runs.
+        public int LogColumnDefaultsVersion { get; set; }
 
         public bool CatEnabled { get; set; }
         public bool LaunchRigctldAutomatically { get; set; } = true;

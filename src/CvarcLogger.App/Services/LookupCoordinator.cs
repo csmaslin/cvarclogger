@@ -53,7 +53,20 @@ public class LookupCoordinator
             if (result.Found) merged = Merge(merged, result);
         }
 
-        return merged ?? CallsignLookupResult.NotFound("Callsign not found in any configured lookup service.");
+        if (merged is not null) return merged;
+
+        // Tailor the "not found" message so a non-US callsign against an unconfigured-QRZ setup doesn't
+        // read like a system failure -- Callook.info is US-only (FCC data), and it's the only free
+        // service in the chain, so a fresh install has no coverage for foreign calls until QRZ or QRZCQ
+        // is configured.
+        if (!qrzConfigured && !qrzCqConfigured)
+        {
+            return CallsignLookupResult.NotFound(
+                $"Callook.info couldn't find {callsign} (Callook only covers US callsigns). " +
+                "For non-US callsigns, configure QRZ.com or QRZCQ.com in Lookup Settings.");
+        }
+
+        return CallsignLookupResult.NotFound($"{callsign} was not found in any configured lookup service.");
     }
 
     // "Core" fields are the ones Callook.info and QRZCQ.com can both supply -- County is deliberately
