@@ -190,6 +190,9 @@ procedure DeinitializeUninstall();
 var
   DataDir: String;
   InstallDir: String;
+  BatchPath: String;
+  BatchContent: TStringList;
+  ErrorCode: Integer;
 begin
   if RemoveDataRequested then
   begin
@@ -207,7 +210,22 @@ begin
 
     if DirExists(DataDir) then
       DelTree(DataDir, True, True, True);
-    if DirExists(InstallDir) then
-      DelTree(InstallDir, True, True, True);
+
+    { The install folder still holds the uninstaller (currently running) plus any files Inno could not
+      remove during uninstall. Schedule a batch file in %TEMP% that waits briefly for the uninstaller
+      to exit, then removes the install folder entirely, then deletes itself. }
+    BatchPath := ExpandConstant('{tmp}') + '\cvarc-cleanup.bat';
+    BatchContent := TStringList.Create;
+    try
+      BatchContent.Add('@echo off');
+      BatchContent.Add('timeout /t 3 /nobreak > nul');
+      BatchContent.Add('rmdir /s /q "' + InstallDir + '"');
+      BatchContent.Add('del "%~f0"');
+      BatchContent.SaveToFile(BatchPath);
+    finally
+      BatchContent.Free;
+    end;
+
+    Exec('cmd.exe', '/c start "" /min "' + BatchPath + '"', '', SW_HIDE, ewNoWait, ErrorCode);
   end;
 end;
