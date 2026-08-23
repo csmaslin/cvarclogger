@@ -59,9 +59,6 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: de
 Filename: "{app}\{#MyAppExeName}"; Description: "Launch {#MyAppName}"; Flags: nowait postinstall skipifsilent
 
 [UninstallDelete]
-; The app writes logs/backups under %LocalAppData%\CVARC Logger at runtime -- not part of the install,
-; so Inno won't remove it on its own. Left in place deliberately: it holds the QSO database, and an
-; uninstall should never silently delete a user's log data.
 
 [Code]
 { Install-time pre-flight: if a previous CVARC Logger is already on the PC, ask whether to keep the
@@ -70,6 +67,7 @@ Filename: "{app}\{#MyAppExeName}"; Description: "Launch {#MyAppName}"; Flags: no
 
 var
   FreshRequested: Boolean;
+  RemoveDataRequested: Boolean;
 
 { Where a previous install recorded itself, or '' if none. AppId + '_is1' is Inno's own uninstall key;
   a 32-bit installer's HKLM read is WOW64-redirected to the same place a prior run of this same script
@@ -162,5 +160,45 @@ begin
     { No existing log to preserve; still clear any stray settings for a genuinely clean start. }
     DeleteFile(DataDir + '\settings.json');
     DeleteFile(DataDir + '\credentials.dpapi');
+  end;
+end;
+
+procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+var
+  DataDir, Db: String;
+  Choice: Integer;
+begin
+  { During uninstall, ask if the user wants to keep or remove the database. }
+  if CurUninstallStep = usUninstalling then
+  begin
+    DataDir := ExpandConstant('{localappdata}\CVARC Logger');
+    Db := DataDir + '\cvarclogger.db';
+
+    { Only prompt if the database actually exists. }
+    if FileExists(Db) or FileExists(DataDir + '\settings.json') then
+    begin
+      Choice := MsgBox(
+        'Remove QSO database and settings?' + #13#10 + #13#10 +
+        'KEEP: Saves your log data. You can reinstall later and continue where you left off.' + #13#10 + #13#10 +
+        'REMOVE: Deletes the log, settings, and radio profiles (a clean wipe).' + #13#10 + #13#10 +
+        'Keep your data?',
+        mbConfirmation, MB_YESNO);
+
+      RemoveDataRequested := (Choice = IDNO);
+    end;
+  end
+  else if (CurUninstallStep = usUninstalled) and RemoveDataRequested then
+  begin
+    { User chose to remove data; delete the data directory and its contents. }
+    DataDir := ExpandConstant('{localappdata}\CVARC Logger');
+    if DirExists(DataDir) then
+    begin
+      DelTree(DataDir, True, True, True);
+    end;
+    { Also remove the install folder (C:\CvarcLogger) since user chose a complete wipe. }
+    if DirExists(ExpandConstant('{app}')) then
+    begin
+      DelTree(ExpandConstant('{app}'), True, True, True);
+    end;
   end;
 end;
