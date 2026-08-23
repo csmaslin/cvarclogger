@@ -213,10 +213,9 @@ begin
   if DirExists(DataDir) then
     DelTree(DataDir, True, True, True);
 
-  { Schedule a batch file in Windows' TEMP dir (NOT {tmp}, which is Setup's own scratch dir and gets
-    cleaned up when the uninstaller exits) to wait, then wipe the install folder including the
-    uninstaller itself and any runtime-created data (cvarclogger.db, settings.json, backups/, logs/).
-    Using GetEnv('TEMP') gets the actual user TEMP folder that survives past uninstaller exit. }
+  // Schedule a batch file in Windows TEMP dir to wait, then wipe the install folder including the
+  // uninstaller itself and any runtime-created data (cvarclogger.db, settings.json, backups, logs).
+  // Uses GetEnv TEMP so the batch file survives past uninstaller exit.
   TempDir := GetEnv('TEMP');
   if TempDir = '' then
     TempDir := ExpandConstant('{userappdata}');
