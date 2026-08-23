@@ -8,7 +8,6 @@
         ShowInTaskbar="False" ResizeMode="CanResize">
 
     <Window.Resources>
-        <!-- Sidebar-styled tab item: dark row, accent stripe when selected. Mirrors AwardsWindow. -->
         <Style x:Key="SidebarTabItem" TargetType="TabItem">
             <Setter Property="Background" Value="#404040"/>
             <Setter Property="Foreground" Value="#ecf0f1"/>
@@ -16,6 +15,7 @@
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="FontFamily" Value="Segoe UI, Roboto, sans-serif"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="MinWidth" Value="200"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TabItem">
@@ -47,57 +47,6 @@
             </Setter>
         </Style>
 
-        <Style x:Key="SidebarTabControl" TargetType="TabControl">
-            <Setter Property="TabStripPlacement" Value="Left"/>
-            <Setter Property="Background" Value="#f5f5f5"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="0"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="TabControl">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <Border Grid.Column="0" Background="#404040" MinWidth="200">
-                                <DockPanel>
-                                    <StackPanel DockPanel.Dock="Top" Margin="16,20,16,20">
-                                        <TextBlock Text="🏆" FontSize="42" HorizontalAlignment="Center"
-                                                   Foreground="White" Margin="0,0,0,6"/>
-                                        <TextBlock Text="Contests" FontSize="18" FontWeight="Bold"
-                                                   Foreground="White" HorizontalAlignment="Center"/>
-                                        <TextBlock Text="Score your log" FontSize="11" Foreground="#bdc3c7"
-                                                   HorizontalAlignment="Center" Margin="0,4,0,0"/>
-                                    </StackPanel>
-                                    <TabPanel IsItemsHost="True" Background="#404040"/>
-                                </DockPanel>
-                            </Border>
-                            <Border Grid.Column="1" Background="#f5f5f5" Padding="24">
-                                <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="*"/>
-                                    </Grid.RowDefinitions>
-                                    <Border Grid.Row="0" BorderThickness="0,0,0,2" BorderBrush="#e0e0e0"
-                                            Padding="0,0,0,10" Margin="0,0,0,15">
-                                        <TextBlock Text="Contest Scoring" FontSize="18" FontWeight="Bold"
-                                                   Foreground="#000000"/>
-                                    </Border>
-                                    <Border Grid.Row="1" Background="White" BorderBrush="#dddddd"
-                                            BorderThickness="1" CornerRadius="4">
-                                        <ContentPresenter x:Name="PART_SelectedContentHost"
-                                                          ContentSource="SelectedContent" Margin="12"/>
-                                    </Border>
-                                </Grid>
-                            </Border>
-                        </Grid>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-            <Setter Property="ItemContainerStyle" Value="{StaticResource SidebarTabItem}"/>
-        </Style>
-
         <Style x:Key="PrimaryButton" TargetType="Button">
             <Setter Property="Padding" Value="20,10"/>
             <Setter Property="Background" Value="#2E7D32"/>
@@ -105,58 +54,77 @@
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="FontSize" Value="13"/>
         </Style>
-
-        <Style x:Key="ComingSoonPanel" TargetType="StackPanel">
-            <Setter Property="HorizontalAlignment" Value="Center"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="Margin" Value="40"/>
-        </Style>
     </Window.Resources>
 
     <Grid>
-        <TabControl Style="{StaticResource SidebarTabControl}">
-            <TabItem>
-                <TabItem.Header>
-                    <emoji:TextBlock Text="📻  Field Day" FontSize="14"/>
-                </TabItem.Header>
-                <StackPanel Margin="20" HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <emoji:TextBlock Text="📻" FontSize="64" HorizontalAlignment="Center" Foreground="#404040"/>
-                    <TextBlock Text="ARRL Field Day" FontSize="20" FontWeight="Bold"
-                               HorizontalAlignment="Center" Margin="0,10,0,6"/>
-                    <TextBlock Text="Score your Field Day log with per-mode QSO points, power multiplier, and bonus checklist."
-                               FontSize="13" Foreground="#666666" TextWrapping="Wrap"
-                               HorizontalAlignment="Center" Width="480" TextAlignment="Center" Margin="0,0,0,20"/>
-                    <Button Content="Open Field Day Scorer" Style="{StaticResource PrimaryButton}"
-                            HorizontalAlignment="Center" Click="FieldDay_Click"/>
-                </StackPanel>
-            </TabItem>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
 
-            <TabItem IsEnabled="False">
-                <TabItem.Header>
-                    <emoji:TextBlock Text="🌐  ARRL Sweepstakes" FontSize="14"/>
-                </TabItem.Header>
-                <StackPanel Style="{StaticResource ComingSoonPanel}">
-                    <TextBlock Text="Coming soon" FontSize="16" Foreground="#999999" HorizontalAlignment="Center"/>
-                </StackPanel>
-            </TabItem>
+        <Border Grid.Column="0" Background="#404040">
+            <StackPanel Margin="16,20,16,16">
+                <emoji:TextBlock Text="🏆" FontSize="42" HorizontalAlignment="Center" Foreground="White" Margin="0,10,0,6"/>
+                <TextBlock Text="Contests" FontSize="18" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                <TextBlock Text="Score your log" FontSize="11" Foreground="#bdc3c7" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+            </StackPanel>
+        </Border>
 
-            <TabItem IsEnabled="False">
-                <TabItem.Header>
-                    <emoji:TextBlock Text="🌐  CQ WW" FontSize="14"/>
-                </TabItem.Header>
-                <StackPanel Style="{StaticResource ComingSoonPanel}">
-                    <TextBlock Text="Coming soon" FontSize="16" Foreground="#999999" HorizontalAlignment="Center"/>
-                </StackPanel>
-            </TabItem>
+        <Grid Grid.Column="1" Margin="24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
 
-            <TabItem IsEnabled="False">
-                <TabItem.Header>
-                    <emoji:TextBlock Text="🌐  NAQP" FontSize="14"/>
-                </TabItem.Header>
-                <StackPanel Style="{StaticResource ComingSoonPanel}">
-                    <TextBlock Text="Coming soon" FontSize="16" Foreground="#999999" HorizontalAlignment="Center"/>
-                </StackPanel>
-            </TabItem>
-        </TabControl>
+            <Border Grid.Row="0" BorderThickness="0,0,0,2" BorderBrush="#e0e0e0" Padding="0,0,0,10" Margin="0,0,0,15">
+                <TextBlock Text="Contest Scoring" FontSize="18" FontWeight="Bold" Foreground="#000000"/>
+            </Border>
+
+            <TabControl Grid.Row="1" TabStripPlacement="Left" Background="White" BorderBrush="#dddddd"
+                        ItemContainerStyle="{StaticResource SidebarTabItem}">
+                <TabItem>
+                    <TabItem.Header>
+                        <emoji:TextBlock Text="📻  Field Day" FontSize="14"/>
+                    </TabItem.Header>
+                    <StackPanel Margin="30" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <emoji:TextBlock Text="📻" FontSize="64" HorizontalAlignment="Center" Foreground="#404040"/>
+                        <TextBlock Text="ARRL Field Day" FontSize="20" FontWeight="Bold"
+                                   HorizontalAlignment="Center" Margin="0,10,0,6"/>
+                        <TextBlock Text="Score your Field Day log with per-mode QSO points, power multiplier, and bonus checklist."
+                                   FontSize="13" Foreground="#666666" TextWrapping="Wrap"
+                                   HorizontalAlignment="Center" Width="480" TextAlignment="Center" Margin="0,0,0,20"/>
+                        <Button Content="Open Field Day Scorer" Style="{StaticResource PrimaryButton}"
+                                HorizontalAlignment="Center" Click="FieldDay_Click"/>
+                    </StackPanel>
+                </TabItem>
+
+                <TabItem IsEnabled="False">
+                    <TabItem.Header>
+                        <emoji:TextBlock Text="🌐  ARRL Sweepstakes" FontSize="14"/>
+                    </TabItem.Header>
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="40">
+                        <TextBlock Text="Coming soon" FontSize="16" Foreground="#999999" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem>
+
+                <TabItem IsEnabled="False">
+                    <TabItem.Header>
+                        <emoji:TextBlock Text="🌐  CQ WW" FontSize="14"/>
+                    </TabItem.Header>
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="40">
+                        <TextBlock Text="Coming soon" FontSize="16" Foreground="#999999" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem>
+
+                <TabItem IsEnabled="False">
+                    <TabItem.Header>
+                        <emoji:TextBlock Text="🌐  NAQP" FontSize="14"/>
+                    </TabItem.Header>
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="40">
+                        <TextBlock Text="Coming soon" FontSize="16" Foreground="#999999" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem>
+            </TabControl>
+        </Grid>
     </Grid>
 </Window>
