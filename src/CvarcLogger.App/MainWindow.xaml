@@ -255,18 +255,18 @@
                             </emoji:TextBlock>
                         </Button>
 
-                        <Button Name="AllModeButton" Click="AllMode_Click" ToolTip="Show QSOs from every mode combined"
+                        <Button Name="ContestsButton" Click="ContestsButton_Click" ToolTip="Open the contest scoring menu (Field Day, Sweepstakes, CQ WW, NAQP, ...)"
                                 Style="{StaticResource SidebarButtonStyle}">
-                            <emoji:TextBlock Text="📊 All"/>
+                            <emoji:TextBlock Text="🏆 Contests"/>
                         </Button>
 
                         <!-- Divider -->
                         <Separator Height="2" Margin="0,20,0,20" Background="#666666"/>
 
-                        <!-- Awards / Contests Toggle Button: 1st click = Awards, 2nd click = Contests menu -->
-                        <Button Name="AwardButton" Click="AwardsContestsButton_Click" ToolTip="1st click: Awards. 2nd click: Contest scoring."
+                        <!-- Award Progress Button -->
+                        <Button Name="AwardButton" Click="AwardsMenuItem_Click" ToolTip="View DXCC/WAS/SOTA/POTA award progress"
                                 Style="{StaticResource SidebarButtonStyle}">
-                            <emoji:TextBlock Text="🏅 Awards/Contests"/>
+                            <emoji:TextBlock Text="🏅 Award"/>
                         </Button>
                     </StackPanel>
                 </ScrollViewer>
