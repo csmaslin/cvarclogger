@@ -17,9 +17,12 @@ public partial class ImportExportViewModel : ObservableObject
     private readonly DialogService _dialogService;
 
     public event EventHandler? ImportCompleted;
+    public event EventHandler<string>? ProgressChanged;
 
     [ObservableProperty] private bool isBusy;
     [ObservableProperty] private string? lastResultMessage;
+
+    private void ReportProgress(string message) => ProgressChanged?.Invoke(this, message);
 
     public ImportExportViewModel(
         IQsoRepository qsoRepository,
@@ -46,8 +49,11 @@ public partial class ImportExportViewModel : ObservableObject
             // as UTF-8 up front) -- see AdifReader.ReadAll(byte[]) for why: some real-world exporters
             // (confirmed: QRZ Logbook) write non-UTF-8 bytes for accented names, and only byte-native
             // reading can recover them instead of corrupting them into U+FFFD.
+            ReportProgress("Reading file...");
             var records = AdifReader.ReadAllFromFile(path);
             int imported = 0;
+            int total = records.Count;
+            ReportProgress($"Importing 0 of {total} record(s)...");
             foreach (var record in records)
             {
                 var qso = AdifFieldMapper.ToQso(record);
@@ -64,6 +70,8 @@ public partial class ImportExportViewModel : ObservableObject
 
                 await _qsoRepository.AddAsync(qso);
                 imported++;
+                if (imported % 25 == 0 || imported == total)
+                    ReportProgress($"Importing {imported} of {total} record(s)...");
             }
 
             LastResultMessage = $"Imported {imported} of {records.Count} record(s) from {Path.GetFileName(path)}.";
@@ -93,7 +101,9 @@ public partial class ImportExportViewModel : ObservableObject
         IsBusy = true;
         try
         {
+            ReportProgress("Loading QSOs...");
             var qsos = await _qsoRepository.GetAllAsync();
+            ReportProgress($"Writing {qsos.Count} QSO(s)...");
             using var writer = new StreamWriter(path, append: false);
             AdifWriter.WriteAll(writer, qsos.Select(AdifFieldMapper.ToAdifRecord));
             LastResultMessage = $"Exported {qsos.Count} QSO(s) to {Path.GetFileName(path)}.";
@@ -118,8 +128,11 @@ public partial class ImportExportViewModel : ObservableObject
         IsBusy = true;
         try
         {
+            ReportProgress("Reading file...");
             var result = CabrilloReader.ReadAll(path);
             int imported = 0;
+            int total = result.Qsos.Count;
+            ReportProgress($"Importing 0 of {total} QSO(s)...");
             foreach (var qso in result.Qsos)
             {
                 if (string.IsNullOrWhiteSpace(qso.Callsign)) continue;
@@ -129,6 +142,8 @@ public partial class ImportExportViewModel : ObservableObject
 
                 await _qsoRepository.AddAsync(qso);
                 imported++;
+                if (imported % 25 == 0 || imported == total)
+                    ReportProgress($"Importing {imported} of {total} QSO(s)...");
             }
 
             LastResultMessage = $"Imported {imported} of {result.Qsos.Count} QSO(s) from Cabrillo file {Path.GetFileName(path)}.";
@@ -159,7 +174,9 @@ public partial class ImportExportViewModel : ObservableObject
         IsBusy = true;
         try
         {
+            ReportProgress("Loading QSOs...");
             var qsos = await _qsoRepository.GetAllAsync();
+            ReportProgress($"Writing {qsos.Count} QSO(s) as Cabrillo...");
             using var writer = new StreamWriter(path, append: false);
             CabrilloWriter.WriteAll(writer, info, qsos, info.Callsign);
             LastResultMessage = $"Exported {qsos.Count} QSO(s) to Cabrillo file {Path.GetFileName(path)}.";

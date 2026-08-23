@@ -17,6 +17,21 @@ public partial class FileOperationsWindow : Window
         InitializeComponent();
     }
 
+    /// <summary>Shows the modal busy overlay with a given message. Also flips the cursor to Wait so
+    /// clicks outside the overlay still feel "busy" even though the overlay blocks them anyway.</summary>
+    private void ShowBusy(string message)
+    {
+        BusyMessage.Text = message;
+        BusyOverlay.Visibility = Visibility.Visible;
+        Cursor = System.Windows.Input.Cursors.Wait;
+    }
+
+    private void HideBusy()
+    {
+        BusyOverlay.Visibility = Visibility.Collapsed;
+        Cursor = null;
+    }
+
     private async void NewLog_Click(object sender, RoutedEventArgs e)
     {
         var filePicker = App.Services.GetRequiredService<FilePickerService>();
@@ -42,6 +57,7 @@ public partial class FileOperationsWindow : Window
             }
         }
 
+        ShowBusy("Creating new log...");
         try
         {
             var options = new DbContextOptionsBuilder<CvarcLoggerDbContext>()
@@ -53,11 +69,13 @@ public partial class FileOperationsWindow : Window
         }
         catch (Exception ex)
         {
+            HideBusy();
             dialogService.ShowError($"Could not create the new log: {ex.Message}");
             return;
         }
 
         await CarryStationProfilesAsync(path);
+        HideBusy();
 
         settings.CurrentDatabasePath = path;
 
@@ -116,6 +134,7 @@ public partial class FileOperationsWindow : Window
         string? path = filePicker.PickExistingDatabaseFileToOpen();
         if (path is null) return;
 
+        ShowBusy("Opening log...");
         try
         {
             var options = new DbContextOptionsBuilder<CvarcLoggerDbContext>()
@@ -128,9 +147,11 @@ public partial class FileOperationsWindow : Window
         }
         catch (Exception ex)
         {
+            HideBusy();
             dialogService.ShowError($"'{path}' doesn't look like a valid CVARC Logger database: {ex.Message}");
             return;
         }
+        HideBusy();
 
         settings.CurrentDatabasePath = path;
 
@@ -146,7 +167,7 @@ public partial class FileOperationsWindow : Window
     /// <summary>Saves a named copy of the active .db file wherever the operator chooses -- lets separate
     /// events (Field Day, a SOTA activation, etc.) get their own named log file instead of every backup
     /// landing under one auto-dated name. Suggests backup-yyyyMMdd.db as a starting point/default name.</summary>
-    private void SaveLog_Click(object sender, RoutedEventArgs e)
+    private async void SaveLog_Click(object sender, RoutedEventArgs e)
     {
         var filePicker = App.Services.GetRequiredService<FilePickerService>();
 
@@ -154,42 +175,54 @@ public partial class FileOperationsWindow : Window
         string? destPath = filePicker.PickBackupDatabaseFileToSave(suggestedName);
         if (destPath is null) return;
 
+        ShowBusy("Saving log...");
         try
         {
             string sourcePath = SettingsService.ResolveActiveDatabasePath();
-            File.Copy(sourcePath, destPath, overwrite: true);
+            // File.Copy runs on the UI thread otherwise; move to background so the overlay actually paints.
+            await Task.Run(() => File.Copy(sourcePath, destPath, overwrite: true));
+            HideBusy();
             MessageBox.Show(this, $"Saved a copy of the current log to {Path.GetFileName(destPath)}.",
                 "Save Log", MessageBoxButton.OK, MessageBoxImage.Information);
         }
         catch (Exception ex)
         {
+            HideBusy();
             MessageBox.Show(this, $"Could not save the backup: {ex.Message}",
                 "Save Log", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
-    private async void ImportADIF_Click(object sender, RoutedEventArgs e)
+    /// <summary>Wraps an import/export command with the busy overlay and live progress subscription.</summary>
+    private async Task RunWithProgress(string initialMessage, Func<ImportExportViewModel, Task> action)
     {
         var importExport = App.Services.GetRequiredService<ImportExportViewModel>();
-        await importExport.ImportCommand.ExecuteAsync(null);
+        ShowBusy(initialMessage);
+        void OnProgress(object? _, string msg) => Dispatcher.BeginInvoke(() => BusyMessage.Text = msg);
+        importExport.ProgressChanged += OnProgress;
+        try
+        {
+            await action(importExport);
+        }
+        finally
+        {
+            importExport.ProgressChanged -= OnProgress;
+            HideBusy();
+        }
     }
 
-    private async void ExportADIF_Click(object sender, RoutedEventArgs e)
-    {
-        var importExport = App.Services.GetRequiredService<ImportExportViewModel>();
-        await importExport.ExportCommand.ExecuteAsync(null);
-    }
+    private async void ImportADIF_Click(object sender, RoutedEventArgs e) =>
+        await RunWithProgress("Importing ADIF...", vm => vm.ImportCommand.ExecuteAsync(null));
 
-    private async void ImportCabrillo_Click(object sender, RoutedEventArgs e)
-    {
-        var importExport = App.Services.GetRequiredService<ImportExportViewModel>();
-        await importExport.ImportCabrilloCommand.ExecuteAsync(null);
-    }
+    private async void ExportADIF_Click(object sender, RoutedEventArgs e) =>
+        await RunWithProgress("Exporting ADIF...", vm => vm.ExportCommand.ExecuteAsync(null));
+
+    private async void ImportCabrillo_Click(object sender, RoutedEventArgs e) =>
+        await RunWithProgress("Importing Cabrillo...", vm => vm.ImportCabrilloCommand.ExecuteAsync(null));
 
     private async void ExportCabrillo_Click(object sender, RoutedEventArgs e)
     {
         // Prompt for contest info first -- callsign + contest name are required per the Cabrillo spec.
-        var settings = App.Services.GetRequiredService<SettingsService>();
         var stationRepo = App.Services.GetRequiredService<CvarcLogger.Core.Abstractions.IStationProfileRepository>();
         var defaultProfile = (await stationRepo.GetAllAsync()).FirstOrDefault(p => p.IsDefault)
             ?? (await stationRepo.GetAllAsync()).FirstOrDefault();
@@ -203,8 +236,7 @@ public partial class FileOperationsWindow : Window
         var dialog = new CabrilloExportDialog(defaults) { Owner = this };
         if (dialog.ShowDialog() != true || dialog.Result is null) return;
 
-        var importExport = App.Services.GetRequiredService<ImportExportViewModel>();
-        await importExport.ExportCabrilloCommand.ExecuteAsync(dialog.Result);
+        await RunWithProgress("Exporting Cabrillo...", vm => vm.ExportCabrilloCommand.ExecuteAsync(dialog.Result));
     }
 
     private void Close_Click(object sender, RoutedEventArgs e) => Close();

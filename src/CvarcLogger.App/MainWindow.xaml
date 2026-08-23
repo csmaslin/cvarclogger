@@ -162,7 +162,7 @@
                         <!-- File Operations Button -->
                         <Button Name="FileButton" Click="FileButton_Click" ToolTip="Import, export, or switch log database files"
                                 Style="{StaticResource SidebarButtonStyle}">
-                            <emoji:TextBlock Text="📁 File"/>
+                            <emoji:TextBlock Text="📁 File Operations"/>
                         </Button>
 
                         <!-- Station Configuration Button -->
