@@ -98,12 +98,19 @@
                     </StackPanel>
                 </TabItem>
 
-                <TabItem IsEnabled="False">
+                <TabItem>
                     <TabItem.Header>
                         <emoji:TextBlock Text="🌐  ARRL Sweepstakes" FontSize="14"/>
                     </TabItem.Header>
-                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="40">
-                        <TextBlock Text="Coming soon" FontSize="16" Foreground="#999999" HorizontalAlignment="Center"/>
+                    <StackPanel Margin="30" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <emoji:TextBlock Text="🌐" FontSize="64" HorizontalAlignment="Center" Foreground="#404040"/>
+                        <TextBlock Text="ARRL Sweepstakes" FontSize="20" FontWeight="Bold"
+                                   HorizontalAlignment="Center" Margin="0,10,0,6"/>
+                        <TextBlock Text="Score your Sweepstakes log with separate CW and Phone event scoring."
+                                   FontSize="13" Foreground="#666666" TextWrapping="Wrap"
+                                   HorizontalAlignment="Center" Width="480" TextAlignment="Center" Margin="0,0,0,20"/>
+                        <Button Content="Open Sweepstakes Scorer" Style="{StaticResource PrimaryButton}"
+                                HorizontalAlignment="Center" Click="Sweepstakes_Click"/>
                     </StackPanel>
                 </TabItem>
 
