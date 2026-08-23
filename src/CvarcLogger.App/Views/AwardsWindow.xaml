@@ -109,7 +109,7 @@
                     <TextBlock DockPanel.Dock="Top" Margin="0,0,0,4" FontSize="11" Foreground="Gray">
                         <Run Text="QSOs per Band:"/>
                     </TextBlock>
-                    <ItemsControl DockPanel.Dock="Top" Margin="0,0,0,10" ItemsSource="{Binding Dxcc.BandCounts}">
+                    <ItemsControl DockPanel.Dock="Top" Margin="0,0,0,10" Height="Auto" ItemsSource="{Binding Dxcc.BandCounts}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <StackPanel Orientation="Horizontal"/>
@@ -128,7 +128,7 @@
                     <TextBlock DockPanel.Dock="Top" Margin="0,0,0,4" FontSize="11" Foreground="Gray">
                         <Run Text="5-Band DXCC (100+ confirmed entities on each band):"/>
                     </TextBlock>
-                    <ItemsControl DockPanel.Dock="Top" Margin="0,0,0,10" ItemsSource="{Binding Dxcc.FiveBandProgress}">
+                    <ItemsControl DockPanel.Dock="Top" Margin="0,0,0,10" Height="Auto" ItemsSource="{Binding Dxcc.FiveBandProgress}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <StackPanel Orientation="Horizontal"/>
@@ -187,7 +187,7 @@
                     <TextBlock DockPanel.Dock="Top" Margin="0,0,0,4" FontSize="11" Foreground="Gray">
                         <Run Text="QSOs per Band:"/>
                     </TextBlock>
-                    <ItemsControl DockPanel.Dock="Top" Margin="0,0,0,10" ItemsSource="{Binding Dxcc.BandCounts}">
+                    <ItemsControl DockPanel.Dock="Top" Margin="0,0,0,10" Height="Auto" ItemsSource="{Binding Dxcc.BandCounts}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <StackPanel Orientation="Horizontal"/>
