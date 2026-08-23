@@ -83,6 +83,7 @@ public class CvarcLoggerDbContext : DbContext
             entity.HasKey(s => s.Id);
             entity.Property(s => s.SummitCode).IsRequired().HasMaxLength(20);
             entity.Property(s => s.SummitName).HasMaxLength(100);
+            entity.Ignore(s => s.ContactCount);
         });
 
         modelBuilder.Entity<PotaActivation>(entity =>

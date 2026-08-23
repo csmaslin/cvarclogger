@@ -267,11 +267,34 @@
                     <emoji:TextBlock Text="⛰️  SOTA" FontSize="14"/>
                 </TabItem.Header>
                 <DockPanel Margin="6" LastChildFill="True">
-                    <TextBlock DockPanel.Dock="Top" Margin="0,0,0,6" FontWeight="Bold">
-                        <Run Text="Activated: "/>
-                        <Run Text="{Binding MountainGoat.TotalPoints, Mode=OneWay}"/>
-                        <Run Text=" / 1000 points toward Mountain Goat"/>
-                    </TextBlock>
+                    <!-- Title bar section - centered SOTA title -->
+                    <Border DockPanel.Dock="Top" BorderThickness="0,0,0,2" BorderBrush="#e0e0e0" Padding="0,0,0,12" Margin="0,0,0,15">
+                        <TextBlock Text="SOTA (Summits on the Air)" FontSize="20" FontWeight="Bold" Foreground="#000000" HorizontalAlignment="Center"/>
+                    </Border>
+
+                    <!-- Database info section -->
+                    <Border DockPanel.Dock="Top" BorderThickness="0,1,0,1" BorderBrush="#e0e0e0" Padding="0,12,0,12" Margin="0,0,0,20">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="SOTA Database Summits" FontSize="13" Foreground="#666666" HorizontalAlignment="Center" FontWeight="SemiBold"/>
+                            <TextBlock Text="{Binding MountainGoat.DatabaseSummitCount, Mode=OneWay}" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#000000" Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Progress info section -->
+                    <Border DockPanel.Dock="Top" BorderThickness="0,1,0,1" BorderBrush="#e0e0e0" Padding="0,12,0,12" Margin="0,0,0,20">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <StackPanel Margin="0,0,100,0" HorizontalAlignment="Center">
+                                <TextBlock Text="Activator Points" FontSize="13" Foreground="#666666" HorizontalAlignment="Center" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding MountainGoat.TotalPoints, Mode=OneWay}" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#000000" Margin="0,4,0,0"/>
+                                <TextBlock Text="/ 1000 points for Mt. Goat" FontSize="11" Foreground="#999999" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                            </StackPanel>
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="S2S Points" FontSize="13" Foreground="#666666" HorizontalAlignment="Center" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding MountainGoat.TotalS2SPoints, Mode=OneWay}" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#000000" Margin="0,4,0,0"/>
+                                <TextBlock Text="Total Earned" FontSize="11" Foreground="#999999" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
 
                     <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
                         <TextBlock Text="Summit Code:" VerticalAlignment="Center" Margin="0,0,6,0"/>
@@ -289,28 +312,99 @@
                             Command="{Binding MountainGoat.DeleteCommand}"
                             CommandParameter="{Binding ElementName=MountainGoatGrid, Path=SelectedItem}"/>
 
-                    <DataGrid x:Name="MountainGoatGrid" ItemsSource="{Binding MountainGoat.Activations}"
-                              AutoGenerateColumns="False" CanUserAddRows="False"
-                              AlternationCount="2" AlternatingRowBackground="WhiteSmoke"
-                              CellEditEnding="MountainGoatGrid_CellEditEnding">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="Summit Code" Binding="{Binding SummitCode}" Width="Auto" IsReadOnly="True"/>
-                            <DataGridTextColumn Header="Points" Width="Auto" IsReadOnly="True">
-                                <DataGridTextColumn.Binding>
-                                    <!-- Shows the point value in parentheses, e.g. "(4)", until Activated is
-                                         checked, so an in-progress summit shows what it would be worth once the
-                                         4-contact activation rule is actually met. -->
-                                    <MultiBinding Converter="{StaticResource PointsDisplayConverter}">
-                                        <Binding Path="Points"/>
-                                        <Binding Path="Activated"/>
-                                    </MultiBinding>
-                                </DataGridTextColumn.Binding>
-                            </DataGridTextColumn>
-                            <DataGridCheckBoxColumn Header="Activated" Binding="{Binding Activated}" Width="Auto"/>
-                            <DataGridTextColumn Header="Activation Date/Time" Binding="{Binding ActivationDateUtc, StringFormat='yyyy-MM-dd HH:mm'}" Width="Auto"/>
-                            <DataGridTextColumn Header="Summit Name" Binding="{Binding SummitName}" Width="Auto" IsReadOnly="True"/>
-                        </DataGrid.Columns>
-                    </DataGrid>
+                    <!-- Grid and detail panel side-by-side -->
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="320"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- DataGrid on the left -->
+                        <DataGrid x:Name="MountainGoatGrid" Grid.Column="0" ItemsSource="{Binding MountainGoat.Activations}"
+                                  SelectedItem="{Binding MountainGoat.SelectedActivation}"
+                                  AutoGenerateColumns="False" CanUserAddRows="False"
+                                  AlternationCount="2" AlternatingRowBackground="WhiteSmoke"
+                                  CellEditEnding="MountainGoatGrid_CellEditEnding">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Summit Code" Binding="{Binding SummitCode}" Width="Auto" IsReadOnly="True"/>
+                                <DataGridTextColumn Header="Points" Width="Auto" IsReadOnly="True">
+                                    <DataGridTextColumn.Binding>
+                                        <!-- Shows the point value in parentheses, e.g. "(4)", until Activated is
+                                             checked, so an in-progress summit shows what it would be worth once the
+                                             4-contact activation rule is actually met. -->
+                                        <MultiBinding Converter="{StaticResource PointsDisplayConverter}">
+                                            <Binding Path="Points"/>
+                                            <Binding Path="Activated"/>
+                                        </MultiBinding>
+                                    </DataGridTextColumn.Binding>
+                                </DataGridTextColumn>
+                                <DataGridCheckBoxColumn Header="Activated" Binding="{Binding Activated}" Width="Auto"/>
+                                <DataGridTextColumn Header="Contacts" Binding="{Binding ContactCount}" Width="Auto" IsReadOnly="True"/>
+                                <DataGridTextColumn Header="Activation Date/Time" Binding="{Binding ActivationDateUtc, StringFormat='yyyy-MM-dd HH:mm'}" Width="Auto"/>
+                                <DataGridTextColumn Header="Summit Name" Binding="{Binding SummitName}" Width="Auto" IsReadOnly="True"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+
+                        <!-- Detail panel on the right -->
+                        <Border Grid.Column="1" Background="#f9f9f9" BorderThickness="1,0,0,0" BorderBrush="#e0e0e0" Padding="12">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <StackPanel>
+                                    <TextBlock Text="Summit Details" FontSize="14" FontWeight="Bold" Foreground="#333333" Margin="0,0,0,12"/>
+
+                                    <TextBlock Text="{Binding MountainGoat.SelectedActivation, StringFormat='Code: {0.SummitCode}'}" FontSize="11" Foreground="#333333" Margin="0,0,0,6" TextWrapping="Wrap"/>
+
+                                    <TextBlock Text="{Binding MountainGoat.SelectedSummitDetails.SummitName, StringFormat='Name: {0}'}" FontSize="11" Foreground="#333333" Margin="0,0,0,6" TextWrapping="Wrap"/>
+
+                                    <TextBlock Text="{Binding MountainGoat.SelectedSummitDetails.Region, StringFormat='Region: {0}'}" FontSize="11" Foreground="#333333" Margin="0,0,0,6" TextWrapping="Wrap"/>
+
+                                    <TextBlock Text="{Binding MountainGoat.SelectedSummitDetails.Elevation, StringFormat='Elevation: {0} m'}" FontSize="11" Foreground="#333333" Margin="0,0,0,6"/>
+
+                                    <TextBlock Text="{Binding MountainGoat.SelectedSummitDetails.Latitude, StringFormat='Latitude: {0}'}" FontSize="11" Foreground="#333333" Margin="0,0,0,6"/>
+
+                                    <TextBlock Text="{Binding MountainGoat.SelectedSummitDetails.Longitude, StringFormat='Longitude: {0}'}" FontSize="11" Foreground="#333333" Margin="0,0,0,6"/>
+
+                                    <TextBlock Text="{Binding MountainGoat.SelectedSummitDetails.Points, StringFormat='Activator Points: {0}'}" FontSize="11" Foreground="#333333" Margin="0,0,0,4"/>
+
+                                    <TextBlock Text="{Binding MountainGoat.SelectedSummitS2SPoints, StringFormat='S2S Points: {0}'}" FontSize="11" Foreground="#333333" Margin="0,0,0,6"/>
+
+                                    <TextBlock Text="{Binding MountainGoat.SelectedActivation.ContactCount, StringFormat='Contacts: {0}'}" FontSize="11" Foreground="#333333" Margin="0,0,0,6"/>
+
+                                    <TextBlock FontSize="11" Margin="0,0,0,12">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Text" Value="Status: Not Activated"/>
+                                                <Setter Property="Foreground" Value="#333333"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding MountainGoat.SelectedActivation.Activated}" Value="True">
+                                                        <Setter Property="Text" Value="Status: Activated"/>
+                                                        <Setter Property="Foreground" Value="Green"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+
+                                    <TextBlock Text="{Binding MountainGoat.SelectedSummitDetails.SeasonalBonus, StringFormat='Seasonal Bonus: {0}'}" FontSize="11" Foreground="#333333" Margin="0,0,0,12" TextWrapping="Wrap"/>
+
+                                    <TextBlock Text="Activation History" FontSize="12" FontWeight="Bold" Foreground="#333333" Margin="0,0,0,6"/>
+
+                                    <ItemsControl ItemsSource="{Binding MountainGoat.ActivationHistory}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Margin="0,0,0,4">
+                                                    <TextBlock Text="{Binding QsoDateTimeOnUtc, StringFormat='d MMM yyyy HH:mm'}" FontSize="10" Foreground="#666666"/>
+                                                    <TextBlock Text="{Binding Band, StringFormat='Band: {0}'}" FontSize="10" Foreground="#999999"/>
+                                                    <TextBlock Text="{Binding Mode, StringFormat='Mode: {0}'}" FontSize="10" Foreground="#999999"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <TextBlock Text="{Binding MountainGoat.ActivationHistory.Count, StringFormat='Total: {0} QSOs'}" FontSize="10" Foreground="#999999" Margin="0,8,0,0"/>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Border>
+                    </Grid>
                 </DockPanel>
             </TabItem>
             <TabItem>
