@@ -118,6 +118,13 @@ public class SettingsService
         set { _data.WsjtxMode = value; Save(); }
     }
 
+    /// <summary>Convenience property: true = multicast mode, false = GridTracker2 relay.</summary>
+    public bool WsjtxUseMulticast
+    {
+        get => _data.WsjtxMode == WsjtxMode.Multicast;
+        set { _data.WsjtxMode = value ? WsjtxMode.Multicast : WsjtxMode.GridTracker2Relay; Save(); }
+    }
+
     /// <summary>Multicast address for WSJT-X direct reception (default 224.0.0.1).</summary>
     public string WsjtxMulticastAddress
     {

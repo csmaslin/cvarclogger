@@ -172,12 +172,16 @@
                     <CheckBox Content="Enable WSJT-X log receiving" IsChecked="{Binding WsjtxEnabled}"
                               FontSize="13" Foreground="#000000" Margin="0,0,0,12"/>
 
+                    <CheckBox Content="Use Multicast mode (224.0.0.1)" IsChecked="{Binding WsjtxUseMulticast}"
+                              FontSize="12" Foreground="#000000" Margin="20,0,0,12"
+                              ToolTip="When checked, receives directly from WSJT-X multicast. When unchecked, receives from GridTracker2 relay."/>
+
                     <StackPanel Margin="0,0,0,12">
                         <TextBlock Text="UDP PORT" Style="{StaticResource FieldLabel}"/>
                         <TextBox Text="{Binding WsjtxPort, UpdateSourceTrigger=PropertyChanged}"
                                  HorizontalAlignment="Left" Width="100" Padding="8" FontSize="14"/>
                         <TextBlock FontSize="11" Foreground="#999999" Margin="0,4,0,0"
-                                   Text="GridTracker2 relay: 2238, WSJT-X multicast: 2237"/>
+                                   Text="Multicast: 2237 (direct from WSJT-X), Relay: 2238 (via GridTracker2)"/>
                     </StackPanel>
                 </StackPanel>
             </Grid>
