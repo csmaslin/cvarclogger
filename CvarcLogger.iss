@@ -104,6 +104,7 @@ var
 begin
   Result := True;
   FreshRequested := False;
+  RemoveDataRequested := False;
 
   { Treat either a recorded prior install or a leftover install folder as "already here". }
   if (PriorInstallLocation() = '') and (not DirExists(ExpandConstant('{sd}\CvarcLogger'))) then
@@ -163,39 +164,39 @@ begin
   end;
 end;
 
-procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+function InitializeUninstall(): Boolean;
 var
   DataDir, Db: String;
   Choice: Integer;
 begin
-  { During uninstall, ask if the user wants to keep or remove the database. }
-  if CurUninstallStep = usUninstalling then
-  begin
-    DataDir := ExpandConstant('{localappdata}\CVARC Logger');
-    Db := DataDir + '\cvarclogger.db';
+  Result := True;
+  DataDir := ExpandConstant('{localappdata}\CVARC Logger');
+  Db := DataDir + '\cvarclogger.db';
 
-    { Only prompt if the database actually exists. }
-    if FileExists(Db) or FileExists(DataDir + '\settings.json') then
-    begin
-      Choice := MsgBox(
-        'Remove QSO database and settings?' + #13#10 + #13#10 +
-        'KEEP: Saves your log data. You can reinstall later and continue where you left off.' + #13#10 + #13#10 +
-        'REMOVE: Deletes the log, settings, and radio profiles (a clean wipe).' + #13#10 + #13#10 +
-        'Keep your data?',
-        mbConfirmation, MB_YESNO);
-
-      RemoveDataRequested := (Choice = IDNO);
-    end;
-  end
-  else if (CurUninstallStep = usUninstalled) and RemoveDataRequested then
+  if FileExists(Db) or FileExists(DataDir + '\settings.json') then
   begin
-    { User chose to remove data; delete the data directory and its contents. }
+    Choice := MsgBox(
+      'Remove QSO database and settings?' + #13#10 + #13#10 +
+      'KEEP: Saves your log data. You can reinstall later and continue where you left off.' + #13#10 + #13#10 +
+      'REMOVE: Deletes the log, settings, and radio profiles (a clean wipe).' + #13#10 + #13#10 +
+      'Keep your data?',
+      mbConfirmation, MB_YESNO);
+
+    RemoveDataRequested := (Choice = IDNO);
+  end;
+end;
+
+procedure DeinitializeUninstall();
+var
+  DataDir: String;
+begin
+  if RemoveDataRequested then
+  begin
     DataDir := ExpandConstant('{localappdata}\CVARC Logger');
     if DirExists(DataDir) then
     begin
       DelTree(DataDir, True, True, True);
     end;
-    { Also remove the install folder (C:\CvarcLogger) since user chose a complete wipe. }
     if DirExists(ExpandConstant('{app}')) then
     begin
       DelTree(ExpandConstant('{app}'), True, True, True);
