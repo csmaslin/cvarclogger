@@ -146,6 +146,10 @@ public partial class ImportExportViewModel : ObservableObject
             {
                 if (string.IsNullOrWhiteSpace(qso.Callsign)) continue;
 
+                // Carry the contest header into each QSO so contest reports later can find them.
+                if (!string.IsNullOrWhiteSpace(result.Info.Contest))
+                    qso.ContestId = result.Info.Contest;
+
                 var resolvedEntity = await _entityResolver.ResolveAsync(qso.Callsign);
                 qso.DxccEntityCode = resolvedEntity?.EntityCode;
 

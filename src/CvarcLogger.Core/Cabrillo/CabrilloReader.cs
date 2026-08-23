@@ -87,6 +87,9 @@ public static class CabrilloReader
 
         // tokens[0] = freq (kHz), [1] = mode, [2] = date, [3] = time, [4] = sent_call,
         // [5] = sent_rst, [6] = sent_exch, [7] = rcvd_call, [8] = rcvd_rst, [9] = rcvd_exch
+        // Some contests split the exchange across multiple tokens (e.g. "3A CO" for Field Day) --
+        // gather everything past index 9 into the received exchange, and everything from 6 to end-of-
+        // rcvd_call for the sent exchange.
         if (!int.TryParse(tokens[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out int freqKhz))
             return null;
 
@@ -96,19 +99,120 @@ public static class CabrilloReader
             out DateTime dt))
             return null;
 
-        return new Qso
+        var qso = new Qso
         {
             QsoDateTimeOnUtc = dt,
             FrequencyMhz = freqKhz / 1000m,
             Band = KhzToBand(freqKhz),
             Mode = mode,
+            StationCallsign = tokens[4].ToUpperInvariant(),
             Callsign = tokens[7].ToUpperInvariant(),
             RstSent = tokens[5],
             RstRcvd = tokens[8],
-            StxSerial = int.TryParse(tokens[6], out int stx) ? stx : null,
-            SrxSerial = int.TryParse(tokens[9], out int srx) ? srx : null,
         };
+
+        // Sent exchange: token[6] plus any extra tokens up to the receiving callsign at token[7].
+        // In the standard 10-column format there is only ever one sent-exchange token, but some
+        // sponsors run 11-column ("QSO: freq mode date time call rst exch1 exch2 rcvdcall rst rcvdexch")
+        // Since we can't reliably distinguish, treat token[6] alone as the sent exchange.
+        ApplyExchange(qso, tokens[6], sent: true);
+
+        // Received exchange: token[9] and any trailing tokens (e.g. "3A CO" is two tokens).
+        string rcvdExch = string.Join(" ", tokens.Skip(9)).Trim();
+        ApplyExchange(qso, rcvdExch, sent: false);
+
+        return qso;
     }
+
+    /// <summary>Route a Cabrillo exchange value into the appropriate Qso field. Serial numbers go to
+    /// StxSerial/SrxSerial, US state abbreviations to State, known ARRL sections to ArrlSection, and
+    /// Field-Day-style "class + section" (e.g. "3A CO") to Class + State/Section. Everything else
+    /// falls back to Class so no information is lost.</summary>
+    private static void ApplyExchange(Qso qso, string exchange, bool sent)
+    {
+        if (string.IsNullOrWhiteSpace(exchange)) return;
+        var parts = exchange.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+        // Pure numeric → serial number
+        if (parts.Length == 1 && int.TryParse(parts[0], out int serial))
+        {
+            if (sent) qso.StxSerial = serial;
+            else qso.SrxSerial = serial;
+            return;
+        }
+
+        // Field Day / Sweepstakes pattern: "3A CO" (class + section) or "A CO" or "3 CO"
+        if (parts.Length == 2 && LooksLikeContestClass(parts[0]))
+        {
+            if (!sent) qso.Class = parts[0].ToUpperInvariant();
+            RouteLocationToken(qso, parts[1], sent);
+            return;
+        }
+
+        // Single token: could be state, section, or generic class
+        if (parts.Length == 1)
+        {
+            RouteLocationToken(qso, parts[0], sent);
+            return;
+        }
+
+        // Multi-token with no recognizable class prefix: join back as Class so nothing is lost.
+        if (!sent) qso.Class = exchange.ToUpperInvariant();
+    }
+
+    /// <summary>A "contest class" like "3A", "5F", "1B" (number + letter) as used by Field Day, or
+    /// a bare letter (Sweepstakes precedence like "A"/"B"/"U"), or a bare number of ops.</summary>
+    private static bool LooksLikeContestClass(string token)
+    {
+        if (string.IsNullOrEmpty(token)) return false;
+        // Number + letter, e.g. "3A", "20A"
+        int i = 0;
+        while (i < token.Length && char.IsDigit(token[i])) i++;
+        if (i > 0 && i < token.Length && token.Substring(i).All(char.IsLetter)) return true;
+        // Bare letter, e.g. "A"
+        if (token.Length <= 2 && token.All(char.IsLetter) && !UsStates.Contains(token.ToUpperInvariant())
+            && !ArrlSections.Contains(token.ToUpperInvariant())) return true;
+        return false;
+    }
+
+    /// <summary>Store a two/three-letter location code in the best-matching field.</summary>
+    private static void RouteLocationToken(Qso qso, string token, bool sent)
+    {
+        string upper = token.ToUpperInvariant();
+        if (UsStates.Contains(upper))
+        {
+            if (!sent) qso.State = upper;
+        }
+        else if (ArrlSections.Contains(upper))
+        {
+            if (!sent) qso.ArrlSection = upper;
+        }
+        else
+        {
+            if (!sent) qso.Class = upper;
+        }
+    }
+
+    private static readonly HashSet<string> UsStates = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "AL","AK","AZ","AR","CA","CO","CT","DE","DC","FL","GA","HI","ID","IL","IN","IA","KS","KY",
+        "LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH",
+        "OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY","PR","VI",
+    };
+
+    private static readonly HashSet<string> ArrlSections = new(StringComparer.OrdinalIgnoreCase)
+    {
+        // Single-section states use their state abbrev, so those are already handled by UsStates.
+        // These are the SPLIT-state / Canadian / regional codes only.
+        "EB","LAX","ORG","SDG","SF","SCV","SB","SJV","SV",           // CA splits
+        "NLI","NNY","ENY","WNY",                                     // NY splits
+        "EPA","WPA",                                                 // PA splits
+        "EMA","WMA",                                                 // MA splits
+        "EWA","WWA",                                                 // WA splits
+        "STX","NTX","WTX","SFL","NFL","WCF",                         // TX, FL splits
+        "MDC",                                                       // MD/DC
+        "MAR","GTA","ONE","ONN","ONS","ONT",                         // Canada
+    };
 
     private static string MapMode(string mode) => mode?.ToUpperInvariant() switch
     {
