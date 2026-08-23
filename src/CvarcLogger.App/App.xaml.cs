@@ -123,6 +123,7 @@ public partial class App : Application
                 services.AddTransient<MountainGoatViewModel>();
                 services.AddTransient<ParksOnTheAirViewModel>();
                 services.AddTransient<SkccViewModel>();
+                services.AddTransient<SweepstakesViewModel>();
                 services.AddTransient<SettingsViewModel>();
                 services.AddTransient<StationProfileViewModel>();
                 services.AddTransient<QsoEditViewModel>();
@@ -134,6 +135,7 @@ public partial class App : Application
                 services.AddTransient<Views.StationProfileEditorWindow>();
                 services.AddTransient<Views.QsoEditWindow>();
                 services.AddTransient<Views.FileOperationsWindow>();
+                services.AddTransient<Views.SweepstakesScoringWindow>();
             })
             .Build();
 

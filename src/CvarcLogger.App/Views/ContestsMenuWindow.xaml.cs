@@ -14,4 +14,10 @@ public partial class ContestsMenuWindow : Window
         var window = new FieldDayScoringWindow { Owner = this };
         window.Show();
     }
+
+    private void Sweepstakes_Click(object sender, RoutedEventArgs e)
+    {
+        var window = new SweepstakesScoringWindow { Owner = this };
+        window.Show();
+    }
 }
