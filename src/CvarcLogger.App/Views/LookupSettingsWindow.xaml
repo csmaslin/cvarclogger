@@ -183,6 +183,13 @@
                         <TextBlock FontSize="11" Foreground="#999999" Margin="0,4,0,0"
                                    Text="Multicast: 2237 (direct from WSJT-X), Relay: 2238 (via GridTracker2)"/>
                     </StackPanel>
+
+                    <StackPanel Orientation="Horizontal">
+                        <Button Command="{Binding SaveWsjtxSettingsCommand}" ToolTip="Save WSJT-X settings" Padding="14,10"
+                                Background="#2E7D32" Foreground="White" BorderThickness="0" Margin="0,0,10,0">
+                            <emoji:TextBlock Text="💾 Save" FontSize="13" Foreground="White"/>
+                        </Button>
+                    </StackPanel>
                 </StackPanel>
             </Grid>
         </ScrollViewer>
