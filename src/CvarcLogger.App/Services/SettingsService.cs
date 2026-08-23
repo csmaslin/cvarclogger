@@ -21,6 +21,15 @@ public enum WsjtxMode
     Multicast
 }
 
+/// <summary>Internet-based radio control via network TCP protocols.</summary>
+public enum InternetRadioType
+{
+    ElecraftK4,
+    FlexRadio,
+    IcomCI_V,
+    KenwoodTS
+}
+
 /// <summary>Simple JSON-file-backed app preferences (not QSO data, not credentials).</summary>
 public class SettingsService
 {
@@ -185,6 +194,12 @@ public class SettingsService
     {
         get => _data.InternetRadioPort;
         set { _data.InternetRadioPort = value; Save(); }
+    }
+
+    public InternetRadioType InternetRadioType
+    {
+        get => _data.InternetRadioType;
+        set { _data.InternetRadioType = value; Save(); }
     }
 
     /// <summary>Mutate entries in place, then call SaveRadioProfiles().</summary>
@@ -453,6 +468,7 @@ public class SettingsService
         public bool InternetRadioEnabled { get; set; }
         public string InternetRadioHost { get; set; } = string.Empty;
         public int InternetRadioPort { get; set; } = 9200;
+        public InternetRadioType InternetRadioType { get; set; } = InternetRadioType.ElecraftK4;
 
         public List<RadioProfile> RadioProfiles { get; set; } = new()
         {
