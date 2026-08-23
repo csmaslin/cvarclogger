@@ -346,14 +346,27 @@ public partial class SettingsViewModel : ObservableObject
     private async Task TestHamlibConnectionAsync()
     {
         var (success, error) = await _rigCoordinator.ConnectAsync();
-        if (success)
+        if (!success)
         {
-            await _rigCoordinator.DisconnectAsync();
-            _dialogService.ShowInfo("CAT connection succeeded.");
+            _dialogService.ShowError($"CAT connection failed: {error}");
+            return;
+        }
+
+        // Verify the radio is actually reachable through rigctld -- a successful TCP connect to rigctld
+        // only proves that rigctld's TCP listener is up, not that it can talk to the radio on the COM port.
+        // A real poll round-trip is the only way to confirm the end-to-end path works.
+        var poll = await _rigCoordinator.PollAsync();
+        await _rigCoordinator.DisconnectAsync();
+
+        if (poll.Success)
+        {
+            string mode = poll.MappedMode ?? "unknown mode";
+            string band = poll.Band is not null ? $", {poll.Band}" : string.Empty;
+            _dialogService.ShowInfo($"CAT connection succeeded.\nRadio reports {poll.FrequencyMhz:0.000000} MHz ({mode}{band}).");
         }
         else
         {
-            _dialogService.ShowError($"CAT connection failed: {error}");
+            _dialogService.ShowError($"Connected to rigctld, but reading the radio failed:\n{poll.Error}\n\nCheck that the radio is powered on and connected to the correct COM port.");
         }
     }
 
