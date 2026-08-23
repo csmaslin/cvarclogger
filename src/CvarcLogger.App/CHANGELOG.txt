@@ -37,6 +37,10 @@ Versions before 1.17 predate this changelog and are not documented here.
   park type description. Park lookup now aligned with CvarcCellLog, extracting Grid,
   LocationDesc, ParkTypeDesc, Latitude/Longitude from live POTA API with fallback
   to bundled CSV.
+- ARRL Sweepstakes scoring: separate CW and Phone event windows (CW: first full
+  weekend of November, Phone: third full weekend, both Saturday 21:00 UTC - Monday
+  02:59 UTC). Score = QSOs × Unique Sections per event (max 85). UI shows CW/Phone
+  results separately with combined total. Accessible via Contests menu.
 
 2.06
 ----
