@@ -24,6 +24,15 @@ public partial class ImportExportViewModel : ObservableObject
 
     private void ReportProgress(string message) => ProgressChanged?.Invoke(this, message);
 
+    /// <summary>Strip characters Windows won't allow in a filename plus whitespace, so callsigns/contest
+    /// names go straight into a suggested Save-As name without producing an invalid path.</summary>
+    private static string SanitizeForFilename(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return string.Empty;
+        var invalid = Path.GetInvalidFileNameChars().Concat(new[] { ' ' }).ToHashSet();
+        return new string(value.Where(c => !invalid.Contains(c)).ToArray());
+    }
+
     public ImportExportViewModel(
         IQsoRepository qsoRepository,
         ICallsignEntityResolver entityResolver,
@@ -167,8 +176,19 @@ public partial class ImportExportViewModel : ObservableObject
         // get a minimal header with only the callsign inferred from the active station profile.
         info ??= new CabrilloContestInfo();
 
+        // Filename: <contest>_<callsign>_<date>.cbr for easy recognition (e.g. "ARRL-DX-CW_AA6CV_20260823.cbr").
+        // Falls back to the DB name when contest/callsign are blank so the file is still self-identifying.
         string dbName = Path.GetFileNameWithoutExtension(SettingsService.ResolveActiveDatabasePath());
-        var path = _filePicker.PickCabrilloFileToSave($"{dbName}_{DateTime.Now:yyyyMMdd_HHmmss}.cbr");
+        string contestPart = SanitizeForFilename(info.Contest);
+        string callPart = SanitizeForFilename(info.Callsign);
+        string suggestedName = (!string.IsNullOrEmpty(contestPart), !string.IsNullOrEmpty(callPart)) switch
+        {
+            (true, true) => $"{contestPart}_{callPart}_{DateTime.Now:yyyyMMdd}.cbr",
+            (true, false) => $"{contestPart}_{DateTime.Now:yyyyMMdd}.cbr",
+            (false, true) => $"{callPart}_{DateTime.Now:yyyyMMdd_HHmmss}.cbr",
+            _ => $"{dbName}_{DateTime.Now:yyyyMMdd_HHmmss}.cbr",
+        };
+        var path = _filePicker.PickCabrilloFileToSave(suggestedName);
         if (path is null) return;
 
         IsBusy = true;
