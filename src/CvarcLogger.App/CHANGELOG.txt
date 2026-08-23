@@ -11,11 +11,23 @@ Versions before 1.17 predate this changelog and are not documented here.
   (224.0.0.1:2237) as an alternative to relaying through GridTracker2. Checkbox in Lookup Settings
   toggles between multicast and relay modes; port automatically adjusts (2237 for multicast, 2238
   for relay). Save button added to WSJT-X settings section for explicit confirmation.
+- Cabrillo import/export: new File Operations buttons for reading and writing contest logs in
+  Cabrillo v3 format. Export prompts for contest header (callsign, contest, category, etc.);
+  import reads header fields plus QSO lines with mode/frequency mapping.
 - CAT Control: baud rate is now a dropdown (9600, 19200, 38400, 57600, 115200) instead of a text box.
-- Tab key in the Callsign field now triggers automatic callsign lookup (same as clicking Lookup).
+- CAT Control: Internet Control now has a radio type dropdown (Elecraft K4, FlexRadio, Icom CI-V,
+  Kenwood TS). Description updated to reflect support for multiple radio types over network TCP.
+- CAT Control: USB (Hamlib) test now actually polls the radio instead of just checking rigctld's
+  TCP listener, eliminating false positives when the radio is unplugged or on the wrong COM port.
+- CAT Control: "Launch rigctld automatically" now defaults to enabled on fresh install so USB CAT
+  works out of the box without manual configuration.
 - Installer: custom installation directory selection enabled in Inno Setup.
+- Installer: uninstall now prompts to keep or remove the database. Choosing "Remove" wipes both
+  %LOCALAPPDATA%\CVARC Logger and the install folder entirely including runtime-created files.
+- Tab key in the Callsign field now triggers automatic callsign lookup (same as clicking Lookup).
 - Entry form and log grid now split vertically with a draggable handle for adjusting space allocation.
-- Fix: default radio selection removed on fresh install (no pre-selected radio in the active radio dropdown).
+- Fresh install cleanup: no default radio profiles or auto-selection. Four empty radio slots are
+  provided with Hamlib rig dropdown for user configuration.
 - GitHub documentation: added GitHub Pages site with manual, overview diagram, and download links.
 
 2.05
