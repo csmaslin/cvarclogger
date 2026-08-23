@@ -29,6 +29,14 @@ Versions before 1.17 predate this changelog and are not documented here.
 - Better error message when Callook.info can't find a non-US callsign -- points the
   operator at QRZ.com / QRZCQ.com in Lookup Settings instead of the generic
   "not found" error.
+- Awards window refinements: SOTA detail panel shows activation history with
+  callsigns and dates; Mountain Goat award now correctly requires all 1000
+  activator points earned within the same calendar year (not lifetime). POTA detail
+  panel displays activation history with callsigns, QSO count toward the 10 required
+  for activation (all on same UTC date), county/state/country location info, and
+  park type description. Park lookup now aligned with CvarcCellLog, extracting Grid,
+  LocationDesc, ParkTypeDesc, Latitude/Longitude from live POTA API with fallback
+  to bundled CSV.
 
 2.06
 ----
