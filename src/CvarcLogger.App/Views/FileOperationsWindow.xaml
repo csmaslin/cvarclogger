@@ -54,6 +54,18 @@
                        Click="ExportADIF_Click">
                     <emoji:TextBlock Text="📤 Export ADIF..." FontSize="14" Foreground="#2c2c2c"/>
                 </Button>
+                <Button Padding="12,16" Foreground="#2c2c2c" ToolTip="Import QSOs from a Cabrillo contest log"
+                       Background="#f9f9f9" BorderBrush="#ccc" BorderThickness="1"
+                       HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                       Click="ImportCabrillo_Click">
+                    <emoji:TextBlock Text="📥 Import Cabrillo..." FontSize="14" Foreground="#2c2c2c"/>
+                </Button>
+                <Button Padding="12,16" Foreground="#2c2c2c" ToolTip="Export QSOs as a Cabrillo contest log"
+                       Background="#f9f9f9" BorderBrush="#ccc" BorderThickness="1"
+                       HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                       Click="ExportCabrillo_Click">
+                    <emoji:TextBlock Text="📤 Export Cabrillo..." FontSize="14" Foreground="#2c2c2c"/>
+                </Button>
             </StackPanel>
 
             <!-- Close Button -->

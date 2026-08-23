@@ -180,5 +180,32 @@ public partial class FileOperationsWindow : Window
         await importExport.ExportCommand.ExecuteAsync(null);
     }
 
+    private async void ImportCabrillo_Click(object sender, RoutedEventArgs e)
+    {
+        var importExport = App.Services.GetRequiredService<ImportExportViewModel>();
+        await importExport.ImportCabrilloCommand.ExecuteAsync(null);
+    }
+
+    private async void ExportCabrillo_Click(object sender, RoutedEventArgs e)
+    {
+        // Prompt for contest info first -- callsign + contest name are required per the Cabrillo spec.
+        var settings = App.Services.GetRequiredService<SettingsService>();
+        var stationRepo = App.Services.GetRequiredService<CvarcLogger.Core.Abstractions.IStationProfileRepository>();
+        var defaultProfile = (await stationRepo.GetAllAsync()).FirstOrDefault(p => p.IsDefault)
+            ?? (await stationRepo.GetAllAsync()).FirstOrDefault();
+
+        var defaults = new CvarcLogger.Core.Cabrillo.CabrilloContestInfo
+        {
+            Callsign = defaultProfile?.Callsign ?? string.Empty,
+            Location = defaultProfile?.MyState ?? string.Empty,
+        };
+
+        var dialog = new CabrilloExportDialog(defaults) { Owner = this };
+        if (dialog.ShowDialog() != true || dialog.Result is null) return;
+
+        var importExport = App.Services.GetRequiredService<ImportExportViewModel>();
+        await importExport.ExportCabrilloCommand.ExecuteAsync(dialog.Result);
+    }
+
     private void Close_Click(object sender, RoutedEventArgs e) => Close();
 }
