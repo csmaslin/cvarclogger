@@ -23,8 +23,30 @@ public partial class MountainGoatViewModel : ObservableObject
     [ObservableProperty] private string newSummitCode = string.Empty;
     [ObservableProperty] private bool isLookingUp;
     [ObservableProperty] private bool isRefreshing;
+    [ObservableProperty] private int databaseSummitCount;
+    [ObservableProperty] private SotaActivation? selectedActivation;
+    [ObservableProperty] private SotaSummitInfo? selectedSummitDetails;
+    [ObservableProperty] private ObservableCollection<Qso> activationHistory = new();
+    [ObservableProperty] private int selectedSummitS2SPoints;
 
     public int TotalPoints => Activations.Where(a => a.Activated).Sum(a => a.Points);
+
+    private Dictionary<int, SotaSummitInfo> _summitDetails = new();
+    private List<Qso> _allQsos = new();
+
+    public int TotalS2SPoints
+    {
+        get
+        {
+            // S2S points are earned when user is on a summit (MySotaRef) and contacts another summit (SotaRef)
+            // Count all QSOs where both are populated, multiply by 2 points per contact
+            int s2sCount = _allQsos
+                .Where(q => !string.IsNullOrWhiteSpace(q.MySotaRef) &&
+                            !string.IsNullOrWhiteSpace(q.SotaRef))
+                .Count();
+            return s2sCount * 2;
+        }
+    }
 
     public MountainGoatViewModel(ISotaActivationRepository repository, IQsoRepository qsoRepository, SotaSummitLookupService lookupService, DialogService dialogService)
     {
@@ -41,10 +63,55 @@ public partial class MountainGoatViewModel : ObservableObject
         Activations.Clear();
         foreach (var a in activations) Activations.Add(a);
 
+        _allQsos = await _qsoRepository.GetAllAsync();
+
         await BackfillMissingSummitNamesAsync();
         await SyncFromQsoLogAsync();
+        await UpdateContactCountsAsync();
+        await CacheAllSummitDetailsAsync();
+
+        DatabaseSummitCount = await _lookupService.GetSummitCountAsync();
 
         OnPropertyChanged(nameof(TotalPoints));
+        OnPropertyChanged(nameof(TotalS2SPoints));
+    }
+
+    /// <summary>Caches summit details (including S2S points) for all activated summits.</summary>
+    private async Task CacheAllSummitDetailsAsync()
+    {
+        foreach (var activation in Activations.Where(a => a.Activated))
+        {
+            if (_summitDetails.ContainsKey(activation.Id)) continue;
+
+            try
+            {
+                var details = await _lookupService.LookupAsync(activation.SummitCode);
+                if (details is not null)
+                {
+                    _summitDetails[activation.Id] = details;
+                }
+            }
+            catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or IOException)
+            {
+                // Best-effort -- if one lookup fails, continue with the rest
+            }
+        }
+    }
+
+    /// <summary>Computes the contact count for each tracked summit from the QSO log.</summary>
+    private async Task UpdateContactCountsAsync()
+    {
+        var qsos = await _qsoRepository.GetAllAsync();
+        var countBySummit = qsos
+            .Where(q => !string.IsNullOrWhiteSpace(q.MySotaRef))
+            .GroupBy(q => SotaSummitLookupService.Normalize(q.MySotaRef!))
+            .ToDictionary(g => g.Key, g => g.Count());
+
+        foreach (var activation in Activations)
+        {
+            string normalized = SotaSummitLookupService.Normalize(activation.SummitCode);
+            activation.ContactCount = countBySummit.TryGetValue(normalized, out var count) ? count : 0;
+        }
     }
 
     /// <summary>Rows added before the SummitName column existed have it blank -- this looks each of
@@ -224,5 +291,56 @@ public partial class MountainGoatViewModel : ObservableObject
     {
         await _repository.UpdateAsync(item);
         OnPropertyChanged(nameof(TotalPoints));
+    }
+
+    partial void OnSelectedActivationChanged(SotaActivation? value) => _ = SelectActivationAsync(value);
+
+    /// <summary>Looks up and displays details for the selected summit, including activation history and S2S points.</summary>
+    private async Task SelectActivationAsync(SotaActivation? activation)
+    {
+        if (activation is null)
+        {
+            SelectedSummitDetails = null;
+            ActivationHistory.Clear();
+            SelectedSummitS2SPoints = 0;
+            return;
+        }
+
+        try
+        {
+            var details = await _lookupService.LookupAsync(activation.SummitCode);
+            SelectedSummitDetails = details;
+
+            if (details is not null)
+            {
+                _summitDetails[activation.Id] = details;
+                OnPropertyChanged(nameof(TotalS2SPoints));
+            }
+
+            string normalized = SotaSummitLookupService.Normalize(activation.SummitCode);
+            var summitQsos = _allQsos
+                .Where(q => !string.IsNullOrWhiteSpace(q.MySotaRef) &&
+                            SotaSummitLookupService.Normalize(q.MySotaRef!) == normalized)
+                .OrderByDescending(q => q.QsoDateTimeOnUtc)
+                .ToList();
+
+            ActivationHistory.Clear();
+            foreach (var qso in summitQsos)
+            {
+                ActivationHistory.Add(qso);
+            }
+
+            // Calculate S2S points for this summit (2 points per S2S contact)
+            int s2sContactCount = summitQsos
+                .Where(q => !string.IsNullOrWhiteSpace(q.SotaRef))
+                .Count();
+            SelectedSummitS2SPoints = s2sContactCount * 2;
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or IOException)
+        {
+            SelectedSummitDetails = null;
+            ActivationHistory.Clear();
+            SelectedSummitS2SPoints = 0;
+        }
     }
 }

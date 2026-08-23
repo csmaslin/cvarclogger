@@ -3,7 +3,16 @@ using System.Net.Http;
 
 namespace CvarcLogger.App.Services;
 
-public record SotaSummitInfo(string SummitCode, string SummitName, int Points);
+public record SotaSummitInfo(
+    string SummitCode,
+    string SummitName,
+    int Points,
+    string Region = "",
+    string Elevation = "",
+    string Latitude = "",
+    string Longitude = "",
+    string SeasonalBonus = "",
+    int S2SPoints = 0);
 
 /// <summary>Resolves SOTA summit points/name by summit code from the official SOTA summit list
 /// (https://storage.sota.org.uk/summitslist.csv, ~181,000 summits worldwide, ~25MB). Too large to
@@ -51,7 +60,18 @@ public class SotaSummitLookupService
 
             if (Normalize(fields[0]) == needle && int.TryParse(fields[10], out int points))
             {
-                return new SotaSummitInfo(fields[0], fields[3], points);
+                string region = fields.Length > 2 ? fields[2] : "";
+                string elevation = fields.Length > 4 ? fields[4] : "";
+                string latitude = fields.Length > 7 ? fields[7] : "";
+                string longitude = fields.Length > 6 ? fields[6] : "";
+                string seasonalBonus = fields.Length > 11 ? fields[11] : "";
+                int s2sPoints = 0;
+                if (fields.Length > 12 && int.TryParse(fields[12], out int s2s))
+                {
+                    s2sPoints = s2s;
+                }
+
+                return new SotaSummitInfo(fields[0], fields[3], points, region, elevation, latitude, longitude, seasonalBonus, s2sPoints);
             }
         }
 
@@ -64,6 +84,34 @@ public class SotaSummitLookupService
     /// the same way before this service ever sees the code.</summary>
     public static string Normalize(string code) =>
         code.Trim().ToUpperInvariant().Replace("-", "").Replace(" ", "");
+
+    /// <summary>Returns the total count of summits in the cached SOTA database, or 0 if the cache
+    /// doesn't exist or can't be read.</summary>
+    public async Task<int> GetSummitCountAsync(CancellationToken ct = default)
+    {
+        try
+        {
+            await EnsureCacheFreshAsync(force: false, ct).ConfigureAwait(false);
+            if (!File.Exists(CachePath)) return 0;
+
+            int count = 0;
+            using var reader = new StreamReader(CachePath);
+            await reader.ReadLineAsync().ConfigureAwait(false); // title line
+            await reader.ReadLineAsync().ConfigureAwait(false); // column header line
+
+            string? line;
+            while ((line = await reader.ReadLineAsync().ConfigureAwait(false)) is not null)
+            {
+                if (line.Length > 0) count++;
+            }
+
+            return count;
+        }
+        catch
+        {
+            return 0;
+        }
+    }
 
     /// <summary>Forces a fresh download of the summit list regardless of the cache's age, for the
     /// user-triggered "Refresh Summit List" button -- unlike the normal 30-day staleness check, this
