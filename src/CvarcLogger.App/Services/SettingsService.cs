@@ -410,7 +410,7 @@ public class SettingsService
         public bool WsjtxEnabled { get; set; }
         public string RigctldExecutablePath { get; set; } = ResolveDefaultRigctldPath();
         public int RigctldTcpPort { get; set; } = 4532;
-        public int ActiveRadioIndex { get; set; }
+        public int ActiveRadioIndex { get; set; } = -1;
 
         public bool InternetRadioEnabled { get; set; }
         public string InternetRadioHost { get; set; } = string.Empty;

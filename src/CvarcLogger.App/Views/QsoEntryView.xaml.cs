@@ -248,6 +248,23 @@ public partial class QsoEntryView : UserControl
         e.Handled = true;
     }
 
+    // Tab out of the Callsign field triggers automatic lookup, so users don't have to click the Lookup button
+    private void CallsignField_PreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Tab || _subscribedViewModel is null) return;
+
+        // Update the binding first so the ViewModel sees the typed callsign
+        if (sender is TextBox callsignBox)
+            callsignBox.GetBindingExpression(TextBox.TextProperty)?.UpdateSource();
+
+        // Trigger the lookup command
+        if (_subscribedViewModel.LookupCommand.CanExecute(null))
+        {
+            _subscribedViewModel.LookupCommand.Execute(null);
+            e.Handled = false; // Allow Tab to move focus to the next field after lookup completes
+        }
+    }
+
     // Reads the current mode's saved field positions (SettingsService.GetEntryFormFieldPositions, via
     // the ViewModel) and places each field in FieldsGrid accordingly. A field with no saved position
     // (never dragged in this mode) uses its DefaultPositions fallback -- unless that cell is contested
