@@ -172,26 +172,12 @@
                     <CheckBox Content="Enable WSJT-X log receiving" IsChecked="{Binding WsjtxEnabled}"
                               FontSize="13" Foreground="#000000" Margin="0,0,0,12"/>
 
-                    <TextBlock Text="RECEPTION MODE" Style="{StaticResource FieldLabel}"/>
-                    <StackPanel Margin="0,0,0,12">
-                        <RadioButton Content="GridTracker2 Relay (port 2238)" GroupName="WsjtxMode"
-                                     IsChecked="{Binding WsjtxMode, Converter={StaticResource EnumToBool}, ConverterParameter=GridTracker2Relay}"
-                                     FontSize="12" Foreground="#000000" Margin="0,0,0,8"/>
-                        <RadioButton Content="WSJT-X Multicast (224.0.0.1:2237)" GroupName="WsjtxMode"
-                                     IsChecked="{Binding WsjtxMode, Converter={StaticResource EnumToBool}, ConverterParameter=Multicast}"
-                                     FontSize="12" Foreground="#000000"/>
-                    </StackPanel>
-
-                    <StackPanel Margin="0,0,0,12" Visibility="{Binding WsjtxMode, Converter={StaticResource EnumToBool}, ConverterParameter=Multicast}">
-                        <TextBlock Text="MULTICAST ADDRESS" Style="{StaticResource FieldLabel}"/>
-                        <TextBox Text="{Binding WsjtxMulticastAddress, UpdateSourceTrigger=PropertyChanged}"
-                                 HorizontalAlignment="Left" Width="150" Padding="8" FontSize="14"/>
-                    </StackPanel>
-
                     <StackPanel Margin="0,0,0,12">
                         <TextBlock Text="UDP PORT" Style="{StaticResource FieldLabel}"/>
                         <TextBox Text="{Binding WsjtxPort, UpdateSourceTrigger=PropertyChanged}"
                                  HorizontalAlignment="Left" Width="100" Padding="8" FontSize="14"/>
+                        <TextBlock FontSize="11" Foreground="#999999" Margin="0,4,0,0"
+                                   Text="GridTracker2 relay: 2238, WSJT-X multicast: 2237"/>
                     </StackPanel>
                 </StackPanel>
             </Grid>
