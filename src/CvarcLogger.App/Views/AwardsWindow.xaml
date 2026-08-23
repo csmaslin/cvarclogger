@@ -82,13 +82,13 @@
             <TextBlock Grid.Row="1" Margin="0,0,0,15" FontSize="12" Foreground="#666666" TextWrapping="Wrap"
                        Text="DXCC entity resolution uses a bundled, community-assembled approximation of the ARRL DXCC prefix list, not the official ARRL data. Correct any misattributed entity from the QSO log directly; totals here update automatically."/>
 
-            <TabControl Grid.Row="2" TabStripPlacement="Left" Background="White" BorderBrush="#dddddd"
+            <TabControl Grid.Row="2" TabStripPlacement="Left" Background="White" BorderBrush="#dddddd" BorderThickness="1"
                         ItemContainerStyle="{StaticResource SidebarTabItem}">
             <TabItem>
                 <TabItem.Header>
                     <emoji:TextBlock Text="🌐  DXCC" FontSize="14"/>
                 </TabItem.Header>
-                <DockPanel Margin="6">
+                <DockPanel Margin="6" LastChildFill="True">
                     <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
                         <TextBlock Text="Band:" VerticalAlignment="Center" Margin="0,0,6,0"/>
                         <ComboBox DockPanel.Dock="Left" Width="100" HorizontalAlignment="Left"
@@ -171,7 +171,7 @@
                 <TabItem.Header>
                     <emoji:TextBlock Text="🇺🇸  WAS" FontSize="14"/>
                 </TabItem.Header>
-                <DockPanel Margin="6">
+                <DockPanel Margin="6" LastChildFill="True">
                     <TextBlock DockPanel.Dock="Top" Margin="0,0,0,10" FontWeight="Bold">
                         <Run Text="Worked: "/>
                         <Run Text="{Binding WasProgress.WorkedCount, Mode=OneWay}"/>
@@ -220,7 +220,7 @@
                 <TabItem.Header>
                     <emoji:TextBlock Text="⛰️  SOTA" FontSize="14"/>
                 </TabItem.Header>
-                <DockPanel Margin="6">
+                <DockPanel Margin="6" LastChildFill="True">
                     <TextBlock DockPanel.Dock="Top" Margin="0,0,0,6" FontWeight="Bold">
                         <Run Text="Activated: "/>
                         <Run Text="{Binding MountainGoat.TotalPoints, Mode=OneWay}"/>
@@ -271,7 +271,7 @@
                 <TabItem.Header>
                     <emoji:TextBlock Text="🌳  POTA" FontSize="14"/>
                 </TabItem.Header>
-                <DockPanel Margin="6">
+                <DockPanel Margin="6" LastChildFill="True">
                     <TextBlock DockPanel.Dock="Top" Margin="0,0,0,6" FontWeight="Bold">
                         <Run Text="Activated: "/>
                         <Run Text="{Binding ParksOnTheAir.TotalParksActivated, Mode=OneWay}"/>
@@ -316,7 +316,7 @@
                 <TabItem.Header>
                     <emoji:TextBlock Text="🔑  SKCC" FontSize="14"/>
                 </TabItem.Header>
-                <DockPanel Margin="6">
+                <DockPanel Margin="6" LastChildFill="True">
                     <TextBlock DockPanel.Dock="Top" Margin="0,0,0,4" FontSize="11" Foreground="Gray" TextWrapping="Wrap"
                                Text="Best-effort estimate, not the official submission tool: counts any CW QSO with an SKCC # logged, trusting it was made with a manual key (straight key/bug/cootie) as SKCC requires -- CvarcLogger has no field to verify that."/>
 
