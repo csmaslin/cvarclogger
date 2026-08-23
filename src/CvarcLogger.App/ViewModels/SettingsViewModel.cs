@@ -61,6 +61,7 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private string gridTrackerPort = "2240";
 
     [ObservableProperty] private bool wsjtxEnabled;
+    [ObservableProperty] private string wsjtxPort = "2238";
 
     // Internet Control (CAT): a network-reachable Elecraft K4 (its native TCP protocol, default port
     // 9200), distinct from the Hamlib/rigctld serial radios above. Password is optional (the K4 protocol
@@ -111,6 +112,7 @@ public partial class SettingsViewModel : ObservableObject
         gridTrackerPort = _settings.GridTrackerPort.ToString();
 
         wsjtxEnabled = _settings.WsjtxEnabled;
+        wsjtxPort = _settings.WsjtxPort.ToString();
 
         internetRadioHost = _settings.InternetRadioHost;
         internetRadioPortText = _settings.InternetRadioPort.ToString();

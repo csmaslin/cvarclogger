@@ -97,6 +97,13 @@ public class SettingsService
         set { _data.WsjtxEnabled = value; Save(); }
     }
 
+    /// <summary>UDP port for receiving WSJT-X logged QSOs relayed by GridTracker2.</summary>
+    public int WsjtxPort
+    {
+        get => _data.WsjtxPort;
+        set { _data.WsjtxPort = value; Save(); }
+    }
+
     /// <summary>The stored path if it still points at a real file (respects an explicit user
     /// customization, or a bundled path that's still valid); otherwise re-resolves against the
     /// *currently running* exe's own folder. This makes the setting self-healing across copying the
@@ -408,6 +415,7 @@ public class SettingsService
         public string GridTrackerHost { get; set; } = "127.0.0.1";
         public int GridTrackerPort { get; set; } = 2240;
         public bool WsjtxEnabled { get; set; }
+        public int WsjtxPort { get; set; } = 2238;
         public string RigctldExecutablePath { get; set; } = ResolveDefaultRigctldPath();
         public int RigctldTcpPort { get; set; } = 4532;
         public int ActiveRadioIndex { get; set; } = -1;

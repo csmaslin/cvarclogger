@@ -29,8 +29,6 @@ namespace CvarcLogger.App.Services;
 /// `netstat -ano -p UDP | findstr :2238` for an unexpected competing process.</summary>
 public class WsjtxUdpListenerService : IDisposable
 {
-    private const int ListenPort = 2238;
-
     private readonly SettingsService _settings;
     private readonly IQsoRepository _qsoRepository;
     private readonly ICallsignEntityResolver _entityResolver;
@@ -76,11 +74,11 @@ public class WsjtxUdpListenerService : IDisposable
         {
             _client = new UdpClient();
             _client.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-            _client.Client.Bind(new IPEndPoint(IPAddress.Any, ListenPort));
+            _client.Client.Bind(new IPEndPoint(IPAddress.Any, _settings.WsjtxPort));
         }
         catch (Exception ex)
         {
-            Log.Warning(ex, "Failed to bind the WSJT-X UDP listener on port {Port}.", ListenPort);
+            Log.Warning(ex, "Failed to bind the WSJT-X UDP listener on port {Port}.", _settings.WsjtxPort);
             _client?.Dispose();
             _client = null;
             return;
