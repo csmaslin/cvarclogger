@@ -166,14 +166,22 @@ end;
 
 function InitializeUninstall(): Boolean;
 var
-  DataDir, Db: String;
+  DataDir, InstallDir: String;
   Choice: Integer;
+  HasData: Boolean;
 begin
   Result := True;
   DataDir := ExpandConstant('{localappdata}\CVARC Logger');
-  Db := DataDir + '\cvarclogger.db';
+  InstallDir := ExpandConstant('{app}');
 
-  if FileExists(Db) or FileExists(DataDir + '\settings.json') then
+  { Data can live in either %LOCALAPPDATA%\CVARC Logger (legacy) or the install folder (fresh installs). }
+  HasData :=
+    FileExists(DataDir + '\cvarclogger.db') or
+    FileExists(DataDir + '\settings.json') or
+    FileExists(InstallDir + '\cvarclogger.db') or
+    FileExists(InstallDir + '\settings.json');
+
+  if HasData then
   begin
     Choice := MsgBox(
       'Remove QSO database and settings?' + #13#10 + #13#10 +
@@ -191,41 +199,46 @@ var
   DataDir: String;
   InstallDir: String;
   BatchPath: String;
+  TempDir: String;
   BatchContent: TStringList;
   ErrorCode: Integer;
 begin
-  if RemoveDataRequested then
-  begin
-    DataDir := ExpandConstant('{localappdata}\CVARC Logger');
-    InstallDir := ExpandConstant('{app}');
+  if not RemoveDataRequested then
+    exit;
 
-    if FileExists(DataDir + '\cvarclogger.db') then
-      DeleteFile(DataDir + '\cvarclogger.db');
-    if FileExists(DataDir + '\settings.json') then
-      DeleteFile(DataDir + '\settings.json');
-    if FileExists(DataDir + '\credentials.dpapi') then
-      DeleteFile(DataDir + '\credentials.dpapi');
-    if FileExists(InstallDir + '\backuplog.db') then
-      DeleteFile(InstallDir + '\backuplog.db');
+  DataDir := ExpandConstant('{localappdata}\CVARC Logger');
+  InstallDir := ExpandConstant('{app}');
 
-    if DirExists(DataDir) then
-      DelTree(DataDir, True, True, True);
+  { Remove legacy %LOCALAPPDATA% data directory entirely if it exists. }
+  if DirExists(DataDir) then
+    DelTree(DataDir, True, True, True);
 
-    { The install folder still holds the uninstaller (currently running) plus any files Inno could not
-      remove during uninstall. Schedule a batch file in %TEMP% that waits briefly for the uninstaller
-      to exit, then removes the install folder entirely, then deletes itself. }
-    BatchPath := ExpandConstant('{tmp}') + '\cvarc-cleanup.bat';
-    BatchContent := TStringList.Create;
-    try
-      BatchContent.Add('@echo off');
-      BatchContent.Add('timeout /t 3 /nobreak > nul');
-      BatchContent.Add('rmdir /s /q "' + InstallDir + '"');
-      BatchContent.Add('del "%~f0"');
-      BatchContent.SaveToFile(BatchPath);
-    finally
-      BatchContent.Free;
-    end;
+  { Schedule a batch file in Windows' TEMP dir (NOT {tmp}, which is Setup's own scratch dir and gets
+    cleaned up when the uninstaller exits) to wait, then wipe the install folder including the
+    uninstaller itself and any runtime-created data (cvarclogger.db, settings.json, backups/, logs/).
+    Using GetEnv('TEMP') gets the actual user TEMP folder that survives past uninstaller exit. }
+  TempDir := GetEnv('TEMP');
+  if TempDir = '' then
+    TempDir := ExpandConstant('{userappdata}');
+  BatchPath := TempDir + '\cvarc-cleanup.bat';
 
-    Exec('cmd.exe', '/c start "" /min "' + BatchPath + '"', '', SW_HIDE, ewNoWait, ErrorCode);
+  BatchContent := TStringList.Create;
+  try
+    BatchContent.Add('@echo off');
+    BatchContent.Add('rem Wait for uninstaller to release the folder.');
+    BatchContent.Add(':waitloop');
+    BatchContent.Add('timeout /t 1 /nobreak > nul');
+    BatchContent.Add('if exist "' + InstallDir + '\unins000.exe" (');
+    BatchContent.Add('  rmdir /s /q "' + InstallDir + '" 2>nul');
+    BatchContent.Add('  if exist "' + InstallDir + '\unins000.exe" goto waitloop');
+    BatchContent.Add(')');
+    BatchContent.Add('rmdir /s /q "' + InstallDir + '" 2>nul');
+    BatchContent.Add('(goto) 2>nul & del "%~f0"');
+    BatchContent.SaveToFile(BatchPath);
+  finally
+    BatchContent.Free;
   end;
+
+  { Launch the batch file detached so it survives after the uninstaller exits. }
+  Exec(ExpandConstant('{cmd}'), '/c start "" /min "' + BatchPath + '"', '', SW_HIDE, ewNoWait, ErrorCode);
 end;
