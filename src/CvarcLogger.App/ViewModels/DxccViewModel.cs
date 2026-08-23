@@ -34,10 +34,10 @@ public partial class DxccViewModel : ObservableObject
     public ObservableCollection<DxccEntityModeRow> EntityRows { get; } = new();
 
     [ObservableProperty] private string selectedBand = "All Bands";
-    [ObservableProperty] private DxccProgress? progress;
-    [ObservableProperty] private DxccProgress? phoneProgress;
-    [ObservableProperty] private DxccProgress? cwProgress;
-    [ObservableProperty] private DxccProgress? digitalProgress;
+    [ObservableProperty] private DxccProgress? progress = new(0, 0, new List<DxccEntityStatus>());
+    [ObservableProperty] private DxccProgress? phoneProgress = new(0, 0, new List<DxccEntityStatus>());
+    [ObservableProperty] private DxccProgress? cwProgress = new(0, 0, new List<DxccEntityStatus>());
+    [ObservableProperty] private DxccProgress? digitalProgress = new(0, 0, new List<DxccEntityStatus>());
     [ObservableProperty] private bool isLoading;
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasErrorMessage))]
