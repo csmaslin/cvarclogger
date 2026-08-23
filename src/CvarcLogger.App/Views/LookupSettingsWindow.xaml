@@ -169,8 +169,14 @@
                     <TextBlock Style="{StaticResource Description}"
                                Text="Receives WSJT-X QSO data via GridTracker2 on UDP port 2238 and adds to log automatically."/>
 
-                    <CheckBox Content="Enable WSJT-X log receiving (UDP 2238)" IsChecked="{Binding WsjtxEnabled}"
+                    <CheckBox Content="Enable WSJT-X log receiving" IsChecked="{Binding WsjtxEnabled}"
                               FontSize="13" Foreground="#000000"/>
+
+                    <StackPanel Margin="20,8,0,0">
+                        <TextBlock Text="WSJT-X UDP PORT" Style="{StaticResource FieldLabel}"/>
+                        <TextBox Text="{Binding WsjtxPort, UpdateSourceTrigger=PropertyChanged}"
+                                 HorizontalAlignment="Left" Width="100" Padding="8" FontSize="14"/>
+                    </StackPanel>
                 </StackPanel>
             </Grid>
         </ScrollViewer>
