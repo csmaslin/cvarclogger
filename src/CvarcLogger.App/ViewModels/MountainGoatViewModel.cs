@@ -29,7 +29,9 @@ public partial class MountainGoatViewModel : ObservableObject
     [ObservableProperty] private ObservableCollection<Qso> activationHistory = new();
     [ObservableProperty] private int selectedSummitS2SPoints;
 
-    public int TotalPoints => Activations.Where(a => a.Activated).Sum(a => a.Points);
+    public int TotalPoints => Activations
+        .Where(a => a.Activated && a.ActivationDateUtc.HasValue && a.ActivationDateUtc.Value.Year == DateTime.UtcNow.Year)
+        .Sum(a => a.Points);
 
     private Dictionary<int, SotaSummitInfo> _summitDetails = new();
     private List<Qso> _allQsos = new();
@@ -39,10 +41,11 @@ public partial class MountainGoatViewModel : ObservableObject
         get
         {
             // S2S points are earned when user is on a summit (MySotaRef) and contacts another summit (SotaRef)
-            // Count all QSOs where both are populated, multiply by 2 points per contact
+            // Only count S2S QSOs from the current calendar year, multiply by 2 points per contact
             int s2sCount = _allQsos
                 .Where(q => !string.IsNullOrWhiteSpace(q.MySotaRef) &&
-                            !string.IsNullOrWhiteSpace(q.SotaRef))
+                            !string.IsNullOrWhiteSpace(q.SotaRef) &&
+                            q.QsoDateTimeOnUtc.Year == DateTime.UtcNow.Year)
                 .Count();
             return s2sCount * 2;
         }
