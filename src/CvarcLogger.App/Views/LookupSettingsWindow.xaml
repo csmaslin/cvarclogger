@@ -167,7 +167,7 @@
                         <TextBlock Text="WSJT-X" Style="{StaticResource SectionTitle}"/>
                     </Border>
                     <TextBlock Style="{StaticResource Description}"
-                               Text="Receives WSJT-X QSO data via GridTracker2 on UDP port 2238 and adds to log automatically."/>
+                               Text="Receives WSJT-X data via UDP through the port selected below."/>
 
                     <CheckBox Content="Enable WSJT-X log receiving" IsChecked="{Binding WsjtxEnabled}"
                               FontSize="13" Foreground="#000000"/>
