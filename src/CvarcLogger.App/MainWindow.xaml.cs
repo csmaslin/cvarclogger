@@ -94,6 +94,27 @@ public partial class MainWindow : Window
         window.Show();
     }
 
+    /// <summary>Toggling sidebar button: odd clicks open Awards, even clicks open the Contests menu.
+    /// The counter resets whenever the app restarts, so the first click after launch is always Awards --
+    /// deliberate, since Awards is what the operator wants ~99% of the time.</summary>
+    private int _awardsContestsClickCount;
+    private void AwardsContestsButton_Click(object sender, RoutedEventArgs e)
+    {
+        _awardsContestsClickCount++;
+        if (_awardsContestsClickCount % 2 == 1)
+        {
+            var window = App.Services.GetRequiredService<AwardsWindow>();
+            window.Owner = this;
+            window.Show();
+        }
+        else
+        {
+            var window = new Views.ContestsMenuWindow();
+            window.Owner = this;
+            window.Show();
+        }
+    }
+
     private void LookupMenuItem_Click(object sender, RoutedEventArgs e)
     {
         var window = App.Services.GetRequiredService<LookupSettingsWindow>();
