@@ -50,6 +50,27 @@ public class FilePickerService
         return dialog.ShowDialog() == true ? dialog.FileName : null;
     }
 
+    public string? PickCabrilloFileToOpen()
+    {
+        var dialog = new OpenFileDialog
+        {
+            Filter = "Cabrillo files (*.cbr;*.log)|*.cbr;*.log|All files (*.*)|*.*",
+            Title = "Import Cabrillo Log"
+        };
+        return dialog.ShowDialog() == true ? dialog.FileName : null;
+    }
+
+    public string? PickCabrilloFileToSave(string suggestedFileName)
+    {
+        var dialog = new SaveFileDialog
+        {
+            Filter = "Cabrillo files (*.cbr)|*.cbr|Cabrillo log files (*.log)|*.log|All files (*.*)|*.*",
+            FileName = suggestedFileName,
+            Title = "Export Cabrillo Log"
+        };
+        return dialog.ShowDialog() == true ? dialog.FileName : null;
+    }
+
     public string? PickExistingDatabaseFileToOpen()
     {
         var dialog = new OpenFileDialog

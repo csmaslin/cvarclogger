@@ -5,6 +5,7 @@ using CvarcLogger.App.Services;
 using CvarcLogger.Core.Abstractions;
 using CvarcLogger.Core.Adif;
 using CvarcLogger.Core.Awards;
+using CvarcLogger.Core.Cabrillo;
 
 namespace CvarcLogger.App.ViewModels;
 
@@ -101,6 +102,72 @@ public partial class ImportExportViewModel : ObservableObject
         catch (Exception ex)
         {
             _dialogService.ShowError($"Export failed: {ex.Message}");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    [RelayCommand]
+    private async Task ImportCabrilloAsync()
+    {
+        var path = _filePicker.PickCabrilloFileToOpen();
+        if (path is null) return;
+
+        IsBusy = true;
+        try
+        {
+            var result = CabrilloReader.ReadAll(path);
+            int imported = 0;
+            foreach (var qso in result.Qsos)
+            {
+                if (string.IsNullOrWhiteSpace(qso.Callsign)) continue;
+
+                var resolvedEntity = await _entityResolver.ResolveAsync(qso.Callsign);
+                qso.DxccEntityCode = resolvedEntity?.EntityCode;
+
+                await _qsoRepository.AddAsync(qso);
+                imported++;
+            }
+
+            LastResultMessage = $"Imported {imported} of {result.Qsos.Count} QSO(s) from Cabrillo file {Path.GetFileName(path)}.";
+            _dialogService.ShowInfo(LastResultMessage);
+            ImportCompleted?.Invoke(this, EventArgs.Empty);
+        }
+        catch (Exception ex)
+        {
+            _dialogService.ShowError($"Cabrillo import failed: {ex.Message}");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    [RelayCommand]
+    private async Task ExportCabrilloAsync(CabrilloContestInfo? info)
+    {
+        // Contest info is supplied by the Cabrillo Export dialog; callers that don't supply one just
+        // get a minimal header with only the callsign inferred from the active station profile.
+        info ??= new CabrilloContestInfo();
+
+        string dbName = Path.GetFileNameWithoutExtension(SettingsService.ResolveActiveDatabasePath());
+        var path = _filePicker.PickCabrilloFileToSave($"{dbName}_{DateTime.Now:yyyyMMdd_HHmmss}.cbr");
+        if (path is null) return;
+
+        IsBusy = true;
+        try
+        {
+            var qsos = await _qsoRepository.GetAllAsync();
+            using var writer = new StreamWriter(path, append: false);
+            CabrilloWriter.WriteAll(writer, info, qsos, info.Callsign);
+            LastResultMessage = $"Exported {qsos.Count} QSO(s) to Cabrillo file {Path.GetFileName(path)}.";
+            _dialogService.ShowInfo(LastResultMessage);
+        }
+        catch (Exception ex)
+        {
+            _dialogService.ShowError($"Cabrillo export failed: {ex.Message}");
         }
         finally
         {
