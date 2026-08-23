@@ -6,6 +6,7 @@ using CvarcLogger.Core.Abstractions;
 using CvarcLogger.Core.Adif;
 using CvarcLogger.Core.Awards;
 using CvarcLogger.Core.Cabrillo;
+using CvarcLogger.Core.Models;
 
 namespace CvarcLogger.App.ViewModels;
 
@@ -13,6 +14,7 @@ public partial class ImportExportViewModel : ObservableObject
 {
     private readonly IQsoRepository _qsoRepository;
     private readonly ICallsignEntityResolver _entityResolver;
+    private readonly IContestSubmissionRepository _submissions;
     private readonly FilePickerService _filePicker;
     private readonly DialogService _dialogService;
 
@@ -36,13 +38,99 @@ public partial class ImportExportViewModel : ObservableObject
     public ImportExportViewModel(
         IQsoRepository qsoRepository,
         ICallsignEntityResolver entityResolver,
+        IContestSubmissionRepository submissions,
         FilePickerService filePicker,
         DialogService dialogService)
     {
         _qsoRepository = qsoRepository;
         _entityResolver = entityResolver;
+        _submissions = submissions;
         _filePicker = filePicker;
         _dialogService = dialogService;
+    }
+
+    /// <summary>Pre-fills a Cabrillo export dialog from the last-saved submission for the same contest,
+    /// so re-exporting an entry a second time doesn't require retyping the whole header.</summary>
+    public async Task<CabrilloContestInfo?> GetLatestSubmissionAsync(string contestId, CancellationToken ct = default)
+    {
+        var saved = await _submissions.GetLatestByContestAsync(contestId, ct);
+        return saved is null ? null : SubmissionToInfo(saved);
+    }
+
+    public Task<List<ContestSubmission>> GetAllSubmissionsAsync(CancellationToken ct = default) =>
+        _submissions.GetAllAsync(ct);
+
+    private static CabrilloContestInfo SubmissionToInfo(ContestSubmission s) => new()
+    {
+        Callsign = s.Callsign,
+        Contest = s.ContestId,
+        CategoryOperator = s.CategoryOperator,
+        CategoryAssisted = s.CategoryAssisted,
+        CategoryBand = s.CategoryBand,
+        CategoryMode = s.CategoryMode,
+        CategoryPower = s.CategoryPower,
+        CategoryStation = s.CategoryStation,
+        CategoryTransmitter = s.CategoryTransmitter,
+        CategoryOverlay = s.CategoryOverlay,
+        ClaimedScore = s.ClaimedScore,
+        Club = s.Club,
+        Location = s.Location,
+        Name = s.Name,
+        Address = s.Address,
+        AddressCity = s.AddressCity,
+        AddressStateProvince = s.AddressStateProvince,
+        AddressPostalCode = s.AddressPostalCode,
+        AddressCountry = s.AddressCountry,
+        Operators = s.Operators,
+        Email = s.Email,
+        SoapBox = s.SoapBox,
+    };
+
+    private static ContestSubmission InfoToSubmission(CabrilloContestInfo i) => new()
+    {
+        Callsign = i.Callsign,
+        ContestId = i.Contest,
+        CategoryOperator = i.CategoryOperator,
+        CategoryAssisted = i.CategoryAssisted,
+        CategoryBand = i.CategoryBand,
+        CategoryMode = i.CategoryMode,
+        CategoryPower = i.CategoryPower,
+        CategoryStation = i.CategoryStation,
+        CategoryTransmitter = i.CategoryTransmitter,
+        CategoryOverlay = i.CategoryOverlay,
+        ClaimedScore = i.ClaimedScore,
+        Club = i.Club,
+        Location = i.Location,
+        Name = i.Name,
+        Address = i.Address,
+        AddressCity = i.AddressCity,
+        AddressStateProvince = i.AddressStateProvince,
+        AddressPostalCode = i.AddressPostalCode,
+        AddressCountry = i.AddressCountry,
+        Operators = i.Operators,
+        Email = i.Email,
+        SoapBox = i.SoapBox,
+    };
+
+    /// <summary>Update the existing submission for this contest, or add a new one if none exists.
+    /// Called from both Cabrillo import (to save an imported header) and Cabrillo export (to remember
+    /// the header the operator just used).</summary>
+    private async Task SaveSubmissionAsync(CabrilloContestInfo info, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(info.Contest) || string.IsNullOrWhiteSpace(info.Callsign)) return;
+
+        var existing = await _submissions.GetLatestByContestAsync(info.Contest, ct);
+        if (existing is not null && existing.Callsign == info.Callsign)
+        {
+            var merged = InfoToSubmission(info);
+            merged.Id = existing.Id;
+            merged.CreatedAtUtc = existing.CreatedAtUtc;
+            await _submissions.UpdateAsync(merged, ct);
+        }
+        else
+        {
+            await _submissions.AddAsync(InfoToSubmission(info), ct);
+        }
     }
 
     [RelayCommand]
@@ -159,6 +247,12 @@ public partial class ImportExportViewModel : ObservableObject
                     ReportProgress($"Importing {imported} of {total} QSO(s)...");
             }
 
+            // Persist the header so re-exporting this contest doesn't require retyping it, and so
+            // future features (Contest Manager UI, per-contest reports) have header context to work
+            // with. Best-effort -- a failure here shouldn't block reporting the successful QSO import.
+            try { await SaveSubmissionAsync(result.Info); }
+            catch (Exception ex) { LastResultMessage = $"(QSOs imported OK, but saving contest header failed: {ex.Message})"; }
+
             LastResultMessage = $"Imported {imported} of {result.Qsos.Count} QSO(s) from Cabrillo file {Path.GetFileName(path)}.";
             _dialogService.ShowInfo(LastResultMessage);
             ImportCompleted?.Invoke(this, EventArgs.Empty);
@@ -203,6 +297,10 @@ public partial class ImportExportViewModel : ObservableObject
             ReportProgress($"Writing {qsos.Count} QSO(s) as Cabrillo...");
             using var writer = new StreamWriter(path, append: false);
             CabrilloWriter.WriteAll(writer, info, qsos, info.Callsign);
+
+            // Remember this header for next time the operator exports the same contest.
+            await SaveSubmissionAsync(info);
+
             LastResultMessage = $"Exported {qsos.Count} QSO(s) to Cabrillo file {Path.GetFileName(path)}.";
             _dialogService.ShowInfo(LastResultMessage);
         }

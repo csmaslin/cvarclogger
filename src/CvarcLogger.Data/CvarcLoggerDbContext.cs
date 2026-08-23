@@ -11,6 +11,7 @@ public class CvarcLoggerDbContext : DbContext
     public DbSet<PrefixMapping> PrefixMappings => Set<PrefixMapping>();
     public DbSet<SotaActivation> SotaActivations => Set<SotaActivation>();
     public DbSet<PotaActivation> PotaActivations => Set<PotaActivation>();
+    public DbSet<ContestSubmission> ContestSubmissions => Set<ContestSubmission>();
 
     public CvarcLoggerDbContext(DbContextOptions<CvarcLoggerDbContext> options) : base(options)
     {
@@ -89,6 +90,34 @@ public class CvarcLoggerDbContext : DbContext
             entity.HasKey(p => p.Id);
             entity.Property(p => p.ParkReference).IsRequired().HasMaxLength(20);
             entity.Property(p => p.ParkName).HasMaxLength(150);
+        });
+
+        modelBuilder.Entity<ContestSubmission>(entity =>
+        {
+            entity.HasKey(c => c.Id);
+            entity.Property(c => c.ContestId).IsRequired().HasMaxLength(40);
+            entity.Property(c => c.Callsign).IsRequired().HasMaxLength(20);
+            entity.Property(c => c.CategoryOperator).HasMaxLength(40);
+            entity.Property(c => c.CategoryAssisted).HasMaxLength(40);
+            entity.Property(c => c.CategoryBand).HasMaxLength(40);
+            entity.Property(c => c.CategoryMode).HasMaxLength(40);
+            entity.Property(c => c.CategoryPower).HasMaxLength(40);
+            entity.Property(c => c.CategoryStation).HasMaxLength(40);
+            entity.Property(c => c.CategoryTransmitter).HasMaxLength(40);
+            entity.Property(c => c.CategoryOverlay).HasMaxLength(40);
+            entity.Property(c => c.ClaimedScore).HasMaxLength(20);
+            entity.Property(c => c.Club).HasMaxLength(100);
+            entity.Property(c => c.Location).HasMaxLength(20);
+            entity.Property(c => c.Name).HasMaxLength(100);
+            entity.Property(c => c.Address).HasMaxLength(200);
+            entity.Property(c => c.AddressCity).HasMaxLength(100);
+            entity.Property(c => c.AddressStateProvince).HasMaxLength(40);
+            entity.Property(c => c.AddressPostalCode).HasMaxLength(20);
+            entity.Property(c => c.AddressCountry).HasMaxLength(60);
+            entity.Property(c => c.Operators).HasMaxLength(500);
+            entity.Property(c => c.Email).HasMaxLength(100);
+            entity.HasIndex(c => c.ContestId);
+            entity.HasIndex(c => c.ModifiedAtUtc);
         });
     }
 }

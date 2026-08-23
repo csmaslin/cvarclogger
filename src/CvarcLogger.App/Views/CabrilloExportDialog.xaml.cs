@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Controls;
 using CvarcLogger.Core.Cabrillo;
 
 namespace CvarcLogger.App.Views;
@@ -7,11 +8,30 @@ public partial class CabrilloExportDialog : Window
 {
     public CabrilloContestInfo? Result { get; private set; }
 
-    public CabrilloExportDialog(CabrilloContestInfo? defaults = null)
+    /// <summary>Called when the operator selects/types a contest name. Returns any previously-saved
+    /// header for that contest so we can pre-fill the rest of the form (address, category choices,
+    /// club, etc.). Passed in from the caller so this dialog stays UI-only with no data-layer coupling.</summary>
+    private readonly Func<string, CancellationToken, Task<CabrilloContestInfo?>>? _loadPriorForContest;
+
+    private bool _restoringFromPriorSubmission;
+
+    public CabrilloExportDialog(
+        CabrilloContestInfo? defaults = null,
+        Func<string, CancellationToken, Task<CabrilloContestInfo?>>? loadPriorForContest = null)
     {
         InitializeComponent();
 
+        _loadPriorForContest = loadPriorForContest;
+
         var info = defaults ?? new CabrilloContestInfo();
+        ApplyInfoToFields(info);
+
+        ContestBox.SelectionChanged += ContestBox_Changed;
+        ContestBox.LostFocus += ContestBox_Changed;
+    }
+
+    private void ApplyInfoToFields(CabrilloContestInfo info)
+    {
         CallsignBox.Text = info.Callsign;
         ContestBox.Text = info.Contest;
         CategoryOperatorBox.Text = info.CategoryOperator;
@@ -24,6 +44,31 @@ public partial class CabrilloExportDialog : Window
         ClaimedScoreBox.Text = info.ClaimedScore;
         EmailBox.Text = info.Email;
         SoapBoxBox.Text = info.SoapBox;
+    }
+
+    private async void ContestBox_Changed(object? sender, RoutedEventArgs e)
+    {
+        if (_restoringFromPriorSubmission || _loadPriorForContest is null) return;
+        string contest = ContestBox.Text?.Trim().ToUpperInvariant() ?? string.Empty;
+        if (string.IsNullOrEmpty(contest)) return;
+
+        try
+        {
+            var prior = await _loadPriorForContest(contest, CancellationToken.None);
+            if (prior is null) return;
+
+            // Preserve whatever the operator has already typed into the callsign field -- switching the
+            // contest shouldn't blow away a manual callsign edit.
+            string callsignAlreadyTyped = CallsignBox.Text?.Trim() ?? string.Empty;
+
+            _restoringFromPriorSubmission = true;
+            ApplyInfoToFields(prior);
+            if (!string.IsNullOrEmpty(callsignAlreadyTyped)) CallsignBox.Text = callsignAlreadyTyped;
+        }
+        finally
+        {
+            _restoringFromPriorSubmission = false;
+        }
     }
 
     private void Cancel_Click(object sender, RoutedEventArgs e)

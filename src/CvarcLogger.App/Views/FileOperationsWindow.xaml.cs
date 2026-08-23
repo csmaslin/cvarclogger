@@ -223,7 +223,11 @@ public partial class FileOperationsWindow : Window
     private async void ExportCabrillo_Click(object sender, RoutedEventArgs e)
     {
         // Prompt for contest info first -- callsign + contest name are required per the Cabrillo spec.
+        // Defaults come from the operator's default station profile, then get replaced by any previously-
+        // saved submission for the same contest once the user picks one from the Contest dropdown.
         var stationRepo = App.Services.GetRequiredService<CvarcLogger.Core.Abstractions.IStationProfileRepository>();
+        var importExport = App.Services.GetRequiredService<ImportExportViewModel>();
+
         var defaultProfile = (await stationRepo.GetAllAsync()).FirstOrDefault(p => p.IsDefault)
             ?? (await stationRepo.GetAllAsync()).FirstOrDefault();
 
@@ -233,7 +237,9 @@ public partial class FileOperationsWindow : Window
             Location = defaultProfile?.MyState ?? string.Empty,
         };
 
-        var dialog = new CabrilloExportDialog(defaults) { Owner = this };
+        // The dialog itself asks us for a previously-saved header whenever the operator changes the
+        // Contest field -- so a repeat export of ARRL-DX-CW auto-restores last year's address block.
+        var dialog = new CabrilloExportDialog(defaults, importExport.GetLatestSubmissionAsync) { Owner = this };
         if (dialog.ShowDialog() != true || dialog.Result is null) return;
 
         await RunWithProgress("Exporting Cabrillo...", vm => vm.ExportCabrilloCommand.ExecuteAsync(dialog.Result));
