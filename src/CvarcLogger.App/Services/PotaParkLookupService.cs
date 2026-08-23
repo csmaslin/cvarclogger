@@ -4,7 +4,14 @@ using System.Text.Json;
 
 namespace CvarcLogger.App.Services;
 
-public record PotaParkInfo(string Reference, string Name);
+public record PotaParkInfo(
+    string Reference,
+    string Name,
+    string? Grid = null,
+    string? LocationDesc = null,
+    string? ParkTypeDesc = null,
+    double? Latitude = null,
+    double? Longitude = null);
 
 /// <summary>Resolves a POTA park's display name by reference. Tries the live POTA API
 /// (https://api.pota.app/park/{reference}) first, since POTA has no bulk "all parks" export to keep a
@@ -63,15 +70,26 @@ public class PotaParkLookupService
 
             string? reference = refProp.GetString();
             string? name = nameProp.GetString();
-            return string.IsNullOrWhiteSpace(reference) || string.IsNullOrWhiteSpace(name)
-                ? null
-                : new PotaParkInfo(reference, name);
+            if (string.IsNullOrWhiteSpace(reference) || string.IsNullOrWhiteSpace(name)) return null;
+
+            return new PotaParkInfo(reference, name,
+                Grid: GetOptionalString(root, "grid6") ?? GetOptionalString(root, "grid4"),
+                LocationDesc: GetOptionalString(root, "locationDesc"),
+                ParkTypeDesc: GetOptionalString(root, "parktypeDesc"),
+                Latitude: GetOptionalDouble(root, "latitude"),
+                Longitude: GetOptionalDouble(root, "longitude"));
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException)
         {
             return null;
         }
     }
+
+    private static string? GetOptionalString(JsonElement root, string name) =>
+        root.TryGetProperty(name, out var prop) && prop.ValueKind == JsonValueKind.String ? prop.GetString() : null;
+
+    private static double? GetOptionalDouble(JsonElement root, string name) =>
+        root.TryGetProperty(name, out var prop) && prop.ValueKind == JsonValueKind.Number ? prop.GetDouble() : null;
 
     /// <summary>Normalizes a POTA park reference for comparison -- uppercase, hyphens/whitespace
     /// stripped -- so a common typo like a missing hyphen ("US0001" instead of "US-0001") still
@@ -101,7 +119,8 @@ public class PotaParkLookupService
                 var fields = ParseCsvLine(line);
                 if (fields.Length < 2 || fields[0].Length == 0) continue;
 
-                index[Normalize(fields[0])] = new PotaParkInfo(fields[0], fields[1]);
+                string? locationDesc = fields.Length > 4 && !string.IsNullOrWhiteSpace(fields[4]) ? fields[4] : null;
+                index[Normalize(fields[0])] = new PotaParkInfo(fields[0], fields[1], LocationDesc: locationDesc);
             }
 
             _byNormalizedReference = index;

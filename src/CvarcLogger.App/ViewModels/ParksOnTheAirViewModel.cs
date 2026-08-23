@@ -24,6 +24,9 @@ public partial class ParksOnTheAirViewModel : ObservableObject
     [ObservableProperty] private string newParkReference = string.Empty;
     [ObservableProperty] private bool isLookingUp;
     [ObservableProperty] private bool isRefreshing;
+    [ObservableProperty] private PotaActivation? selectedActivation;
+    [ObservableProperty] private PotaParkInfo? selectedParkDetails;
+    [ObservableProperty] private ObservableCollection<Qso> activationHistory = new();
 
     public int TotalParksActivated => Activations.Count(a => a.Activated);
     public int KiloParkCount => Activations.Count(a => a.IsKiloEligible);
@@ -96,14 +99,14 @@ public partial class ParksOnTheAirViewModel : ObservableObject
     /// logged from the park on the same UTC calendar date (the "My POTA" field on the entry form) --
     /// working the same station repeatedly doesn't add toward the 10. For each park that's had any
     /// such contact, this refreshes the tracked row's cumulative QSO count (used for the separate Kilo
-    /// award) every time, but only sets Activated/ActivationDateUtc the first time the 10-unique-
-    /// callsign bar is actually cleared -- once Activated, that date is locked in (either a qualified
-    /// activation or a hand-edited manual entry) and isn't overwritten by later re-syncs, even though
-    /// the QSO count keeps climbing toward Kilo. Contacts logged with slightly different formatting
+    /// award) every time, but only sets Activated/ActivationDateUtc the first time 10 total QSOs are
+    /// logged from that park -- once Activated, that date is locked in (either a qualified activation
+    /// or a hand-edited manual entry) and isn't overwritten by later re-syncs, even though the QSO
+    /// count keeps climbing toward Kilo. Contacts logged with slightly different formatting
     /// (e.g. a missing hyphen) are normalized so they still count toward the same park.</summary>
     private async Task SyncFromQsoLogAsync()
     {
-        const int MinUniqueCallsignsToActivate = 10;
+        const int MinQsosToActivate = 10;
 
         var qsos = await _qsoRepository.GetAllAsync();
         var byPark = qsos
@@ -114,9 +117,10 @@ public partial class ParksOnTheAirViewModel : ObservableObject
         {
             int totalQsoCount = parkGroup.Count();
 
+            // Activation requires 10+ QSOs all on the same UTC calendar date
             var qualifyingDate = parkGroup
                 .GroupBy(q => q.QsoDateTimeOnUtc.Date)
-                .Where(g => g.Select(q => q.Callsign.Trim().ToUpperInvariant()).Distinct().Count() >= MinUniqueCallsignsToActivate)
+                .Where(g => g.Count() >= MinQsosToActivate)
                 .OrderBy(g => g.Key)
                 .FirstOrDefault();
 
@@ -256,5 +260,43 @@ public partial class ParksOnTheAirViewModel : ObservableObject
     {
         await _repository.UpdateAsync(item);
         NotifyTotalsChanged();
+    }
+
+    partial void OnSelectedActivationChanged(PotaActivation? value) => _ = LoadActivationHistoryAsync(value);
+
+    /// <summary>Loads activation history (QSOs) for the selected park and looks up park details.</summary>
+    private async Task LoadActivationHistoryAsync(PotaActivation? activation)
+    {
+        if (activation is null)
+        {
+            ActivationHistory.Clear();
+            SelectedParkDetails = null;
+            return;
+        }
+
+        try
+        {
+            var details = await _lookupService.LookupAsync(activation.ParkReference);
+            SelectedParkDetails = details;
+
+            var qsos = await _qsoRepository.GetAllAsync();
+            string normalized = PotaParkLookupService.Normalize(activation.ParkReference);
+            var parkQsos = qsos
+                .Where(q => !string.IsNullOrWhiteSpace(q.MySigInfo) &&
+                            PotaParkLookupService.Normalize(q.MySigInfo!) == normalized)
+                .OrderByDescending(q => q.QsoDateTimeOnUtc)
+                .ToList();
+
+            ActivationHistory.Clear();
+            foreach (var qso in parkQsos)
+            {
+                ActivationHistory.Add(qso);
+            }
+        }
+        catch
+        {
+            ActivationHistory.Clear();
+            SelectedParkDetails = null;
+        }
     }
 }

@@ -296,16 +296,18 @@
                         </StackPanel>
                     </Border>
 
-                    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
-                        <TextBlock Text="Summit Code:" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                        <Button DockPanel.Dock="Right" Content="Refresh Summit List" Padding="12,4" Margin="6,0,0,0"
-                                Command="{Binding MountainGoat.RefreshListCommand}"
-                                ToolTip="Force-downloads the official SOTA summit list now, instead of waiting for its normal 30-day refresh."/>
-                        <Button DockPanel.Dock="Right" Content="Add" Padding="12,4" Margin="6,0,0,0"
-                                Command="{Binding MountainGoat.AddSummitCommand}" ToolTip="Add this summit to your activation list"/>
-                        <TextBox Width="160" HorizontalAlignment="Left" CharacterCasing="Upper"
-                                 Text="{Binding MountainGoat.NewSummitCode, UpdateSourceTrigger=PropertyChanged}"/>
-                    </DockPanel>
+                    <StackPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                        <TextBlock Text="Summit Code" FontSize="12" FontWeight="SemiBold" Foreground="#333333" Margin="0,0,0,4"/>
+                        <DockPanel>
+                            <Button DockPanel.Dock="Right" Content="Refresh Summit List" Padding="12,4" Margin="6,0,0,0"
+                                    Command="{Binding MountainGoat.RefreshListCommand}"
+                                    ToolTip="Force-downloads the official SOTA summit list now, instead of waiting for its normal 30-day refresh."/>
+                            <Button DockPanel.Dock="Right" Content="Add" Padding="12,4" Margin="6,0,0,0"
+                                    Command="{Binding MountainGoat.AddSummitCommand}" ToolTip="Add this summit to your activation list"/>
+                            <TextBox Width="160" HorizontalAlignment="Left" CharacterCasing="Upper"
+                                     Text="{Binding MountainGoat.NewSummitCode, UpdateSourceTrigger=PropertyChanged}"/>
+                        </DockPanel>
+                    </StackPanel>
 
                     <Button DockPanel.Dock="Bottom" Content="Delete Selected" Padding="10,2" Margin="0,8,0,0"
                             HorizontalAlignment="Left" ToolTip="Remove the selected summit from this list"
@@ -392,9 +394,8 @@
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
                                                 <StackPanel Margin="0,0,0,4">
-                                                    <TextBlock Text="{Binding QsoDateTimeOnUtc, StringFormat='d MMM yyyy HH:mm'}" FontSize="10" Foreground="#666666"/>
-                                                    <TextBlock Text="{Binding Band, StringFormat='Band: {0}'}" FontSize="10" Foreground="#999999"/>
-                                                    <TextBlock Text="{Binding Mode, StringFormat='Mode: {0}'}" FontSize="10" Foreground="#999999"/>
+                                                    <TextBlock Text="{Binding Callsign, StringFormat='Call: {0}'}" FontSize="10" FontWeight="SemiBold" Foreground="#333333"/>
+                                                    <TextBlock Text="{Binding QsoDateTimeOnUtc, StringFormat='d MMM yyyy HH:mm'}" FontSize="9" Foreground="#666666"/>
                                                 </StackPanel>
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
@@ -412,44 +413,167 @@
                     <emoji:TextBlock Text="🌳  POTA" FontSize="14"/>
                 </TabItem.Header>
                 <DockPanel Margin="6" LastChildFill="True">
-                    <TextBlock DockPanel.Dock="Top" Margin="0,0,0,6" FontWeight="Bold">
-                        <Run Text="Activated: "/>
-                        <Run Text="{Binding ParksOnTheAir.TotalParksActivated, Mode=OneWay}"/>
-                        <Run Text=" parks   Award: "/>
-                        <Run Text="{Binding ParksOnTheAir.CurrentAwardTier, Mode=OneWay}"/>
-                        <Run Text="   Kilo Parks (1,000+ QSOs): "/>
-                        <Run Text="{Binding ParksOnTheAir.KiloParkCount, Mode=OneWay}"/>
-                    </TextBlock>
+                    <!-- Title bar section - centered POTA title -->
+                    <Border DockPanel.Dock="Top" BorderThickness="0,0,0,2" BorderBrush="#e0e0e0" Padding="0,0,0,12" Margin="0,0,0,15">
+                        <TextBlock Text="POTA (Parks on the Air)" FontSize="20" FontWeight="Bold" Foreground="#000000" HorizontalAlignment="Center"/>
+                    </Border>
 
-                    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
-                        <TextBlock Text="Park Reference:" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                        <Button DockPanel.Dock="Right" Content="Refresh Park Info" Padding="12,4" Margin="6,0,0,0"
-                                Command="{Binding ParksOnTheAir.RefreshCommand}"
-                                ToolTip="Re-checks live park names for everything in this list from POTA's API. POTA has no single bulk export, so this only re-checks parks you're already tracking, not the full worldwide list."/>
-                        <Button DockPanel.Dock="Right" Content="Add" Padding="12,4" Margin="6,0,0,0"
-                                Command="{Binding ParksOnTheAir.AddParkCommand}" ToolTip="Add this park to your activation list"/>
-                        <TextBox Width="160" HorizontalAlignment="Left" CharacterCasing="Upper"
-                                 Text="{Binding ParksOnTheAir.NewParkReference, UpdateSourceTrigger=PropertyChanged}"/>
-                    </DockPanel>
+                    <!-- Progress info section -->
+                    <Border DockPanel.Dock="Top" BorderThickness="0,1,0,1" BorderBrush="#e0e0e0" Padding="0,12,0,12" Margin="0,0,0,20">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <StackPanel Margin="0,0,80,0" HorizontalAlignment="Center">
+                                <TextBlock Text="Parks Activated" FontSize="13" Foreground="#666666" HorizontalAlignment="Center" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding ParksOnTheAir.TotalParksActivated, Mode=OneWay}" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#000000" Margin="0,4,0,0"/>
+                            </StackPanel>
+                            <StackPanel Margin="0,0,80,0" HorizontalAlignment="Center">
+                                <TextBlock Text="Current Award" FontSize="13" Foreground="#666666" HorizontalAlignment="Center" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding ParksOnTheAir.CurrentAwardTier, Mode=OneWay}" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#000000" Margin="0,4,0,0"/>
+                            </StackPanel>
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="Kilo Parks" FontSize="13" Foreground="#666666" HorizontalAlignment="Center" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding ParksOnTheAir.KiloParkCount, Mode=OneWay}" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#000000" Margin="0,4,0,0"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <StackPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                        <TextBlock Text="Park Reference" FontSize="12" FontWeight="SemiBold" Foreground="#333333" Margin="0,0,0,4"/>
+                        <DockPanel>
+                            <Button DockPanel.Dock="Right" Content="Refresh Park Info" Padding="12,4" Margin="6,0,0,0"
+                                    Command="{Binding ParksOnTheAir.RefreshCommand}"
+                                    ToolTip="Re-checks live park names for everything in this list from POTA's API."/>
+                            <Button DockPanel.Dock="Right" Content="Add" Padding="12,4" Margin="6,0,0,0"
+                                    Command="{Binding ParksOnTheAir.AddParkCommand}" ToolTip="Add this park to your activation list"/>
+                            <TextBox Width="160" HorizontalAlignment="Left" CharacterCasing="Upper"
+                                     Text="{Binding ParksOnTheAir.NewParkReference, UpdateSourceTrigger=PropertyChanged}"/>
+                        </DockPanel>
+                    </StackPanel>
 
                     <Button DockPanel.Dock="Bottom" Content="Delete Selected" Padding="10,2" Margin="0,8,0,0"
                             HorizontalAlignment="Left" ToolTip="Remove the selected park from this list"
                             Command="{Binding ParksOnTheAir.DeleteCommand}"
                             CommandParameter="{Binding ElementName=PotaGrid, Path=SelectedItem}"/>
 
-                    <DataGrid x:Name="PotaGrid" ItemsSource="{Binding ParksOnTheAir.Activations}"
-                              AutoGenerateColumns="False" CanUserAddRows="False"
-                              AlternationCount="2" AlternatingRowBackground="WhiteSmoke"
-                              CellEditEnding="PotaGrid_CellEditEnding">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="Park Reference" Binding="{Binding ParkReference}" Width="Auto" IsReadOnly="True"/>
-                            <DataGridTextColumn Header="Park Name" Binding="{Binding ParkName}" Width="Auto" IsReadOnly="True"/>
-                            <DataGridCheckBoxColumn Header="Activated" Binding="{Binding Activated}" Width="Auto"/>
-                            <DataGridTextColumn Header="Activation Date/Time" Binding="{Binding ActivationDateUtc, StringFormat='yyyy-MM-dd HH:mm'}" Width="Auto"/>
-                            <DataGridTextColumn Header="Total QSOs" Binding="{Binding TotalQsoCount}" Width="Auto" IsReadOnly="True"/>
-                            <DataGridCheckBoxColumn Header="Kilo" Binding="{Binding IsKiloEligible, Mode=OneWay}" Width="Auto" IsReadOnly="True"/>
-                        </DataGrid.Columns>
-                    </DataGrid>
+                    <!-- Grid and detail panel side-by-side -->
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="320"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- DataGrid on the left -->
+                        <DataGrid x:Name="PotaGrid" Grid.Column="0" ItemsSource="{Binding ParksOnTheAir.Activations}"
+                                  SelectedItem="{Binding ParksOnTheAir.SelectedActivation}"
+                                  AutoGenerateColumns="False" CanUserAddRows="False"
+                                  AlternationCount="2" AlternatingRowBackground="WhiteSmoke"
+                                  CellEditEnding="PotaGrid_CellEditEnding">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Park Reference" Binding="{Binding ParkReference}" Width="Auto" IsReadOnly="True"/>
+                                <DataGridTextColumn Header="Park Name" Binding="{Binding ParkName}" Width="Auto" IsReadOnly="True"/>
+                                <DataGridCheckBoxColumn Header="Activated" Binding="{Binding Activated}" Width="Auto"/>
+                                <DataGridTextColumn Header="Activation Date/Time" Binding="{Binding ActivationDateUtc, StringFormat='yyyy-MM-dd HH:mm'}" Width="Auto"/>
+                                <DataGridTextColumn Header="Total QSOs" Binding="{Binding TotalQsoCount}" Width="Auto" IsReadOnly="True"/>
+                                <DataGridCheckBoxColumn Header="Kilo" Binding="{Binding IsKiloEligible, Mode=OneWay}" Width="Auto" IsReadOnly="True"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+
+                        <!-- Detail panel on the right -->
+                        <Border Grid.Column="1" Background="#f9f9f9" BorderThickness="1,0,0,0" BorderBrush="#e0e0e0" Padding="12">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <StackPanel>
+                                    <TextBlock Text="Park Details" FontSize="14" FontWeight="Bold" Foreground="#333333" Margin="0,0,0,12"/>
+
+                                    <TextBlock Text="{Binding ParksOnTheAir.SelectedActivation, StringFormat='Reference: {0.ParkReference}'}" FontSize="11" Foreground="#333333" Margin="0,0,0,6" TextWrapping="Wrap"/>
+
+                                    <TextBlock Text="{Binding ParksOnTheAir.SelectedActivation.ParkName, StringFormat='Name: {0}'}" FontSize="11" Foreground="#333333" Margin="0,0,0,6" TextWrapping="Wrap"/>
+
+                                    <TextBlock Text="{Binding ParksOnTheAir.SelectedParkDetails.LocationDesc, StringFormat='Location: {0}'}" FontSize="11" Foreground="#333333" Margin="0,0,0,6" TextWrapping="Wrap"/>
+
+                                    <TextBlock Text="{Binding ParksOnTheAir.SelectedParkDetails.ParkTypeDesc, StringFormat='Park Type: {0}'}" FontSize="11" Foreground="#333333" Margin="0,0,0,4" TextWrapping="Wrap"
+                                               Visibility="{Binding ParksOnTheAir.SelectedParkDetails.ParkTypeDesc, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                                    <TextBlock FontSize="11" Margin="0,0,0,6">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Text" Value="{Binding ParksOnTheAir.SelectedParkDetails.Grid, StringFormat='Grid: {0}'}"/>
+                                                <Setter Property="Foreground" Value="#333333"/>
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ParksOnTheAir.SelectedParkDetails.Grid}" Value="{x:Null}">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+
+                                    <TextBlock Text="{Binding ParksOnTheAir.SelectedActivation.TotalQsoCount, StringFormat='Total QSOs: {0}'}" FontSize="11" Foreground="#333333" Margin="0,0,0,6"/>
+
+                                    <TextBlock FontSize="11" Margin="0,0,0,6">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Text" Value="{Binding ParksOnTheAir.SelectedActivation.TotalQsoCount, StringFormat='QSOs toward activation: {0} / 10'}"/>
+                                                <Setter Property="Foreground" Value="#333333"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ParksOnTheAir.SelectedActivation.Activated}" Value="True">
+                                                        <Setter Property="Text" Value="QSOs toward activation: 10+ (Activated)"/>
+                                                        <Setter Property="Foreground" Value="Green"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+
+                                    <TextBlock Text="(All 10 must be on same UTC date)" FontSize="9" Foreground="#999999" Margin="0,0,0,12" FontStyle="Italic"/>
+
+                                    <TextBlock FontSize="11" Margin="0,0,0,12">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Text" Value="Status: Not Activated"/>
+                                                <Setter Property="Foreground" Value="#333333"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ParksOnTheAir.SelectedActivation.Activated}" Value="True">
+                                                        <Setter Property="Text" Value="Status: Activated"/>
+                                                        <Setter Property="Foreground" Value="Green"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+
+                                    <TextBlock FontSize="11" Margin="0,0,0,12">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Text" Value="Kilo Eligible: No"/>
+                                                <Setter Property="Foreground" Value="#999999"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ParksOnTheAir.SelectedActivation.IsKiloEligible}" Value="True">
+                                                        <Setter Property="Text" Value="Kilo Eligible: Yes (1000+ QSOs)"/>
+                                                        <Setter Property="Foreground" Value="Green"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+
+                                    <TextBlock Text="Activation History" FontSize="12" FontWeight="Bold" Foreground="#333333" Margin="0,0,0,6"/>
+
+                                    <ItemsControl ItemsSource="{Binding ParksOnTheAir.ActivationHistory}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Margin="0,0,0,4">
+                                                    <TextBlock Text="{Binding Callsign, StringFormat='Call: {0}'}" FontSize="10" FontWeight="SemiBold" Foreground="#333333"/>
+                                                    <TextBlock Text="{Binding QsoDateTimeOnUtc, StringFormat='d MMM yyyy HH:mm'}" FontSize="9" Foreground="#666666"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <TextBlock Text="{Binding ParksOnTheAir.ActivationHistory.Count, StringFormat='Total: {0} QSOs'}" FontSize="10" Foreground="#999999" Margin="0,8,0,0"/>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Border>
+                    </Grid>
                 </DockPanel>
             </TabItem>
             <TabItem>
