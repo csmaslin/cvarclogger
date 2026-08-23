@@ -35,6 +35,9 @@ public partial class DxccViewModel : ObservableObject
 
     [ObservableProperty] private string selectedBand = "All Bands";
     [ObservableProperty] private DxccProgress? progress;
+    [ObservableProperty] private DxccProgress? phoneProgress;
+    [ObservableProperty] private DxccProgress? cwProgress;
+    [ObservableProperty] private DxccProgress? digitalProgress;
     [ObservableProperty] private bool isLoading;
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasErrorMessage))]
@@ -97,6 +100,10 @@ public partial class DxccViewModel : ObservableObject
             var phone = ComputeProgress(PhoneModes, BandFilter);
             var cw = ComputeProgress(CwModes, BandFilter);
             var digital = ComputeProgress(DigitalModes, BandFilter);
+
+            PhoneProgress = phone;
+            CwProgress = cw;
+            DigitalProgress = digital;
 
             var phoneCodes = phone.Entities.Select(e => e.EntityCode).ToHashSet();
             var cwCodes = cw.Entities.Select(e => e.EntityCode).ToHashSet();

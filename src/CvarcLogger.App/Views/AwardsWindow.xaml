@@ -107,6 +107,22 @@
                     </TextBlock>
 
                     <TextBlock DockPanel.Dock="Top" Margin="0,0,0,4" FontSize="11" Foreground="Gray">
+                        <Run Text="Phone: "/>
+                        <Run Text="{Binding Dxcc.PhoneProgress.WorkedCount, Mode=OneWay}"/>
+                        <Run Text=" worked / "/>
+                        <Run Text="{Binding Dxcc.PhoneProgress.ConfirmedCount, Mode=OneWay}"/>
+                        <Run Text=" confirmed    |    CW: "/>
+                        <Run Text="{Binding Dxcc.CwProgress.WorkedCount, Mode=OneWay}"/>
+                        <Run Text=" worked / "/>
+                        <Run Text="{Binding Dxcc.CwProgress.ConfirmedCount, Mode=OneWay}"/>
+                        <Run Text=" confirmed    |    Digital: "/>
+                        <Run Text="{Binding Dxcc.DigitalProgress.WorkedCount, Mode=OneWay}"/>
+                        <Run Text=" worked / "/>
+                        <Run Text="{Binding Dxcc.DigitalProgress.ConfirmedCount, Mode=OneWay}"/>
+                        <Run Text=" confirmed"/>
+                    </TextBlock>
+
+                    <TextBlock DockPanel.Dock="Top" Margin="0,0,0,4" FontSize="11" Foreground="Gray">
                         <Run Text="QSOs per Band:"/>
                     </TextBlock>
                     <ItemsControl DockPanel.Dock="Top" Margin="0,0,0,10" Height="Auto" ItemsSource="{Binding Dxcc.BandCounts}">
