@@ -94,25 +94,10 @@ public partial class MainWindow : Window
         window.Show();
     }
 
-    /// <summary>Toggling sidebar button: odd clicks open Awards, even clicks open the Contests menu.
-    /// The counter resets whenever the app restarts, so the first click after launch is always Awards --
-    /// deliberate, since Awards is what the operator wants ~99% of the time.</summary>
-    private int _awardsContestsClickCount;
-    private void AwardsContestsButton_Click(object sender, RoutedEventArgs e)
+    private void ContestsButton_Click(object sender, RoutedEventArgs e)
     {
-        _awardsContestsClickCount++;
-        if (_awardsContestsClickCount % 2 == 1)
-        {
-            var window = App.Services.GetRequiredService<AwardsWindow>();
-            window.Owner = this;
-            window.Show();
-        }
-        else
-        {
-            var window = new Views.ContestsMenuWindow();
-            window.Owner = this;
-            window.Show();
-        }
+        var window = new Views.ContestsMenuWindow { Owner = this };
+        window.Show();
     }
 
     private void LookupMenuItem_Click(object sender, RoutedEventArgs e)
@@ -217,8 +202,6 @@ public partial class MainWindow : Window
         SwitchMode(target == QsoEntryMode.Custom2 ? "Custom2" : "Custom3");
     }
 
-    private void AllMode_Click(object sender, RoutedEventArgs e) => SwitchMode("All");
-
     private void SwitchMode(string modeName)
     {
         // Sets QsoEntry.SelectedEntryModeOption, which the PropertyChanged subscription in the
@@ -243,7 +226,6 @@ public partial class MainWindow : Window
             ? Resources["SidebarButtonActiveStyle"] as Style : Resources["SidebarButtonStyle"] as Style;
         Undef3Undef4ToggleButton.Style = mode is QsoEntryMode.Custom2 or QsoEntryMode.Custom3
             ? Resources["SidebarButtonActiveStyle"] as Style : Resources["SidebarButtonStyle"] as Style;
-        AllModeButton.Style = mode == QsoEntryMode.All ? Resources["SidebarButtonActiveStyle"] as Style : Resources["SidebarButtonStyle"] as Style;
     }
 
     private void GridColumnsButton_Click(object sender, RoutedEventArgs e) => ColumnsButton_Click(sender, e);

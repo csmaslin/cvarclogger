@@ -35,6 +35,8 @@ public enum FieldDayPowerClass
     HighPower,
 }
 
+public record FieldDayBonusItem(string Name, int Points);
+
 public record FieldDayScoreBreakdown(
     int TotalQsos,
     int PhoneQsos,
@@ -46,6 +48,7 @@ public record FieldDayScoreBreakdown(
     int RawQsoPoints,
     int PowerMultiplier,
     int MultipliedQsoPoints,
+    IReadOnlyList<FieldDayBonusItem> Bonuses,
     int BonusPoints,
     int FinalScore,
     IReadOnlyList<string> SectionsWorked);
@@ -60,8 +63,10 @@ public static class FieldDayScorer
     public static FieldDayScoreBreakdown Score(
         IEnumerable<Qso> qsos,
         FieldDayPowerClass powerClass,
-        int bonusPoints = 0)
+        IReadOnlyList<FieldDayBonusItem>? bonuses = null)
     {
+        bonuses ??= Array.Empty<FieldDayBonusItem>();
+        int bonusPoints = bonuses.Sum(b => b.Points);
         int phone = 0, cw = 0, digital = 0;
         var sections = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -104,6 +109,7 @@ public static class FieldDayScorer
             RawQsoPoints: rawPts,
             PowerMultiplier: mult,
             MultipliedQsoPoints: multipliedPts,
+            Bonuses: bonuses,
             BonusPoints: bonusPoints,
             FinalScore: final,
             SectionsWorked: sortedSections);
