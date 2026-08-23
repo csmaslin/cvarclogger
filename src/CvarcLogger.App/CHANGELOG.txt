@@ -5,6 +5,31 @@ build meant to reach the user (see AppVersion.cs) -- before running publish.ps1.
 
 Versions before 1.17 predate this changelog and are not documented here.
 
+2.07
+----
+- New Contests menu, opened by clicking the sidebar's "Awards/Contests" button a second
+  time (first click still opens Awards). Menu lists per-contest scoring tools; Sweepstakes,
+  CQ WW, and NAQP are placeholders for future work.
+- Field Day scoring window: enter year, power class (QRP Battery x5 / Low x2 / High x1),
+  and bonus points, then click Recalculate. Shows QSO counts by mode (Phone/CW/Digital)
+  with per-mode points, raw x multiplier + bonuses = final score, and the alphabetized
+  list of ARRL sections/states worked. Optional filter to only score QSOs tagged with
+  ContestId=ARRL-FIELD-DAY.
+- Cabrillo import now saves the full header (contest name, category, callsign, address,
+  operators, soapbox, etc.) into a new ContestSubmissions table so it survives past the
+  import. Cabrillo export saves the header from the export dialog into the same table.
+- Cabrillo export dialog auto-fills every field (address, category choices, club, etc.)
+  from the last-saved submission for the same contest when the operator picks a contest
+  from the dropdown -- retyping is no longer required for repeat exports.
+- Cabrillo import smart-routes each received exchange into the right Qso field: pure
+  numeric -> serial, US state -> State, ARRL section -> ArrlSection, Field Day style
+  "3A CO" -> Class + State. Nothing gets silently dropped.
+- Cabrillo reader now streams the input file instead of loading it all at once,
+  reducing memory footprint on very large contest logs.
+- Better error message when Callook.info can't find a non-US callsign -- points the
+  operator at QRZ.com / QRZCQ.com in Lookup Settings instead of the generic
+  "not found" error.
+
 2.06
 ----
 - WSJT-X multicast reception: receive logged QSOs directly from WSJT-X's multicast broadcasts
