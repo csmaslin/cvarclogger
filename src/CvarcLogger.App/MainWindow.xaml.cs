@@ -237,29 +237,24 @@ public partial class MainWindow : Window
         window.Show();
     }
 
-    private void CvarcLogo_Click(object sender, RoutedEventArgs e)
-    {
-        try
-        {
-            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-            {
-                FileName = "https://cvarc.org",
-                UseShellExecute = true
-            });
-        }
-        catch { }
-    }
+    private void CvarcLogo_Click(object sender, RoutedEventArgs e) => OpenUrl("https://cvarc.org");
 
-    private void ArrlLogo_Click(object sender, RoutedEventArgs e)
+    private void ArrlLogo_Click(object sender, RoutedEventArgs e) => OpenUrl("https://arrl.org");
+
+    private static void OpenUrl(string url)
     {
         try
         {
             System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
             {
-                FileName = "https://arrl.org",
+                FileName = url,
                 UseShellExecute = true
             });
         }
-        catch { }
+        catch (Exception ex)
+        {
+            System.Windows.MessageBox.Show($"Failed to open {url}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            App.Services.GetRequiredService<Serilog.ILogger>().Error(ex, "Failed to open URL {Url}", url);
+        }
     }
 }

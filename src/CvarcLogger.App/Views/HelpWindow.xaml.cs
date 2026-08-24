@@ -4,20 +4,28 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using Serilog;
 
 namespace CvarcLogger.App.Views;
 
 public partial class HelpWindow : Window
 {
+    private const string ManualTxtFilename = "CvarcLogger User Manual.txt";
+    private const string ManualPdfFilename = "CvarcLogger User Manual.pdf";
+    private const int TitleTruncateLength = 77;
+    private const int PreviewTruncateLength = 97;
+    private const int ContextLines = 5;
+
     private string _fullManualContent = "";
-    private ObservableCollection<SearchResult> _results = new();
+    private readonly ObservableCollection<SearchResult> _results = new();
+    private string[]? _manualLines;
 
     public class SearchResult
     {
-        public string Title { get; set; } = "";
-        public string Preview { get; set; } = "";
+        public required string Title { get; set; }
+        public required string Preview { get; set; }
         public int LineNumber { get; set; }
-        public string FullContent { get; set; } = "";
+        public required string FullContent { get; set; }
     }
 
     public HelpWindow()
@@ -30,33 +38,76 @@ public partial class HelpWindow : Window
     private void LoadManual()
     {
         string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-        string txtPath = Path.Combine(baseDir, "CvarcLogger User Manual.txt");
-        string pdfPath = Path.Combine(baseDir, "CvarcLogger User Manual.pdf");
+        string txtPath = Path.Combine(baseDir, ManualTxtFilename);
+        string pdfPath = Path.Combine(baseDir, ManualPdfFilename);
 
-        if (File.Exists(txtPath))
+        if (TryLoadTextManual(txtPath))
+            return;
+
+        if (TryLoadPdfManual(pdfPath))
+            return;
+
+        DisplayManualNotFound(baseDir);
+    }
+
+    private bool TryLoadTextManual(string txtPath)
+    {
+        if (!File.Exists(txtPath))
+            return false;
+
+        try
         {
             _fullManualContent = File.ReadAllText(txtPath);
+            _manualLines = _fullManualContent.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+            ContentText.Text = _fullManualContent;
+            return true;
         }
-        else if (File.Exists(pdfPath))
+        catch (Exception ex)
         {
-            _fullManualContent = "PDF manual found. Opening in default PDF viewer...\n\n";
-            _fullManualContent += "To view the full manual, please open: " + pdfPath;
-            try
-            {
-                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-                {
-                    FileName = pdfPath,
-                    UseShellExecute = true
-                });
-            }
-            catch { }
+            Log.Warning(ex, "Failed to load text manual from {TxtPath}", txtPath);
+            return false;
         }
-        else
-        {
-            _fullManualContent = "Help manual not found.\n\nThe application comes with a user manual (CvarcLogger User Manual.pdf) that should be in the same folder as this program.\n\nPlease check:\n" + baseDir;
-        }
+    }
 
+    private bool TryLoadPdfManual(string pdfPath)
+    {
+        if (!File.Exists(pdfPath))
+            return false;
+
+        try
+        {
+            _fullManualContent = $"PDF manual found. Opening in default PDF viewer...\n\nTo view the full manual, please open: {pdfPath}";
+            ContentText.Text = _fullManualContent;
+            OpenFile(pdfPath);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Failed to load PDF manual from {PdfPath}", pdfPath);
+            return false;
+        }
+    }
+
+    private void DisplayManualNotFound(string baseDir)
+    {
+        _fullManualContent = $"Help manual not found.\n\nThe application comes with a user manual ({ManualPdfFilename}) that should be in the same folder as this program.\n\nPlease check:\n{baseDir}";
         ContentText.Text = _fullManualContent;
+    }
+
+    private void OpenFile(string filePath)
+    {
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = filePath,
+                UseShellExecute = true
+            });
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Failed to open file {FilePath}", filePath);
+        }
     }
 
     private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -64,46 +115,46 @@ public partial class HelpWindow : Window
         string query = SearchBox.Text.Trim();
         _results.Clear();
 
-        if (string.IsNullOrWhiteSpace(query))
+        if (string.IsNullOrWhiteSpace(query) || _manualLines == null)
         {
             ResultCount.Text = "";
             ContentText.Text = _fullManualContent;
             return;
         }
 
-        string lowerQuery = query.ToLower();
-        var lines = _fullManualContent.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
-        var matchedSections = new ObservableCollection<SearchResult>();
-
-        for (int i = 0; i < lines.Length; i++)
-        {
-            string line = lines[i];
-            if (line.ToLower().Contains(lowerQuery))
-            {
-                string title = line.Length > 80 ? line.Substring(0, 77) + "..." : line;
-                string preview = "";
-
-                if (i + 1 < lines.Length)
-                    preview = lines[i + 1].Length > 100 ? lines[i + 1].Substring(0, 97) + "..." : lines[i + 1];
-
-                matchedSections.Add(new SearchResult
-                {
-                    Title = title,
-                    Preview = preview,
-                    LineNumber = i,
-                    FullContent = string.Join(Environment.NewLine, lines.Skip(Math.Max(0, i - 2)).Take(5))
-                });
-            }
-        }
-
+        var matchedSections = FindMatches(query, _manualLines);
         foreach (var result in matchedSections)
             _results.Add(result);
 
         ResultCount.Text = $"({_results.Count} matches)";
-
         if (_results.Count > 0)
             ResultsList.SelectedIndex = 0;
     }
+
+    private static ObservableCollection<SearchResult> FindMatches(string query, string[] lines)
+    {
+        var results = new ObservableCollection<SearchResult>();
+        string lowerQuery = query.ToLower();
+
+        for (int i = 0; i < lines.Length; i++)
+        {
+            if (!lines[i].ToLower().Contains(lowerQuery))
+                continue;
+
+            results.Add(new SearchResult
+            {
+                Title = TruncateString(lines[i], TitleTruncateLength),
+                Preview = i + 1 < lines.Length ? TruncateString(lines[i + 1], PreviewTruncateLength) : "",
+                LineNumber = i,
+                FullContent = string.Join(Environment.NewLine, lines.Skip(Math.Max(0, i - 2)).Take(ContextLines))
+            });
+        }
+
+        return results;
+    }
+
+    private static string TruncateString(string text, int maxLength)
+        => text.Length > maxLength ? text.Substring(0, maxLength - 3) + "..." : text;
 
     private void ResultsList_DoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
     {
