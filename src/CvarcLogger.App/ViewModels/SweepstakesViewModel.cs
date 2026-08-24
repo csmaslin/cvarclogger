@@ -1,8 +1,18 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CvarcLogger.Core.Abstractions;
+using CvarcLogger.Core.Geo;
 using CvarcLogger.Core.Models;
 
 namespace CvarcLogger.App.ViewModels;
+
+/// <summary>Result of a <see cref="SweepstakesViewModel.BackfillArrlSectionsAsync"/> pass.</summary>
+public class ArrlSectionBackfillResult
+{
+    public int Updated { get; set; }
+    public int AlreadyPresent { get; set; }
+    public int SkippedNoState { get; set; }
+    public int SkippedUnresolved { get; set; }
+}
 
 /// <summary>Tracks ARRL Sweepstakes scoring for both CW (first full weekend of November) and
 /// Phone (third full weekend of November) events. Each event runs Saturday 21:00 UTC through
@@ -38,8 +48,9 @@ public partial class SweepstakesViewModel : ObservableObject
         CwSectionCount = cwSections;
         CwScore = cwQsos * cwSections;
 
-        // Phone event: third full weekend of November
-        (var phoneQsos, var phoneSections) = CalculateSweepstakesScore(allQsos, year, 3, "SSB", "AM", "FM");
+        // Phone event: third full weekend of November. USB/LSB are both Phone (SSB logged by actual
+        // sideband rather than the generic "SSB" tag), same as AM and FM.
+        (var phoneQsos, var phoneSections) = CalculateSweepstakesScore(allQsos, year, 3, "SSB", "USB", "LSB", "AM", "FM");
         PhoneQsoCount = phoneQsos;
         PhoneSectionCount = phoneSections;
         PhoneScore = phoneQsos * phoneSections;
@@ -48,6 +59,53 @@ public partial class SweepstakesViewModel : ObservableObject
         TotalQsoCount = cwQsos + phoneQsos;
         TotalSectionCount = Math.Min(cwSections + phoneSections, 85);
         TotalScore = CwScore + PhoneScore;
+    }
+
+    /// <summary>Resolves ArrlSection from each QSO's State/County for every QSO whose timestamp falls
+    /// within either the CW or Phone Sweepstakes window for the given year but has no section recorded --
+    /// covers imported/historical data that predates the section field, or where the lookup-driven
+    /// auto-fill in QsoEntryViewModel never ran. Scoped by time span only, not by mode: a section is
+    /// useful log metadata regardless of whether that QSO's mode currently counts toward SS scoring.</summary>
+    public async Task<ArrlSectionBackfillResult> BackfillArrlSectionsAsync(int year)
+    {
+        var allQsos = await _qsoRepository.GetAllAsync();
+
+        var cwWindow = GetSweepstakesEventDates(year, 1);
+        var phoneWindow = GetSweepstakesEventDates(year, 3);
+
+        var inScope = allQsos.Where(q =>
+            (q.QsoDateTimeOnUtc >= cwWindow.start && q.QsoDateTimeOnUtc <= cwWindow.end) ||
+            (q.QsoDateTimeOnUtc >= phoneWindow.start && q.QsoDateTimeOnUtc <= phoneWindow.end));
+
+        var result = new ArrlSectionBackfillResult();
+
+        foreach (var qso in inScope)
+        {
+            if (!string.IsNullOrWhiteSpace(qso.ArrlSection))
+            {
+                result.AlreadyPresent++;
+                continue;
+            }
+
+            if (string.IsNullOrWhiteSpace(qso.State))
+            {
+                result.SkippedNoState++;
+                continue;
+            }
+
+            var resolved = ArrlSectionResolver.Resolve(qso.State, qso.County);
+            if (resolved is null)
+            {
+                result.SkippedUnresolved++;
+                continue;
+            }
+
+            qso.ArrlSection = resolved;
+            await _qsoRepository.UpdateAsync(qso);
+            result.Updated++;
+        }
+
+        return result;
     }
 
     private (int qsoCount, int sectionCount) CalculateSweepstakesScore(List<Qso> allQsos, int year, int weekendNumber, params string[] modes)

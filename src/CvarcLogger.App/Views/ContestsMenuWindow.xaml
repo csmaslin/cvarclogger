@@ -8,40 +8,55 @@
         ShowInTaskbar="False" ResizeMode="CanResize">
 
     <Window.Resources>
-        <Style x:Key="SidebarTabItem" TargetType="TabItem">
+        <!-- Sidebar nav item: a RadioButton styled to look like the old left-placed TabItem strip
+             (same colors/padding/left accent bar), so moving the tabs into the sidebar changes only
+             where they're drawn, not how they look or behave. Checked == that page's content shows. -->
+        <Style x:Key="SidebarNavItem" TargetType="RadioButton">
             <Setter Property="Background" Value="#404040"/>
             <Setter Property="Foreground" Value="#ecf0f1"/>
             <Setter Property="Padding" Value="16,14"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="FontFamily" Value="Segoe UI, Roboto, sans-serif"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
-            <Setter Property="MinWidth" Value="200"/>
             <Setter Property="Template">
                 <Setter.Value>
-                    <ControlTemplate TargetType="TabItem">
-                        <Border x:Name="TabBorder"
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="NavBorder"
                                 Background="{TemplateBinding Background}"
                                 BorderBrush="Transparent" BorderThickness="4,0,0,0"
                                 Padding="{TemplateBinding Padding}" Margin="0,0,0,2">
-                            <ContentPresenter ContentSource="Header"
-                                              HorizontalAlignment="Left" VerticalAlignment="Center"
+                            <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"
                                               RecognizesAccessKey="True"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="TabBorder" Property="Background" Value="#4a4a4a"/>
+                                <Setter TargetName="NavBorder" Property="Background" Value="#4a4a4a"/>
                             </Trigger>
-                            <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="TabBorder" Property="Background" Value="#34495e"/>
-                                <Setter TargetName="TabBorder" Property="BorderBrush" Value="#3498db"/>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="NavBorder" Property="Background" Value="#34495e"/>
+                                <Setter TargetName="NavBorder" Property="BorderBrush" Value="#3498db"/>
                                 <Setter Property="Foreground" Value="White"/>
                                 <Setter Property="FontWeight" Value="SemiBold"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="TabBorder" Property="Background" Value="#2a2a2a"/>
+                                <Setter TargetName="NavBorder" Property="Background" Value="#2a2a2a"/>
                                 <Setter Property="Foreground" Value="#666666"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Headerless TabControl: keeps TabItem/TabControl for content + SelectedIndex switching
+             (so every TabItem's content, including the existing Click handlers, is unchanged) but
+             renders only the selected page, with no built-in tab strip, since that job moved to the
+             SidebarNavItem RadioButtons above. -->
+        <Style x:Key="HeaderlessTabControl" TargetType="TabControl">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabControl">
+                        <ContentPresenter ContentSource="SelectedContent"/>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
@@ -63,11 +78,30 @@
         </Grid.ColumnDefinitions>
 
         <Border Grid.Column="0" Background="#404040">
-            <StackPanel Margin="16,20,16,16">
-                <emoji:TextBlock Text="🏆" FontSize="42" HorizontalAlignment="Center" Foreground="White" Margin="0,10,0,6"/>
-                <TextBlock Text="Contests" FontSize="18" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
-                <TextBlock Text="Score your log" FontSize="11" Foreground="#bdc3c7" HorizontalAlignment="Center" Margin="0,4,0,0"/>
-            </StackPanel>
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Top" Margin="16,20,16,16">
+                    <emoji:TextBlock Text="🏆" FontSize="42" HorizontalAlignment="Center" Foreground="White" Margin="0,10,0,6"/>
+                    <TextBlock Text="Contests" FontSize="18" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Score your log" FontSize="11" Foreground="#bdc3c7" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                </StackPanel>
+
+                <StackPanel DockPanel.Dock="Top">
+                    <RadioButton x:Name="FieldDayNavItem" GroupName="ContestNav" Style="{StaticResource SidebarNavItem}"
+                                 IsChecked="True" Checked="ContestNav_Checked" Tag="0">
+                        <emoji:TextBlock Text="📻  Field Day" FontSize="14"/>
+                    </RadioButton>
+                    <RadioButton x:Name="SweepstakesNavItem" GroupName="ContestNav" Style="{StaticResource SidebarNavItem}"
+                                 Checked="ContestNav_Checked" Tag="1">
+                        <emoji:TextBlock Text="🌐  ARRL Sweepstakes" FontSize="14"/>
+                    </RadioButton>
+                    <RadioButton GroupName="ContestNav" Style="{StaticResource SidebarNavItem}" IsEnabled="False">
+                        <emoji:TextBlock Text="🌐  CQ WW" FontSize="14"/>
+                    </RadioButton>
+                    <RadioButton GroupName="ContestNav" Style="{StaticResource SidebarNavItem}" IsEnabled="False">
+                        <emoji:TextBlock Text="🌐  NAQP" FontSize="14"/>
+                    </RadioButton>
+                </StackPanel>
+            </DockPanel>
         </Border>
 
         <Grid Grid.Column="1" Margin="24">
@@ -80,8 +114,8 @@
                 <TextBlock Text="Contest Scoring" FontSize="18" FontWeight="Bold" Foreground="#000000"/>
             </Border>
 
-            <TabControl Grid.Row="1" TabStripPlacement="Left" Background="White" BorderBrush="#dddddd" BorderThickness="1"
-                        ItemContainerStyle="{StaticResource SidebarTabItem}">
+            <TabControl x:Name="ContestTabControl" Grid.Row="1" Style="{StaticResource HeaderlessTabControl}"
+                        Background="White" BorderBrush="#dddddd" BorderThickness="1">
                 <TabItem>
                     <TabItem.Header>
                         <emoji:TextBlock Text="📻  Field Day" FontSize="14"/>
