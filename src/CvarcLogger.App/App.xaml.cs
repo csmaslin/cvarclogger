@@ -136,6 +136,7 @@ public partial class App : Application
                 services.AddTransient<Views.QsoEditWindow>();
                 services.AddTransient<Views.FileOperationsWindow>();
                 services.AddTransient<Views.SweepstakesScoringWindow>();
+                services.AddTransient<Views.HelpWindow>();
             })
             .Build();
 
