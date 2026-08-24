@@ -12,27 +12,22 @@ public partial class HelpWindow : Window
 {
     private const string ManualTxtFilename = "CvarcLogger User Manual.txt";
     private const string ManualPdfFilename = "CvarcLogger User Manual.pdf";
-    private const int TitleTruncateLength = 77;
-    private const int PreviewTruncateLength = 97;
-    private const int ContextLines = 5;
 
-    private string _fullManualContent = "";
-    private readonly ObservableCollection<SearchResult> _results = new();
+    private readonly ObservableCollection<ManualSection> _sections = new();
     private string[]? _manualLines;
 
-    public class SearchResult
+    public class ManualSection
     {
         public required string Title { get; set; }
-        public required string Preview { get; set; }
-        public int LineNumber { get; set; }
-        public required string FullContent { get; set; }
+        public required string Content { get; set; }
+        public string SearchKeywords { get; set; } = "";
     }
 
     public HelpWindow()
     {
         InitializeComponent();
         LoadManual();
-        ResultsList.ItemsSource = _results;
+        ResultsList.ItemsSource = _sections;
     }
 
     private void LoadManual()
@@ -57,15 +52,57 @@ public partial class HelpWindow : Window
 
         try
         {
-            _fullManualContent = File.ReadAllText(txtPath);
-            _manualLines = _fullManualContent.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
-            ContentText.Text = _fullManualContent;
+            string content = File.ReadAllText(txtPath);
+            _manualLines = content.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+            ParseSections(_manualLines);
+            if (_sections.Count > 0)
+            {
+                ResultsList.SelectedIndex = 0;
+                DisplaySection(_sections[0]);
+            }
             return true;
         }
         catch (Exception ex)
         {
             Log.Warning(ex, "Failed to load text manual from {TxtPath}", txtPath);
             return false;
+        }
+    }
+
+    private void ParseSections(string[] lines)
+    {
+        _sections.Clear();
+        var currentSection = new ManualSection { Title = "Table of Contents", Content = "" };
+        var contentLines = new List<string>();
+
+        for (int i = 0; i < lines.Length; i++)
+        {
+            string line = lines[i].Trim();
+
+            if (line.StartsWith("###") || line.StartsWith("##"))
+            {
+                if (!string.IsNullOrWhiteSpace(currentSection.Title) && contentLines.Count > 0)
+                {
+                    currentSection.Content = string.Join(Environment.NewLine, contentLines);
+                    currentSection.SearchKeywords = (currentSection.Title + " " + currentSection.Content).ToLower();
+                    _sections.Add(currentSection);
+                }
+
+                string titleText = line.TrimStart('#').Trim();
+                currentSection = new ManualSection { Title = titleText, Content = "" };
+                contentLines.Clear();
+            }
+            else if (!string.IsNullOrWhiteSpace(line))
+            {
+                contentLines.Add(line);
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(currentSection.Title) && contentLines.Count > 0)
+        {
+            currentSection.Content = string.Join(Environment.NewLine, contentLines);
+            currentSection.SearchKeywords = (currentSection.Title + " " + currentSection.Content).ToLower();
+            _sections.Add(currentSection);
         }
     }
 
@@ -76,8 +113,14 @@ public partial class HelpWindow : Window
 
         try
         {
-            _fullManualContent = $"PDF manual found.\n\nTo view the full manual, please open: {pdfPath}";
-            ContentText.Text = _fullManualContent;
+            var pdfSection = new ManualSection
+            {
+                Title = "User Manual (PDF)",
+                Content = $"PDF manual found at:\n{pdfPath}\n\nTo view the full manual, please open the PDF file in your Documents folder.",
+                SearchKeywords = "manual pdf"
+            };
+            _sections.Add(pdfSection);
+            DisplaySection(pdfSection);
             return true;
         }
         catch (Exception ex)
@@ -89,62 +132,48 @@ public partial class HelpWindow : Window
 
     private void DisplayManualNotFound(string baseDir)
     {
-        _fullManualContent = $"Help manual not found.\n\nThe application comes with a user manual ({ManualPdfFilename}) that should be in the same folder as this program.\n\nPlease check:\n{baseDir}";
-        ContentText.Text = _fullManualContent;
+        var notFoundSection = new ManualSection
+        {
+            Title = "Help Not Available",
+            Content = $"Help manual not found.\n\nThe application comes with a user manual (CvarcLogger User Manual.pdf) that should be in the same folder as this program.\n\nPlease check:\n{baseDir}",
+            SearchKeywords = "help manual not found"
+        };
+        _sections.Add(notFoundSection);
+        DisplaySection(notFoundSection);
     }
 
     private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
     {
-        string query = SearchBox.Text.Trim();
-        _results.Clear();
+        string query = SearchBox.Text.Trim().ToLower();
 
-        if (string.IsNullOrWhiteSpace(query) || _manualLines == null)
+        if (string.IsNullOrWhiteSpace(query))
         {
             ResultCount.Text = "";
-            ContentText.Text = _fullManualContent;
+            foreach (var section in _sections)
+                section.Title = section.Title;
             return;
         }
 
-        var matchedSections = FindMatches(query, _manualLines);
-        foreach (var result in matchedSections)
-            _results.Add(result);
+        var matchedCount = _sections.Count(s => s.SearchKeywords.Contains(query) || s.Title.ToLower().Contains(query));
+        ResultCount.Text = $"({matchedCount} matches)";
 
-        ResultCount.Text = $"({_results.Count} matches)";
-        if (_results.Count > 0)
-            ResultsList.SelectedIndex = 0;
-    }
-
-    private static ObservableCollection<SearchResult> FindMatches(string query, string[] lines)
-    {
-        var results = new ObservableCollection<SearchResult>();
-        string lowerQuery = query.ToLower();
-
-        for (int i = 0; i < lines.Length; i++)
+        ResultsList.Items.Filter = item =>
         {
-            if (!lines[i].ToLower().Contains(lowerQuery))
-                continue;
-
-            results.Add(new SearchResult
-            {
-                Title = TruncateString(lines[i], TitleTruncateLength),
-                Preview = i + 1 < lines.Length ? TruncateString(lines[i + 1], PreviewTruncateLength) : "",
-                LineNumber = i,
-                FullContent = string.Join(Environment.NewLine, lines.Skip(Math.Max(0, i - 2)).Take(ContextLines))
-            });
-        }
-
-        return results;
+            if (item is ManualSection section)
+                return section.SearchKeywords.Contains(query) || section.Title.ToLower().Contains(query);
+            return false;
+        };
     }
-
-    private static string TruncateString(string text, int maxLength)
-        => text.Length > maxLength ? text.Substring(0, maxLength - 3) + "..." : text;
 
     private void ResultsList_DoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
     {
-        if (ResultsList.SelectedItem is SearchResult result)
-        {
-            ContentText.Text = result.FullContent;
-            ContentScroll.ScrollToHome();
-        }
+        if (ResultsList.SelectedItem is ManualSection section)
+            DisplaySection(section);
+    }
+
+    private void DisplaySection(ManualSection section)
+    {
+        ContentText.Text = $"{section.Title}\n{'=' * section.Title.Length}\n\n{section.Content}";
+        ContentScroll.ScrollToHome();
     }
 }
