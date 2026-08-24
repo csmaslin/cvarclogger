@@ -229,4 +229,37 @@ public partial class MainWindow : Window
     }
 
     private void GridColumnsButton_Click(object sender, RoutedEventArgs e) => ColumnsButton_Click(sender, e);
+
+    private void HelpButton_Click(object sender, RoutedEventArgs e)
+    {
+        var window = App.Services.GetRequiredService<HelpWindow>();
+        window.Owner = this;
+        window.Show();
+    }
+
+    private void CvarcLogo_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = "https://cvarc.org",
+                UseShellExecute = true
+            });
+        }
+        catch { }
+    }
+
+    private void ArrlLogo_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = "https://arrl.org",
+                UseShellExecute = true
+            });
+        }
+        catch { }
+    }
 }

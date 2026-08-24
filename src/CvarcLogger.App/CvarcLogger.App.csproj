@@ -52,6 +52,9 @@
     </Content>
   </ItemGroup>
 
+  <!-- User manual for the integrated help system. PDF is included in publish, convert to txt separately. -->
+  <!-- For now, help system will look for .txt but fallback to .pdf if available. -->
+
   <!-- Bundled rigctld.exe (Hamlib) so CAT control works out of the box on a copied install,
        without requiring a separate Hamlib install. See vendor/hamlib/README-CVARCLOGGER-BUNDLE.txt. -->
   <ItemGroup>
