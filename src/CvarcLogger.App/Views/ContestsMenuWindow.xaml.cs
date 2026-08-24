@@ -34,12 +34,27 @@ public partial class ContestsMenuWindow : Window
             case 1:
                 OpenSweepstakesScorer();
                 break;
+            case 2:
+                OpenCqWwScorer();
+                break;
+            case 3:
+                OpenSprintsScorer();
+                break;
+            case 4:
+                OpenNaqpScorer();
+                break;
         }
     }
 
     private void FieldDay_Click(object sender, RoutedEventArgs e) => OpenFieldDayScorer();
 
     private void Sweepstakes_Click(object sender, RoutedEventArgs e) => OpenSweepstakesScorer();
+
+    private void CqWw_Click(object sender, RoutedEventArgs e) => OpenCqWwScorer();
+
+    private void Sprints_Click(object sender, RoutedEventArgs e) => OpenSprintsScorer();
+
+    private void Naqp_Click(object sender, RoutedEventArgs e) => OpenNaqpScorer();
 
     private void OpenFieldDayScorer()
     {
@@ -50,6 +65,24 @@ public partial class ContestsMenuWindow : Window
     private void OpenSweepstakesScorer()
     {
         var window = new SweepstakesScoringWindow { Owner = this };
+        window.Show();
+    }
+
+    private void OpenCqWwScorer()
+    {
+        var window = new CqWwScoringWindow { Owner = this };
+        window.Show();
+    }
+
+    private void OpenSprintsScorer()
+    {
+        var window = new SprintsScoringWindow { Owner = this };
+        window.Show();
+    }
+
+    private void OpenNaqpScorer()
+    {
+        var window = new NaqpScoringWindow { Owner = this };
         window.Show();
     }
 }

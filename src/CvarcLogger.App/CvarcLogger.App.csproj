@@ -54,7 +54,8 @@
 
   <!-- User manual for the integrated Help window: structured JSON (chapters + text/table blocks) is the
        primary source the Help window parses; the PDF (exported by publish.ps1 from the .docx) is kept as
-       a fallback if the JSON is ever missing. -->
+       a fallback if the JSON is ever missing. Regenerated from the .docx on every build (see
+       RegenerateManualJson target below) so the Help window can never go stale relative to the manual. -->
   <ItemGroup>
     <Content Include="..\..\docs\CvarcLogger User Manual.json">
       <Link>CvarcLogger User Manual.json</Link>
@@ -62,6 +63,16 @@
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
   </ItemGroup>
+
+  <!-- Regenerates "docs\CvarcLogger User Manual.json" from "docs\CvarcLogger User Manual.docx" before
+       every build, via extract-manual-json.py at the repo root, keeping the in-app Help window's manual
+       in sync with whatever the user last hand-edited in the .docx, with no separate manual step.
+       ContinueOnError so a machine without Python on PATH still gets a normal build (using whatever
+       manual JSON is already on disk) instead of a hard failure. -->
+  <Target Name="RegenerateManualJson" BeforeTargets="BeforeBuild">
+    <Exec Command="python &quot;$(MSBuildProjectDirectory)\..\..\extract-manual-json.py&quot;"
+          ContinueOnError="WarnAndContinue" />
+  </Target>
 
   <!-- Bundled rigctld.exe (Hamlib) so CAT control works out of the box on a copied install,
        without requiring a separate Hamlib install. See vendor/hamlib/README-CVARCLOGGER-BUNDLE.txt. -->
