@@ -14,14 +14,20 @@
         <!-- Search Bar -->
         <Border Grid.Row="0" Background="#3498db" Padding="15">
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                <TextBlock Text="🔍 Search:" Foreground="White" FontSize="14" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                <TextBox x:Name="SearchBox" Width="300" Height="32" Padding="10,6" FontSize="13"
-                         TextChanged="SearchBox_TextChanged" VerticalAlignment="Center"/>
+                <TextBlock Text="Search:" Foreground="White" FontSize="14" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                <TextBox x:Name="SearchBox" Width="280" Height="32" Padding="8,6" FontSize="13"
+                         Style="{x:Null}" Background="White" Foreground="Black" BorderBrush="#cccccc" BorderThickness="1"
+                         VerticalAlignment="Center" VerticalContentAlignment="Center"
+                         KeyDown="SearchBox_KeyDown"/>
+                <Button x:Name="FindButton" Content="Find" Width="70" Height="32" Margin="8,0,0,0"
+                        Click="FindButton_Click" VerticalAlignment="Center"/>
+                <Button x:Name="NextButton" Content="Next" Width="70" Height="32" Margin="6,0,0,0"
+                        Click="NextButton_Click" VerticalAlignment="Center" IsEnabled="False"/>
                 <TextBlock x:Name="ResultCount" Foreground="White" FontSize="13" Margin="15,0,0,0" VerticalAlignment="Center"/>
             </StackPanel>
         </Border>
 
-        <!-- Content Area: Either results list or full manual view -->
+        <!-- Content Area -->
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="250" MinWidth="150"/>
@@ -29,10 +35,10 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Results List (when searching) -->
+            <!-- Chapter List -->
             <ListBox x:Name="ResultsList" Grid.Column="0" Background="White" BorderBrush="#cccccc" BorderThickness="1"
                      ScrollViewer.VerticalScrollBarVisibility="Auto" Margin="10"
-                     MouseDoubleClick="ResultsList_DoubleClick">
+                     SelectionChanged="ResultsList_SelectionChanged">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Margin="5">
@@ -48,10 +54,10 @@
 
             <!-- Manual Content Viewer -->
             <Border Grid.Column="2" Background="White" BorderBrush="#cccccc" BorderThickness="1" Margin="10">
-                <ScrollViewer x:Name="ContentScroll" VerticalScrollBarVisibility="Auto">
-                    <TextBlock x:Name="ContentText" Padding="15" TextWrapping="Wrap" LineHeight="22"
-                               Foreground="#333333" FontSize="12" FontFamily="Segoe UI, Consolas, monospace"/>
-                </ScrollViewer>
+                <RichTextBox x:Name="ContentViewer" IsReadOnly="True" BorderThickness="0" Background="White"
+                             Padding="15" FontSize="13" FontFamily="Segoe UI, Roboto, sans-serif"
+                             VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
+                             IsDocumentEnabled="True"/>
             </Border>
         </Grid>
     </Grid>

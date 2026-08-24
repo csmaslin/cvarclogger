@@ -52,8 +52,16 @@
     </Content>
   </ItemGroup>
 
-  <!-- User manual for the integrated help system. PDF is included in publish, convert to txt separately. -->
-  <!-- For now, help system will look for .txt but fallback to .pdf if available. -->
+  <!-- User manual for the integrated Help window: structured JSON (chapters + text/table blocks) is the
+       primary source the Help window parses; the PDF (exported by publish.ps1 from the .docx) is kept as
+       a fallback if the JSON is ever missing. -->
+  <ItemGroup>
+    <Content Include="..\..\docs\CvarcLogger User Manual.json">
+      <Link>CvarcLogger User Manual.json</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
 
   <!-- Bundled rigctld.exe (Hamlib) so CAT control works out of the box on a copied install,
        without requiring a separate Hamlib install. See vendor/hamlib/README-CVARCLOGGER-BUNDLE.txt. -->
