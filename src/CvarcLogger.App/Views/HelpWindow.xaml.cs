@@ -76,9 +76,8 @@ public partial class HelpWindow : Window
 
         try
         {
-            _fullManualContent = $"PDF manual found. Opening in default PDF viewer...\n\nTo view the full manual, please open: {pdfPath}";
+            _fullManualContent = $"PDF manual found.\n\nTo view the full manual, please open: {pdfPath}";
             ContentText.Text = _fullManualContent;
-            OpenFile(pdfPath);
             return true;
         }
         catch (Exception ex)
@@ -92,22 +91,6 @@ public partial class HelpWindow : Window
     {
         _fullManualContent = $"Help manual not found.\n\nThe application comes with a user manual ({ManualPdfFilename}) that should be in the same folder as this program.\n\nPlease check:\n{baseDir}";
         ContentText.Text = _fullManualContent;
-    }
-
-    private void OpenFile(string filePath)
-    {
-        try
-        {
-            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-            {
-                FileName = filePath,
-                UseShellExecute = true
-            });
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "Failed to open file {FilePath}", filePath);
-        }
     }
 
     private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
