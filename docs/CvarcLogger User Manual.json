@@ -311,6 +311,18 @@
               "Highlights"
             ],
             [
+              "2.07 (Beta)",
+              "New Contests menu with per-contest scoring tools (Field Day, ARRL Sweepstakes, CQ WW, Sprints, NAQP - all labeled Beta). Cabrillo import now saves the full contest header; export dialog auto-fills from the last submission. New in-app Help window with the full manual (including real tables) and find/next search, kept in sync with this document automatically on every build. ARRL Sweepstakes fixes: USB/LSB now count as Phone-event modes, and a Fill in Missing Sections tool backfills ARRL Section from State/County for older QSOs."
+            ],
+            [
+              "2.06",
+              "WSJT-X multicast reception as an alternative to GridTracker2 relay. Cabrillo import/export for contest logs. CAT Control: baud rate dropdown, Internet Control radio-type dropdown (K4/FlexRadio/CI-V/Kenwood), USB test now actually polls the radio, rigctld auto-launch on by default. Custom install directory; uninstall prompts to keep or remove the database. Tab key in Callsign now triggers lookup."
+            ],
+            [
+              "2.05",
+              "Entry form and log grid can now be resized against each other via a drag handle (remembers your split). Fixed: Edit QSO's Lookup button now works; added a Clear & Lookup button that empties and refetches looked-up fields without touching anything typed by hand."
+            ],
+            [
               "2.04",
               "Internal cleanup and performance work on the SKCC awards feature -- faster SKCC tab load, no user-visible behavior change besides tier labels now showing contacts remaining."
             ],
