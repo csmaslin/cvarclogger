@@ -2,17 +2,19 @@
 
 # CVARC Logger
 
-> **Latest Release: v2.07 (Beta)** | [View all releases](https://github.com/csmaslin/cvarclogger/releases)
+> **Latest Release: v2.06** | [View all releases](https://github.com/csmaslin/cvarclogger/releases)
 >
 > **📥 Download Now:**
 >
-> ⬇️ **[CvarcLogger-Setup-2.07.exe](https://github.com/csmaslin/cvarclogger/releases/download/v2.07/CvarcLogger-Setup-2.07.exe)** (Windows Installer, 60 MB)
+> ⬇️ **[CvarcLogger-Setup-2.06.exe](https://github.com/csmaslin/cvarclogger/releases/download/v2.06/CvarcLogger-Setup-2.06.exe)** (Windows Installer, 59.9 MB)
 >
-> ⬇️ **[CvarcLogger.V2.07.zip](https://github.com/csmaslin/cvarclogger/releases/download/v2.07/CvarcLogger.V2.07.zip)** (Portable ZIP, 60 MB)
+> ⬇️ **[CvarcLogger.V2.06.zip](https://github.com/csmaslin/cvarclogger/releases/download/v2.06/CvarcLogger.V2.06.zip)** (Portable ZIP, 59.9 MB)
+>
+> 🧪 **Pre-release available: [v2.07 (Beta)](https://github.com/csmaslin/cvarclogger/releases/tag/v2.07)** -- adds a new Contest Scoring Suite (Field Day, ARRL Sweepstakes, CQ WW, Sprints, NAQP) and a rebuilt in-app Help window. Not yet production; download at your own risk from the [v2.07 pre-release page](https://github.com/csmaslin/cvarclogger/releases/tag/v2.07).
 
 ---
 
-**Version 2.07 (Beta)**  
+**Version 2.06**  
 Conejo Valley Amateur Radio Club  
 Program by W6CSM
 
