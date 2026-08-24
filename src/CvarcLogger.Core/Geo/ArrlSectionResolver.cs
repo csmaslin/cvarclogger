@@ -15,7 +15,7 @@ public static class ArrlSectionResolver
     private static readonly Dictionary<string, string> SingleSectionStates = new(StringComparer.OrdinalIgnoreCase)
     {
         ["AL"] = "AL", ["AK"] = "AK", ["AZ"] = "AZ", ["AR"] = "AR", ["CO"] = "CO", ["CT"] = "CT",
-        ["DE"] = "DE", ["DC"] = "MDC", ["MD"] = "MDC", ["GA"] = "GA", ["ID"] = "ID", ["IL"] = "IL",
+        ["DE"] = "DE", ["DC"] = "MDC", ["MD"] = "MDC", ["GA"] = "GA", ["HI"] = "PAC", ["ID"] = "ID", ["IL"] = "IL",
         ["IN"] = "IN", ["IA"] = "IA", ["KS"] = "KS", ["KY"] = "KY", ["LA"] = "LA", ["ME"] = "ME",
         ["MI"] = "MI", ["MN"] = "MN", ["MS"] = "MS", ["MO"] = "MO", ["MT"] = "MT", ["NE"] = "NE",
         ["NV"] = "NV", ["NH"] = "NH", ["NM"] = "NM", ["NC"] = "NC", ["ND"] = "ND", ["OH"] = "OH",
