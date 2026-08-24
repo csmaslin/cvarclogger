@@ -2,17 +2,17 @@
 
 # CVARC Logger
 
-> **Latest Release: v2.05** | [View all releases](https://github.com/csmaslin/cvarclogger/releases)
+> **Latest Release: v2.07 (Beta)** | [View all releases](https://github.com/csmaslin/cvarclogger/releases)
 >
 > **📥 Download Now:**
 >
-> ⬇️ **[CvarcLogger-Setup-2.05.exe](https://github.com/csmaslin/cvarclogger/releases/download/v2.05/CvarcLogger-Setup-2.05.exe)** (Windows Installer, 59.9 MB)
+> ⬇️ **[CvarcLogger-Setup-2.07.exe](https://github.com/csmaslin/cvarclogger/releases/download/v2.07/CvarcLogger-Setup-2.07.exe)** (Windows Installer, 60 MB)
 >
-> ⬇️ **[CvarcLogger.V2.05.zip](https://github.com/csmaslin/cvarclogger/releases/download/v2.05/CvarcLogger.V2.05.zip)** (Portable ZIP, 60.1 MB)
+> ⬇️ **[CvarcLogger.V2.07.zip](https://github.com/csmaslin/cvarclogger/releases/download/v2.07/CvarcLogger.V2.07.zip)** (Portable ZIP, 60 MB)
 
 ---
 
-**Version 2.05**  
+**Version 2.07 (Beta)**  
 Conejo Valley Amateur Radio Club  
 Program by W6CSM
 
@@ -423,6 +423,19 @@ Open Columns/Tabs (sidebar or ribbon) and check it on for the current Log Mode -
 ## Appendix A: Version History
 
 Versions before 1.17 predate CVARC Logger's changelog and are not documented here.
+
+**v2.07 (Beta)**
+- **New Contests menu**: per-contest scoring tools for Field Day, ARRL Sweepstakes, CQ WW, Sprints (CW/SSB/RTTY plus the ARRL VHF Contest), and NAQP -- all labeled Beta pending real-world verification.
+- **New in-app Help window**: the full user manual, including tables rendered as real grids, with a find/next search that jumps to and highlights matches. Kept in sync with the manual automatically on every build.
+- **Cabrillo import** now saves the full contest header; the export dialog auto-fills from the last submission for the same contest.
+- **ARRL Sweepstakes fixes**: USB/LSB now count as Phone-event modes (previously only the literal "SSB" tag counted); a new "Fill in Missing Sections" tool backfills ARRL Section from State/County for older QSOs.
+
+**v2.06**
+- **WSJT-X multicast reception** as an alternative to relaying through GridTracker2.
+- **Cabrillo import/export** for contest logs.
+- **CAT Control improvements**: baud rate dropdown, Internet Control radio-type dropdown (Elecraft K4/FlexRadio/Icom CI-V/Kenwood), USB test now actually polls the radio, rigctld auto-launch on by default.
+- **Installer**: custom install directory; uninstall prompts to keep or remove the database.
+- Tab key in the Callsign field now triggers automatic lookup.
 
 **v2.05** (2026-08-17)
 - **Resizable split between entry form and log grid**: drag the grey handle just under the button ribbon up or down to give either pane more room. Defaults to 50/50, remembers the position on exit.
