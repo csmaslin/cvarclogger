@@ -124,6 +124,9 @@ public partial class App : Application
                 services.AddTransient<ParksOnTheAirViewModel>();
                 services.AddTransient<SkccViewModel>();
                 services.AddTransient<SweepstakesViewModel>();
+                services.AddTransient<CqWwViewModel>();
+                services.AddTransient<SprintsViewModel>();
+                services.AddTransient<NaqpViewModel>();
                 services.AddTransient<SettingsViewModel>();
                 services.AddTransient<StationProfileViewModel>();
                 services.AddTransient<QsoEditViewModel>();
@@ -136,6 +139,9 @@ public partial class App : Application
                 services.AddTransient<Views.QsoEditWindow>();
                 services.AddTransient<Views.FileOperationsWindow>();
                 services.AddTransient<Views.SweepstakesScoringWindow>();
+                services.AddTransient<Views.CqWwScoringWindow>();
+                services.AddTransient<Views.SprintsScoringWindow>();
+                services.AddTransient<Views.NaqpScoringWindow>();
                 services.AddTransient<Views.HelpWindow>();
             })
             .Build();

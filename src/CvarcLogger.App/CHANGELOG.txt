@@ -5,8 +5,8 @@ build meant to reach the user (see AppVersion.cs) -- before running publish.ps1.
 
 Versions before 1.17 predate this changelog and are not documented here.
 
-2.07
-----
+2.07 (Beta)
+-----------
 - New Contests menu, opened by clicking the sidebar's "Awards/Contests" button a second
   time (first click still opens Awards). Menu lists per-contest scoring tools; Sweepstakes,
   CQ WW, and NAQP are placeholders for future work.
@@ -41,6 +41,36 @@ Versions before 1.17 predate this changelog and are not documented here.
   weekend of November, Phone: third full weekend, both Saturday 21:00 UTC - Monday
   02:59 UTC). Score = QSOs × Unique Sections per event (max 85). UI shows CW/Phone
   results separately with combined total. Accessible via Contests menu.
+- ARRL Sweepstakes fix: Phone-event mode matching now accepts USB/LSB (how sideband
+  voice is actually logged) alongside SSB/AM/FM -- QSOs tagged USB/LSB were being
+  silently excluded from Phone scoring entirely.
+- ARRL Sweepstakes: added "Fill in Missing Sections" button to backfill ArrlSection
+  from each QSO's State/County via the existing resolver, for QSOs inside either SS
+  weekend window that predate the section field (e.g. imported historical data).
+  ArrlSectionResolver also gained a Hawaii -> PAC mapping, which had none before.
+- New in-app Help window: full user manual (all chapters, including tables rendered
+  as real grids, not flattened text) loaded from a JSON file that's regenerated from
+  the source .docx automatically on every build. Search finds and highlights the
+  first match in the manual body with a Next button to step through further matches.
+- Contests menu redesigned: the Field Day / Sweepstakes / CQ WW / Sprints / NAQP tab
+  strip now lives in the sidebar instead of a second tab rail in the content area;
+  clicking a sidebar tab auto-opens that contest's scorer window directly.
+- New CQ WW DX Contest scoring (Beta): separate SSB (last full weekend of October)
+  and CW (last full weekend of November) events, 160-10m. QSO points follow the
+  official same-country/same-continent/different-continent/both-North-America rules;
+  zone and country multipliers are each counted once per band and summed. Since the
+  app has no "my own station" continent/country on file, it's resolved per QSO from
+  each StationCallsign via the same DXCC-prefix resolver used for worked stations.
+- New Sprints scoring (Beta): CW/SSB/RTTY Sprint on 80/40/20m (manual UTC date/time
+  entry per event, since Sprint dates aren't a fixed weekend-of-month rule) and the
+  ARRL January/June/September VHF Contest, fixed-station scoring, 50 MHz and up
+  (QSO points by band tier, multiplier = 4-character grid squares worked per band).
+- New NAQP scoring (Beta): CW/SSB/RTTY, each run twice a year on NCJ's fixed
+  weekend-of-month schedule (all 6 event windows derived automatically from a single
+  year field). Score = total QSOs × multipliers, with multipliers counted again on
+  each band per NCJ rule 11.
+- All contest scoring features (Sweepstakes, CQ WW, Sprints, NAQP) are labeled
+  (Beta) in the UI pending real-world verification against live contest logs.
 
 2.06
 ----

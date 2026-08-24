@@ -279,7 +279,7 @@
 
                         <Button Name="ContestsButton" Click="ContestsButton_Click" ToolTip="Open the contest scoring menu (Field Day, Sweepstakes, CQ WW, NAQP, ...)"
                                 Style="{StaticResource SidebarButtonStyle}">
-                            <emoji:TextBlock Text="🏆 Contests"/>
+                            <emoji:TextBlock Text="🏆 Contests (Beta)"/>
                         </Button>
 
                         <!-- Divider -->
