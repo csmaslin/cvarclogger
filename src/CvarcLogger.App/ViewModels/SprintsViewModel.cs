@@ -14,7 +14,7 @@ public partial class SprintsViewModel : ObservableObject
 
     private static readonly HashSet<string> SprintBands = new(StringComparer.OrdinalIgnoreCase) { "80m", "40m", "20m" };
     private static readonly HashSet<string> CwModes = new(StringComparer.OrdinalIgnoreCase) { "CW" };
-    private static readonly HashSet<string> SsbModes = new(StringComparer.OrdinalIgnoreCase) { "SSB", "USB", "LSB", "AM", "FM" };
+    private static readonly HashSet<string> SsbModes = new(StringComparer.OrdinalIgnoreCase) { "SSB", "USB", "LSB", "AM", "FM", "PH" };
     private static readonly HashSet<string> RttyModes = new(StringComparer.OrdinalIgnoreCase) { "RTTY" };
 
     [ObservableProperty] private int cwQsoCount;

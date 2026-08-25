@@ -49,8 +49,8 @@ public partial class SweepstakesViewModel : ObservableObject
         CwScore = cwQsos * cwSections;
 
         // Phone event: third full weekend of November. USB/LSB are both Phone (SSB logged by actual
-        // sideband rather than the generic "SSB" tag), same as AM and FM.
-        (var phoneQsos, var phoneSections) = CalculateSweepstakesScore(allQsos, year, 3, "SSB", "USB", "LSB", "AM", "FM");
+        // sideband rather than the generic "SSB" tag), same as AM, FM, and the generic "PH" tag.
+        (var phoneQsos, var phoneSections) = CalculateSweepstakesScore(allQsos, year, 3, "SSB", "USB", "LSB", "AM", "FM", "PH");
         PhoneQsoCount = phoneQsos;
         PhoneSectionCount = phoneSections;
         PhoneScore = phoneQsos * phoneSections;
