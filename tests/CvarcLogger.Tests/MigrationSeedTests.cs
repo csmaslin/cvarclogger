@@ -61,6 +61,42 @@ public class MigrationSeedTests : IDisposable
         Assert.Equal(firstCount, secondCount);
     }
 
+    [Fact]
+    public async Task SeedIfEmpty_ToppsUpEntitiesMissingFromAnAlreadySeededDatabase()
+    {
+        // Simulates a database seeded before a later bundled-list expansion: manually inserting one
+        // entity (as if it were all a smaller, older seed had produced) must not block the rest of the
+        // current list from being added on the next call -- unlike a plain "table already has rows,
+        // skip entirely" check would.
+        await using var db = CreateContext();
+        await db.Database.MigrateAsync();
+
+        db.DxccEntities.Add(new CvarcLogger.Core.Models.DxccEntity { EntityCode = 291, EntityName = "United States of America", Continent = "NA" });
+        await db.SaveChangesAsync();
+
+        await SeedRunner.SeedIfEmptyAsync(db);
+
+        int count = await db.DxccEntities.CountAsync();
+        Assert.True(count > 1, "Seeding should have added entities beyond the one already present.");
+
+        var canada = await db.DxccEntities.FindAsync(1);
+        Assert.NotNull(canada);
+        Assert.Equal("Canada", canada!.EntityName);
+    }
+
+    [Fact]
+    public async Task SeedIfEmpty_PopulatesCqAndItuZones()
+    {
+        await using var db = CreateContext();
+        await db.Database.MigrateAsync();
+        await SeedRunner.SeedIfEmptyAsync(db);
+
+        var usa = await db.DxccEntities.FindAsync(291);
+        Assert.NotNull(usa);
+        Assert.NotNull(usa!.CqZone);
+        Assert.NotNull(usa.ItuZone);
+    }
+
     private CvarcLoggerDbContext CreateContext()
     {
         var options = new DbContextOptionsBuilder<CvarcLoggerDbContext>()

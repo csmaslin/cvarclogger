@@ -13,6 +13,16 @@ public partial class ContestsMenuWindow : Window
     public ContestsMenuWindow()
     {
         InitializeComponent();
+
+        // FieldDayNavItem's IsChecked="True" in XAML fires its Checked event during InitializeComponent,
+        // before ContestTabControl is necessarily ready to receive a SelectedIndex -- and because
+        // RadioButtons only raise Checked on an unchecked->checked transition, a user's first click on
+        // an already-checked FieldDayNavItem does nothing at all, leaving the content area blank until
+        // some other tab is clicked first (a real transition). Setting SelectedIndex explicitly here,
+        // after InitializeComponent has fully finished, guarantees the default tab's content actually
+        // shows without depending on that XAML-time event's timing.
+        ContestTabControl.SelectedIndex = 0;
+
         _isLoaded = true;
     }
 

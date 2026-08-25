@@ -11,10 +11,12 @@ public partial class FieldDayScoringWindow : Window
 {
     /// <summary>Standard ARRL Field Day bonus items with their fixed point values. Item ordering here
     /// mirrors the order they appear on the official ARRL FD Summary Sheet, so someone submitting a
-    /// score by hand can tick them off in the same order.</summary>
+    /// score by hand can tick them off in the same order. 100% Emergency Power and the GOTA Bonus are
+    /// handled separately (see BuildCountedBonusRow) since both scale with a count rather than being a
+    /// single fixed value: rule 7.3.1 pays 100 points per transmitter (max 20, 2,000-point cap), and
+    /// rule 7.3.13.1 pays 5 points per GOTA-station contact with no cap.</summary>
     private static readonly (string Name, int Points)[] BonusCatalog =
     {
-        ("100% Emergency Power (100 pts per transmitter, max 20)", 100),
         ("Media Publicity", 100),
         ("Public Location", 100),
         ("Public Information Table", 100),
@@ -29,9 +31,16 @@ public partial class FieldDayScoringWindow : Window
         ("Web submission of the entry", 50),
         ("Youth Participation (20 pts per youth op, max 5)", 100),
         ("Safety Officer", 100),
+        ("GOTA Coach (supervised >=10 GOTA contacts, rule 7.3.13.2)", 100),
     };
 
+    private const int EmergencyPowerPointsPerTransmitter = 100;
+    private const int EmergencyPowerMaxTransmitters = 20;
+    private const int GotaPointsPerContact = 5;
+
     private readonly List<CheckBox> _bonusCheckboxes = new();
+    private CountedBonusRow _emergencyPower = null!;
+    private CountedBonusRow _gotaBonus = null!;
 
     public FieldDayScoringWindow()
     {
@@ -44,6 +53,14 @@ public partial class FieldDayScoringWindow : Window
     {
         BonusList.Children.Clear();
         _bonusCheckboxes.Clear();
+
+        _emergencyPower = BuildCountedBonusRow(
+            "100% Emergency Power", "transmitters", EmergencyPowerPointsPerTransmitter, EmergencyPowerMaxTransmitters);
+        BonusList.Children.Add(_emergencyPower.Panel);
+
+        _gotaBonus = BuildCountedBonusRow(
+            "GOTA Bonus", "GOTA contacts", GotaPointsPerContact, maxCount: null);
+        BonusList.Children.Add(_gotaBonus.Panel);
 
         foreach (var (name, points) in BonusCatalog)
         {
@@ -63,11 +80,121 @@ public partial class FieldDayScoringWindow : Window
         UpdateBonusTotal();
     }
 
+    private sealed class CountedBonusRow
+    {
+        public required StackPanel Panel { get; init; }
+        public required CheckBox Checkbox { get; init; }
+        public required TextBox CountBox { get; init; }
+        public required TextBlock PointsLabel { get; init; }
+        public required int PointsPerUnit { get; init; }
+        public required int? MaxCount { get; init; }
+
+        public int Count()
+        {
+            if (!int.TryParse(CountBox.Text, out int count) || count < 1)
+                count = 1;
+            return MaxCount is int max ? Math.Min(count, max) : count;
+        }
+
+        public int Points() => Checkbox.IsChecked == true ? Count() * PointsPerUnit : 0;
+    }
+
+    /// <summary>Builds a checkbox + numeric count field for a bonus that scales per-unit (transmitters,
+    /// contacts, etc.) instead of being a single fixed value, e.g. "100% Emergency Power x 3 transmitters"
+    /// or "GOTA Bonus x 12 contacts". Pass maxCount: null for an uncapped count (the GOTA bonus has no
+    /// upper limit, unlike Emergency Power's 20-transmitter cap).</summary>
+    private CountedBonusRow BuildCountedBonusRow(string checkboxLabel, string unitLabel, int pointsPerUnit, int? maxCount)
+    {
+        var container = new StackPanel { Margin = new Thickness(0, 4, 0, 8) };
+        var row = new StackPanel { Orientation = Orientation.Horizontal };
+
+        var checkbox = new CheckBox
+        {
+            Content = checkboxLabel,
+            VerticalAlignment = VerticalAlignment.Center,
+            FontSize = 12,
+        };
+        row.Children.Add(checkbox);
+
+        row.Children.Add(new TextBlock { Text = "  ×", VerticalAlignment = VerticalAlignment.Center, FontSize = 12 });
+
+        var countBox = new TextBox
+        {
+            Text = "1",
+            Width = maxCount is int m && m < 100 ? 32 : 44,
+            Margin = new Thickness(4, 0, 4, 0),
+            TextAlignment = TextAlignment.Center,
+            FontSize = 12,
+            MaxLength = maxCount is int mx ? mx.ToString().Length : 4,
+            // Bypasses App.xaml's global TextBox style/ControlTemplate, which renders typed text
+            // invisible/garbled for code-behind-constructed TextBoxes (same issue and same fix as the
+            // Help window's search box). Plain default WPF rendering here is reliable.
+            Style = null,
+            Background = Brushes.White,
+            Foreground = Brushes.Black,
+            BorderBrush = Brushes.Gray,
+            BorderThickness = new Thickness(1),
+        };
+        // Digits only -- without this, non-numeric or overlong input left the field showing garbage
+        // that int.TryParse silently fell back to 1 for, with no visible feedback that the typed value
+        // wasn't being used.
+        countBox.PreviewTextInput += (_, e) => e.Handled = !e.Text.All(char.IsDigit);
+        DataObject.AddPastingHandler(countBox, (s, e) =>
+        {
+            if (!e.DataObject.GetDataPresent(DataFormats.Text) || !((string)e.DataObject.GetData(DataFormats.Text)).All(char.IsDigit))
+                e.CancelCommand();
+        });
+        countBox.GotFocus += (_, _) => countBox.SelectAll();
+        row.Children.Add(countBox);
+
+        string maxSuffix = maxCount is int cap ? $" (max {cap})" : "";
+        row.Children.Add(new TextBlock { Text = $"{unitLabel}{maxSuffix}", VerticalAlignment = VerticalAlignment.Center, FontSize = 12 });
+        container.Children.Add(row);
+
+        var pointsLabel = new TextBlock
+        {
+            FontSize = 11,
+            Foreground = (Brush)new BrushConverter().ConvertFromString("#666666")!,
+            Margin = new Thickness(20, 2, 0, 0),
+        };
+        container.Children.Add(pointsLabel);
+
+        var result = new CountedBonusRow
+        {
+            Panel = container,
+            Checkbox = checkbox,
+            CountBox = countBox,
+            PointsLabel = pointsLabel,
+            PointsPerUnit = pointsPerUnit,
+            MaxCount = maxCount,
+        };
+
+        void RefreshLabel() => result.PointsLabel.Text = $"{result.Count()} × {pointsPerUnit} pts = {result.Points()} pts";
+
+        // Split label-only refresh from the full event handler: the full handler also calls
+        // UpdateBonusTotal(), which reads both _emergencyPower and _gotaBonus -- but during BuildBonusList,
+        // this row's own field (e.g. _emergencyPower) hasn't been assigned yet while the *other* row is
+        // still being constructed, so calling UpdateBonusTotal() from here during initial setup would
+        // null-ref. BuildBonusList already calls UpdateBonusTotal() itself once both rows exist.
+        void Refresh(object? s, RoutedEventArgs e)
+        {
+            RefreshLabel();
+            UpdateBonusTotal();
+        }
+
+        checkbox.Checked += Refresh;
+        checkbox.Unchecked += Refresh;
+        countBox.TextChanged += Refresh;
+        RefreshLabel();
+
+        return result;
+    }
+
     private void Bonus_CheckedChanged(object sender, RoutedEventArgs e) => UpdateBonusTotal();
 
     private int UpdateBonusTotal()
     {
-        int total = 0;
+        int total = _emergencyPower.Points() + _gotaBonus.Points();
         foreach (var cb in _bonusCheckboxes)
         {
             if (cb.IsChecked == true && cb.Tag is BonusEntry entry) total += entry.Points;
@@ -79,6 +206,19 @@ public partial class FieldDayScoringWindow : Window
     private IReadOnlyList<FieldDayBonusItem> GetSelectedBonuses()
     {
         var picked = new List<FieldDayBonusItem>();
+
+        if (_emergencyPower.Checkbox.IsChecked == true)
+        {
+            int count = _emergencyPower.Count();
+            picked.Add(new FieldDayBonusItem($"100% Emergency Power ({count} transmitter{(count == 1 ? "" : "s")} × {EmergencyPowerPointsPerTransmitter} pts)", count * EmergencyPowerPointsPerTransmitter));
+        }
+
+        if (_gotaBonus.Checkbox.IsChecked == true)
+        {
+            int count = _gotaBonus.Count();
+            picked.Add(new FieldDayBonusItem($"GOTA Bonus ({count} contact{(count == 1 ? "" : "s")} × {GotaPointsPerContact} pts)", count * GotaPointsPerContact));
+        }
+
         foreach (var cb in _bonusCheckboxes)
         {
             if (cb.IsChecked == true && cb.Tag is BonusEntry entry)

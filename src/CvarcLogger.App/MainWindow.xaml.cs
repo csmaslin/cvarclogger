@@ -24,7 +24,7 @@ public partial class MainWindow : Window
         InitializeComponent();
         _viewModel = viewModel;
         DataContext = _viewModel;
-        Title = $"CVARC Logger v{AppVersion.Current} (Beta)";
+        Title = $"CVARC Logger v{AppVersion.Current}a (Beta)";
 
         string dbPath = SettingsService.ResolveActiveDatabasePath();
         LogNameText.Text = $"Log: {Path.GetFileName(dbPath)}";
