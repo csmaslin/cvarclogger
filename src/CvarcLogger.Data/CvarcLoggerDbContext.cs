@@ -12,6 +12,7 @@ public class CvarcLoggerDbContext : DbContext
     public DbSet<SotaActivation> SotaActivations => Set<SotaActivation>();
     public DbSet<PotaActivation> PotaActivations => Set<PotaActivation>();
     public DbSet<ContestSubmission> ContestSubmissions => Set<ContestSubmission>();
+    public DbSet<SkccMember> SkccMembers => Set<SkccMember>();
 
     public CvarcLoggerDbContext(DbContextOptions<CvarcLoggerDbContext> options) : base(options)
     {

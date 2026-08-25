@@ -97,6 +97,15 @@ public partial class Qso
 
     public string? City { get; set; }
 
+    // SKCC contest fields
+    public string? SkccMemberNumber { get; set; }      // What they sent: "1234", "1234S", "NONE", or empty
+
+    public string? SkccMemberStatus { get; set; }      // Parsed from member number suffix: "C", "T", "S", or null
+
+    public string? SkccOperatorName { get; set; }      // Their operator name: "PETE"
+
+    public string? SkccEventType { get; set; }         // Event type: "SKS", "WES", "SKCC-QSO", etc.
+
     public virtual DxccEntity? DxccEntityCodeNavigation { get; set; }
 
     public virtual StationProfile? StationProfile { get; set; }
