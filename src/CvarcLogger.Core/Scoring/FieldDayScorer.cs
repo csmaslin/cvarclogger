@@ -205,7 +205,7 @@ public static class FieldDayScorer
         {
             "CW" => ModeCategory.Cw,
             "SSB" or "USB" or "LSB" or "AM" or "FM" or "PH" or "PHONE" => ModeCategory.Phone,
-            "RTTY" or "PSK" or "PSK31" or "FT8" or "FT4" or "JT65" or "JT9" or "MFSK" or "DIGITAL" or "DIGI" or "DATA" or "DG" => ModeCategory.Digital,
+            "RTTY" or "PSK" or "PSK31" or "FT8" or "FT4" or "JT65" or "JT9" or "MFSK" or "DIGITAL" or "DIGI" or "DIG" or "DATA" or "DG" => ModeCategory.Digital,
             _ => s switch
             {
                 "USB" or "LSB" or "AM" or "FM" => ModeCategory.Phone,
