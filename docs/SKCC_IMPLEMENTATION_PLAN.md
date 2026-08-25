@@ -9,6 +9,102 @@ Implement comprehensive SKCC (Straight Key Century Club) contest logging support
 
 ---
 
+## Phase 0: Integrate SKCC Lookup into Existing Chain (1 session)
+
+### 0.1 Extend CallsignLookupResult
+
+**File: `src/CvarcLogger.Core/Lookup/CallsignLookupResult.cs`**
+
+Add SKCC fields to the existing record:
+```csharp
+public record CallsignLookupResult(
+    bool Found,
+    string? Name = null,
+    string? GridSquare = null,
+    string? Country = null,
+    int? DxccEntityCode = null,
+    string? State = null,
+    string? County = null,
+    string? City = null,
+    double? Latitude = null,
+    double? Longitude = null,
+    // NEW SKCC FIELDS:
+    string? SkccMemberNumber = null,        // "1234" or "1234S"
+    string? SkccMemberStatus = null,        // "C", "T", "S", or null
+    string? SkccOperatorName = null,        // "PETE"
+    string? Error = null)
+{
+    public static CallsignLookupResult NotFound(string? error = null) => new(false, Error: error);
+}
+```
+
+### 0.2 Create SkccMemberLookupService
+
+**New file: `src/CvarcLogger.App/Services/SkccMemberLookupService.cs`**
+
+Following the pattern of `SotaSummitLookupService`:
+- Download member CSV from SKCC (weekly refresh)
+- Cache locally to `App.DataDirectory/skcc-members.csv`
+- Fast lookup by callsign
+- Parse member status suffix from member number (e.g., "1234S" → 'S')
+
+```csharp
+public class SkccMemberLookupService
+{
+    private const string MembersDatabaseUrl = "https://www.skccgroup.com/members/downloads/member_list.csv";
+    private static readonly TimeSpan MaxCacheAge = TimeSpan.FromDays(7);
+    
+    public async Task<SkccMemberInfo?> LookupAsync(string callsign, CancellationToken ct = default);
+    public async Task<int> GetMemberCountAsync(CancellationToken ct = default);
+    public Task RefreshAsync(CancellationToken ct = default);  // Force refresh
+}
+
+public record SkccMemberInfo(
+    string Callsign,
+    string MemberNumber,
+    string Name,
+    string Qth,
+    char? MemberStatus);  // 'C', 'T', 'S', or null
+```
+
+### 0.3 Integrate into LookupCoordinator
+
+**File: `src/CvarcLogger.App/Services/LookupCoordinator.cs`**
+
+Add SKCC to the lookup chain (after QRZ/QRZCQ, before Callook):
+- Inject `SkccMemberLookupService` into constructor
+- Call after QRZ/QRZCQ chain completes
+- Merge SKCC fields (SkccMemberNumber, SkccMemberStatus, SkccOperatorName) into result
+- Non-blocking: if SKCC database doesn't exist, silently skip (don't fail lookup)
+
+### 0.4 Update Service Registration
+
+**File: `src/CvarcLogger.App/App.xaml.cs`**
+
+Register in dependency injection:
+```csharp
+services.AddHttpClient<SkccMemberLookupService>();
+services.AddSingleton(sp => new LookupCoordinator(
+    sp.GetRequiredService<CallookLookupService>(),
+    sp.GetRequiredService<QrzLookupService>(),
+    sp.GetRequiredService<QrzCqLookupService>(),
+    sp.GetRequiredService<SkccMemberLookupService>(),  // NEW
+    sp.GetRequiredService<ICredentialStore>()));
+```
+
+### 0.5 Test Phase 0
+
+**Test scenarios:**
+1. SkccMemberLookupService loads member CSV on first run
+2. Lookup by callsign returns name + member# + status
+3. Lookup for non-member returns null (silently)
+4. LookupCoordinator merges SKCC fields into QRZ/Callook result
+5. Type callsign in entry form → all info (QRZ + SKCC) populates together
+
+**Deliverable:** `LookupCoordinator.LookupAsync("W5ABC")` returns merged result with SKCC fields populated
+
+---
+
 ## Phase 1: Database Schema & Core Models (2 sessions)
 
 ### 1.1 Database Migrations
