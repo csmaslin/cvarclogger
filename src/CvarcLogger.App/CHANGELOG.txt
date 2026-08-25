@@ -5,6 +5,29 @@ build meant to reach the user (see AppVersion.cs) -- before running publish.ps1.
 
 Versions before 1.17 predate this changelog and are not documented here.
 
+2.07a (Beta)
+------------
+- Fix: crash on opening the Field Day scorer (from the Contests menu or its sidebar tab), introduced
+  by the GOTA/Emergency Power bonus rework below. UpdateBonusTotal() was being called while a bonus
+  row was still under construction, before the other row's field existed yet -- null reference.
+- Field Day: 100% Emergency Power bonus corrected to ARRL rule 7.3.1 -- 100 points per transmitter
+  (up to 20 transmitters, 2,000-point max), not a flat 100 regardless of transmitter count. Now a
+  checkbox plus a transmitter-count field instead of a single fixed-value checkbox.
+- Field Day: added the GOTA Bonus (5 points per GOTA-station contact, no cap, rule 7.3.13.1) as a
+  checkbox plus contact-count field, and GOTA Coach (100 points, rule 7.3.13.2) as a standard
+  checkbox -- neither existed before.
+- Field Day: fixed a rendering bug where the Emergency Power / GOTA transmitter/contact-count input
+  boxes showed no visible text while typing (same root cause and fix as an earlier Help window issue:
+  App.xaml's global TextBox style doesn't render correctly for code-behind-constructed TextBoxes).
+  Also added digit-only input filtering and a length cap, since the box previously accepted unlimited
+  non-numeric text.
+- Contests menu: fixed the Field Day tab not displaying its content (and not responding to a click)
+  the very first time the Contests window opened, due to its pre-checked sidebar RadioButton firing
+  before the tab control was ready.
+- DXCC entity seed data expanded from 338 to 402 entities with CQ/ITU zone and deleted-entity data;
+  an already-seeded database is now topped up with new entities on next launch instead of only a
+  brand-new database being seeded.
+
 2.07 (Beta)
 -----------
 - New Contests menu, opened by clicking the sidebar's "Awards/Contests" button a second
@@ -71,6 +94,17 @@ Versions before 1.17 predate this changelog and are not documented here.
   each band per NCJ rule 11.
 - All contest scoring features (Sweepstakes, CQ WW, Sprints, NAQP) are labeled
   (Beta) in the UI pending real-world verification against live contest logs.
+- Bundled DXCC entity list expanded from 338 to 402 entities (AD1C's cty.csv), now
+  including CQ/ITU zone and deleted-entity data that was previously missing
+  entirely. An existing database is topped up with any entities it doesn't already
+  have on its next launch, not just a brand-new one -- entities already present are
+  left untouched, so zone data only appears on newly-added (less common) entities
+  for now.
+- Fix: the Contests window's Field Day tab didn't show its content (and clicking it
+  did nothing) the first time the window opened, because its sidebar RadioButton
+  starts pre-checked in XAML, which fires before the tab control is ready and
+  doesn't fire again on a same-state click. The default tab now displays correctly
+  from the first open.
 
 2.06
 ----
