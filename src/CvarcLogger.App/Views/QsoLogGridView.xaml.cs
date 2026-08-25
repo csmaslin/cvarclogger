@@ -451,4 +451,27 @@ public partial class QsoLogGridView : UserControl
             _ = viewModel.RefreshCommand.ExecuteAsync(null);
         }
     }
+
+    private void BulkEdit_Click(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is not QsoLogViewModel viewModel) return;
+
+        var qsos = viewModel.SelectedQsos.Count > 0
+            ? viewModel.SelectedQsos.ToList()
+            : viewModel.SelectedQso is not null ? new List<Qso> { viewModel.SelectedQso } : new List<Qso>();
+        if (qsos.Count == 0)
+        {
+            MessageBox.Show(Window.GetWindow(this), "Select one or more QSOs in the log first.", "Bulk Edit",
+                MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        var window = App.Services.GetRequiredService<BulkEditWindow>();
+        window.Owner = Window.GetWindow(this);
+        window.LoadQsos(qsos);
+        if (window.ShowDialog() == true)
+        {
+            _ = viewModel.RefreshCommand.ExecuteAsync(null);
+        }
+    }
 }

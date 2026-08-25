@@ -61,106 +61,160 @@
             </StackPanel>
         </Border>
 
-        <!-- Right content -->
-        <Grid Grid.Column="1" Margin="24">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
+        <!-- Right content with tabs -->
+        <TabControl Grid.Column="1">
+            <!-- Score Tab -->
+            <TabItem Header="Score" Padding="12,6">
+                <Grid Margin="24">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
 
-            <Border Grid.Row="0" BorderThickness="0,0,0,2" BorderBrush="#e0e0e0" Padding="0,0,0,10" Margin="0,0,0,15">
-                <TextBlock Text="Score Sheet" FontSize="18" FontWeight="Bold" Foreground="#000000"/>
-            </Border>
+                    <Border Grid.Row="0" BorderThickness="0,0,0,2" BorderBrush="#e0e0e0" Padding="0,0,0,10" Margin="0,0,0,15">
+                        <TextBlock Text="Score Sheet" FontSize="18" FontWeight="Bold" Foreground="#000000"/>
+                    </Border>
 
-            <!-- Inputs card -->
-            <Border Grid.Row="1" Style="{StaticResource SectionCard}" Margin="0,0,0,15">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
+                    <!-- Inputs card -->
+                    <Border Grid.Row="1" Style="{StaticResource SectionCard}" Margin="0,0,0,15">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
 
-                    <StackPanel Grid.Column="0" Margin="0,0,24,0">
-                        <TextBlock Text="YEAR" Style="{StaticResource FieldLabel}"/>
-                        <TextBox x:Name="YearBox" Style="{StaticResource StandardInput}" Width="90" HorizontalAlignment="Left"/>
-                    </StackPanel>
-
-                    <StackPanel Grid.Column="1" Margin="0,0,24,0">
-                        <TextBlock Text="POWER CLASS" Style="{StaticResource FieldLabel}"/>
-                        <ComboBox x:Name="PowerClassBox" Style="{StaticResource StandardInput}" Width="230">
-                            <ComboBoxItem Content="QRP Battery (≤5W) — ×5" Tag="QrpBattery"/>
-                            <ComboBoxItem Content="Low Power (≤150W) — ×2" Tag="LowPower" IsSelected="True"/>
-                            <ComboBoxItem Content="High Power (&gt;150W) — ×1" Tag="HighPower"/>
-                        </ComboBox>
-                    </StackPanel>
-
-                    <CheckBox Grid.Column="2" x:Name="StrictContestIdBox" VerticalAlignment="Bottom" Margin="0,0,0,8"
-                              Content="Require ContestId = ARRL-FIELD-DAY" IsChecked="False"
-                              ToolTip="When off, all QSOs inside the FD weekend window count."/>
-                </Grid>
-            </Border>
-
-            <!-- Score breakdown (left) + bonus checklist (right) -->
-            <Grid Grid.Row="2">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="380"/>
-                </Grid.ColumnDefinitions>
-
-                <Border Grid.Column="0" Style="{StaticResource SectionCard}" Margin="0,0,10,0">
-                    <DockPanel>
-                        <Border DockPanel.Dock="Top" BorderThickness="0,0,0,1" BorderBrush="#e0e0e0"
-                                Padding="0,0,0,8" Margin="0,0,0,10">
-                            <emoji:TextBlock Text="🧮 Score Breakdown" FontSize="14" FontWeight="Bold" Foreground="#000000"/>
-                        </Border>
-                        <ScrollViewer VerticalScrollBarVisibility="Auto">
-                            <StackPanel x:Name="ResultsPanel">
-                                <TextBlock Text="Enter a year, pick bonuses, then click Recalculate."
-                                           Foreground="#666666" FontStyle="Italic"/>
+                            <StackPanel Grid.Column="0" Margin="0,0,24,0">
+                                <TextBlock Text="YEAR" Style="{StaticResource FieldLabel}"/>
+                                <TextBox x:Name="YearBox" Style="{StaticResource StandardInput}" Width="90" HorizontalAlignment="Left"/>
                             </StackPanel>
-                        </ScrollViewer>
-                    </DockPanel>
-                </Border>
 
-                <Border Grid.Column="1" Style="{StaticResource SectionCard}" Margin="10,0,0,0">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-
-                        <Border Grid.Row="0" BorderThickness="0,0,0,1" BorderBrush="#e0e0e0"
-                                Padding="0,0,0,8" Margin="0,0,0,10">
-                            <StackPanel>
-                                <emoji:TextBlock Text="🎁 Bonus Points" FontSize="14" FontWeight="Bold" Foreground="#000000"/>
-                                <TextBlock Text="Check each bonus your operation earned." Foreground="#666666"
-                                           FontSize="11" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                            <StackPanel Grid.Column="1" Margin="0,0,24,0">
+                                <TextBlock Text="POWER CLASS" Style="{StaticResource FieldLabel}"/>
+                                <ComboBox x:Name="PowerClassBox" Style="{StaticResource StandardInput}" Width="230">
+                                    <ComboBoxItem Content="QRP Battery (≤5W) — ×5" Tag="QrpBattery"/>
+                                    <ComboBoxItem Content="Low Power (≤150W) — ×2" Tag="LowPower" IsSelected="True"/>
+                                    <ComboBoxItem Content="High Power (&gt;150W) — ×1" Tag="HighPower"/>
+                                </ComboBox>
                             </StackPanel>
+
+                            <CheckBox Grid.Column="2" x:Name="StrictContestIdBox" VerticalAlignment="Bottom" Margin="0,0,0,8"
+                                      Content="Require ContestId = ARRL-FIELD-DAY" IsChecked="False"
+                                      ToolTip="When off, all QSOs inside the FD weekend window count."/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Score breakdown (left) + bonus checklist (right) -->
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="380"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Column="0" Style="{StaticResource SectionCard}" Margin="0,0,10,0">
+                            <DockPanel>
+                                <Border DockPanel.Dock="Top" BorderThickness="0,0,0,1" BorderBrush="#e0e0e0"
+                                        Padding="0,0,0,8" Margin="0,0,0,10">
+                                    <emoji:TextBlock Text="🧮 Score Breakdown" FontSize="14" FontWeight="Bold" Foreground="#000000"/>
+                                </Border>
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <StackPanel x:Name="ResultsPanel">
+                                        <TextBlock Text="Enter a year, pick bonuses, then click Recalculate."
+                                                   Foreground="#666666" FontStyle="Italic"/>
+                                    </StackPanel>
+                                </ScrollViewer>
+                            </DockPanel>
                         </Border>
 
-                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                            <StackPanel x:Name="BonusList"/>
-                        </ScrollViewer>
+                        <Border Grid.Column="1" Style="{StaticResource SectionCard}" Margin="10,0,0,0">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
 
-                        <Border Grid.Row="2" BorderThickness="0,1,0,0" BorderBrush="#e0e0e0"
-                                Padding="0,8,0,0" Margin="0,8,0,0">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Selected bonus total: " FontWeight="Bold" FontSize="12"/>
-                                <TextBlock x:Name="BonusTotalLabel" Text="0" FontWeight="Bold" FontSize="12" Foreground="#2E7D32"/>
-                            </StackPanel>
+                                <Border Grid.Row="0" BorderThickness="0,0,0,1" BorderBrush="#e0e0e0"
+                                        Padding="0,0,0,8" Margin="0,0,0,10">
+                                    <StackPanel>
+                                        <emoji:TextBlock Text="🎁 Bonus Points" FontSize="14" FontWeight="Bold" Foreground="#000000"/>
+                                        <TextBlock Text="Check each bonus your operation earned." Foreground="#666666"
+                                                   FontSize="11" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                                    <StackPanel x:Name="BonusList"/>
+                                </ScrollViewer>
+
+                                <Border Grid.Row="2" BorderThickness="0,1,0,0" BorderBrush="#e0e0e0"
+                                        Padding="0,8,0,0" Margin="0,8,0,0">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Selected bonus total: " FontWeight="Bold" FontSize="12"/>
+                                        <TextBlock x:Name="BonusTotalLabel" Text="0" FontWeight="Bold" FontSize="12" Foreground="#2E7D32"/>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
                         </Border>
                     </Grid>
-                </Border>
-            </Grid>
 
-            <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
-                <Button Content="Recalculate" Style="{StaticResource PrimaryButton}" Margin="0,0,10,0" Click="Recalculate_Click"/>
-                <Button Content="Close" Style="{StaticResource SecondaryButton}" Click="Close_Click"/>
-            </StackPanel>
-        </Grid>
+                    <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
+                        <Button Content="Recalculate" Style="{StaticResource PrimaryButton}" Margin="0,0,10,0" Click="Recalculate_Click"/>
+                        <Button Content="Close" Style="{StaticResource SecondaryButton}" Click="Close_Click"/>
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+
+            <!-- Verify Entries Tab -->
+            <TabItem Header="Verify Entries" Padding="12,6">
+                <Grid Margin="24">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" BorderThickness="0,0,0,2" BorderBrush="#e0e0e0" Padding="0,0,0,10" Margin="0,0,0,15">
+                        <TextBlock Text="QSO Entry Verification" FontSize="18" FontWeight="Bold" Foreground="#000000"/>
+                    </Border>
+
+                    <TextBlock Grid.Row="1" Margin="0,0,0,15" FontSize="12" Foreground="#666666" TextWrapping="Wrap"
+                               Text="Review which QSOs qualify for Field Day scoring. Green checkmarks indicate qualifying entries; red crosses show why each QSO was excluded (outside window, invalid mode, missing exchange, etc.)."/>
+
+                    <Border Grid.Row="2" Style="{StaticResource SectionCard}">
+                        <DataGrid x:Name="VerificationGrid" AutoGenerateColumns="False" IsReadOnly="True"
+                                  AlternationCount="2" AlternatingRowBackground="WhiteSmoke" ColumnHeaderHeight="28">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="#" Binding="{Binding LogNumber}" Width="50"/>
+                                <DataGridTextColumn Header="Callsign" Binding="{Binding Callsign}" Width="100"/>
+                                <DataGridTextColumn Header="Date/Time UTC" Binding="{Binding QsoDateTimeUtc, StringFormat='yyyy-MM-dd HHmm'}" Width="140"/>
+                                <DataGridTextColumn Header="Mode" Binding="{Binding Mode}" Width="80"/>
+                                <DataGridTextColumn Header="Status" Binding="{Binding Reason}" Width="*"/>
+                            </DataGrid.Columns>
+                            <DataGrid.RowStyle>
+                                <Style TargetType="DataGridRow">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Qualifies}" Value="True">
+                                            <Setter Property="Foreground" Value="#2E7D32"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Qualifies}" Value="False">
+                                            <Setter Property="Foreground" Value="#C0392B"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGrid.RowStyle>
+                        </DataGrid>
+                    </Border>
+
+                    <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
+                        <Button Content="Verify Now" Style="{StaticResource PrimaryButton}" Margin="0,0,10,0" Click="VerifyNow_Click"/>
+                        <Button Content="Close" Style="{StaticResource SecondaryButton}" Click="Close_Click"/>
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+        </TabControl>
     </Grid>
 </Window>

@@ -370,6 +370,32 @@ public partial class FieldDayScoringWindow : Window
         });
     }
 
+    private async void VerifyNow_Click(object sender, RoutedEventArgs e)
+    {
+        if (!int.TryParse(YearBox.Text, out int year) || year < 1950 || year > 2100)
+        {
+            MessageBox.Show(this, "Enter a valid year (e.g. 2026).", "Field Day",
+                MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        string? requiredContestId = StrictContestIdBox.IsChecked == true ? "ARRL-FIELD-DAY" : null;
+
+        try
+        {
+            var qsoRepo = App.Services.GetRequiredService<IQsoRepository>();
+            var allQsos = await qsoRepo.GetAllAsync();
+            var verificationResults = FieldDayScorer.Verify(allQsos, year, requiredContestId);
+
+            VerificationGrid.ItemsSource = verificationResults;
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, $"Verification failed: {ex.Message}", "Field Day",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
     private void Close_Click(object sender, RoutedEventArgs e) => Close();
 
     private record BonusEntry(string Name, int Points);

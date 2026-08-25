@@ -131,6 +131,7 @@ public partial class App : Application
                 services.AddTransient<SettingsViewModel>();
                 services.AddTransient<StationProfileViewModel>();
                 services.AddTransient<QsoEditViewModel>();
+                services.AddTransient<BulkEditViewModel>();
 
                 services.AddScoped<MainWindow>();
                 services.AddTransient<Views.AwardsWindow>();
@@ -138,6 +139,7 @@ public partial class App : Application
                 services.AddTransient<Views.CatControlWindow>();
                 services.AddTransient<Views.StationProfileEditorWindow>();
                 services.AddTransient<Views.QsoEditWindow>();
+                services.AddTransient<Views.BulkEditWindow>();
                 services.AddTransient<Views.FileOperationsWindow>();
                 services.AddTransient<Views.SweepstakesScoringWindow>();
                 services.AddTransient<Views.CqWwScoringWindow>();

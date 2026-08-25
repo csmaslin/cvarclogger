@@ -37,6 +37,15 @@ public enum FieldDayPowerClass
 
 public record FieldDayBonusItem(string Name, int Points);
 
+public record FieldDayQsoVerification(
+    int LogNumber,
+    string Callsign,
+    DateTime QsoDateTimeUtc,
+    string Mode,
+    string? SubMode,
+    bool Qualifies,
+    string Reason);
+
 public record FieldDayScoreBreakdown(
     int TotalQsos,
     int PhoneQsos,
@@ -59,6 +68,65 @@ public static class FieldDayScorer
     private const int PhonePointsPerQso = 1;
     private const int CwPointsPerQso = 2;
     private const int DigitalPointsPerQso = 2;
+
+    public static IReadOnlyList<FieldDayQsoVerification> Verify(
+        IEnumerable<Qso> allQsos,
+        int year,
+        string? requiredContestId = null)
+    {
+        var (windowStart, windowEnd) = FieldDayQsoFilter.WindowFor(year);
+        var results = new List<FieldDayQsoVerification>();
+
+        foreach (var q in allQsos)
+        {
+            string callsign = q.Callsign ?? "(empty)";
+            var modeCategory = ClassifyMode(q.Mode, q.SubMode);
+
+            // Check if QSO is in the FD window
+            if (q.QsoDateTimeOnUtc < windowStart || q.QsoDateTimeOnUtc > windowEnd)
+            {
+                results.Add(new FieldDayQsoVerification(
+                    q.LogNumber, callsign, q.QsoDateTimeOnUtc, q.Mode ?? "", q.SubMode,
+                    false, $"Outside FD window ({windowStart:MMdd HHmm}Z - {windowEnd:MMdd HHmm}Z)"));
+                continue;
+            }
+
+            // Check if contest ID matches (if strict mode enabled)
+            if (requiredContestId != null && q.ContestId != requiredContestId)
+            {
+                results.Add(new FieldDayQsoVerification(
+                    q.LogNumber, callsign, q.QsoDateTimeOnUtc, q.Mode ?? "", q.SubMode,
+                    false, $"ContestId mismatch (expected '{requiredContestId}', got '{q.ContestId}')"));
+                continue;
+            }
+
+            // Check if mode is valid (Phone, CW, or Digital)
+            if (modeCategory == ModeCategory.Unknown)
+            {
+                results.Add(new FieldDayQsoVerification(
+                    q.LogNumber, callsign, q.QsoDateTimeOnUtc, q.Mode ?? "", q.SubMode,
+                    false, $"Mode '{q.Mode}' not recognized (Phone/CW/Digital only)"));
+                continue;
+            }
+
+            // Check if there's an exchange (ArrlSection or State)
+            string? section = FirstNonBlank(q.ArrlSection, q.State);
+            if (string.IsNullOrEmpty(section))
+            {
+                results.Add(new FieldDayQsoVerification(
+                    q.LogNumber, callsign, q.QsoDateTimeOnUtc, q.Mode ?? "", q.SubMode,
+                    false, "No ArrlSection or State recorded"));
+                continue;
+            }
+
+            // QSO qualifies
+            results.Add(new FieldDayQsoVerification(
+                q.LogNumber, callsign, q.QsoDateTimeOnUtc, q.Mode ?? "", q.SubMode,
+                true, "✓ Qualifies"));
+        }
+
+        return results;
+    }
 
     public static FieldDayScoreBreakdown Score(
         IEnumerable<Qso> qsos,
