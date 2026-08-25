@@ -53,6 +53,9 @@ public partial class ContestsMenuWindow : Window
             case 4:
                 OpenNaqpScorer();
                 break;
+            case 5:
+                OpenArrlContestsScorer();
+                break;
         }
     }
 
@@ -65,6 +68,8 @@ public partial class ContestsMenuWindow : Window
     private void Sprints_Click(object sender, RoutedEventArgs e) => OpenSprintsScorer();
 
     private void Naqp_Click(object sender, RoutedEventArgs e) => OpenNaqpScorer();
+
+    private void ArrlContests_Click(object sender, RoutedEventArgs e) => OpenArrlContestsScorer();
 
     private void OpenFieldDayScorer()
     {
@@ -93,6 +98,12 @@ public partial class ContestsMenuWindow : Window
     private void OpenNaqpScorer()
     {
         var window = new NaqpScoringWindow { Owner = this };
+        window.Show();
+    }
+
+    private void OpenArrlContestsScorer()
+    {
+        var window = new ArrlContestsScoringWindow { Owner = this };
         window.Show();
     }
 }
