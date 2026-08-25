@@ -27,6 +27,9 @@ Versions before 1.17 predate this changelog and are not documented here.
 - DXCC entity seed data expanded from 338 to 402 entities with CQ/ITU zone and deleted-entity data;
   an already-seeded database is now topped up with new entities on next launch instead of only a
   brand-new database being seeded.
+- All contest scorers (Sweepstakes, CQ WW, Sprints, NAQP) now also accept Mode="PH" as a Phone/voice
+  contact, matching Field Day's scorer which already did -- QSOs logged with the generic "PH" tag
+  were previously excluded from Phone/SSB scoring in every contest except Field Day.
 
 2.07 (Beta)
 -----------

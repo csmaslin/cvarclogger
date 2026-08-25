@@ -15,7 +15,7 @@ public partial class CqWwViewModel : ObservableObject
     private readonly IQsoRepository _qsoRepository;
     private readonly ICallsignEntityResolver _entityResolver;
 
-    private static readonly HashSet<string> SsbModes = new(StringComparer.OrdinalIgnoreCase) { "SSB", "USB", "LSB", "AM", "FM" };
+    private static readonly HashSet<string> SsbModes = new(StringComparer.OrdinalIgnoreCase) { "SSB", "USB", "LSB", "AM", "FM", "PH" };
     private static readonly HashSet<string> CwModes = new(StringComparer.OrdinalIgnoreCase) { "CW" };
 
     [ObservableProperty] private int ssbQsoCount;

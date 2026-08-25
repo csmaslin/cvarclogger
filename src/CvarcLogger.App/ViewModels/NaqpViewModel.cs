@@ -18,7 +18,7 @@ public partial class NaqpViewModel : ObservableObject
     private static readonly HashSet<string> RttyBands = new(StringComparer.OrdinalIgnoreCase) { "80m", "40m", "20m", "15m", "10m" };
 
     private static readonly HashSet<string> CwModes = new(StringComparer.OrdinalIgnoreCase) { "CW" };
-    private static readonly HashSet<string> SsbModes = new(StringComparer.OrdinalIgnoreCase) { "SSB", "USB", "LSB", "AM", "FM" };
+    private static readonly HashSet<string> SsbModes = new(StringComparer.OrdinalIgnoreCase) { "SSB", "USB", "LSB", "AM", "FM", "PH" };
     private static readonly HashSet<string> RttyModes = new(StringComparer.OrdinalIgnoreCase) { "RTTY" };
 
     [ObservableProperty] private int cwJanQsoCount;
