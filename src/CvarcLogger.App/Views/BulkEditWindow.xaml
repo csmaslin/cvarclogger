@@ -71,6 +71,11 @@
                 <TextBox TextAlignment="Center" Text="{Binding QsoDateTimeUtcText, UpdateSourceTrigger=PropertyChanged}"
                          behaviors:DateInputMask.Format="yyyy-MM-dd HH:mm"/>
             </StackPanel>
+            <StackPanel Margin="0,0,10,8" Width="150">
+                <TextBlock Text="Time Off (UTC)"/>
+                <TextBox TextAlignment="Center" Text="{Binding QsoDateTimeOffUtcText, UpdateSourceTrigger=PropertyChanged}"
+                         behaviors:DateInputMask.Format="yyyy-MM-dd HH:mm"/>
+            </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="100">
                 <TextBlock Text="Callsign"/>
                 <TextBox Text="{Binding Callsign, UpdateSourceTrigger=PropertyChanged}" FontWeight="Bold"/>
@@ -198,6 +203,36 @@
             <StackPanel Margin="0,0,0,8" Width="500">
                 <TextBlock Text="Comment"/>
                 <TextBox TextAlignment="Left" Text="{Binding Comment, UpdateSourceTrigger=PropertyChanged}"/>
+            </StackPanel>
+        </WrapPanel>
+
+        <Separator Margin="0,4,0,10"/>
+
+        <TextBlock Text="Contest / SKCC" FontWeight="Bold" Margin="0,0,0,6"/>
+        <WrapPanel>
+            <StackPanel Margin="0,0,10,8" Width="70">
+                <TextBlock Text="Precedence"/>
+                <TextBox TextAlignment="Center" Text="{Binding Precedence, UpdateSourceTrigger=PropertyChanged}"/>
+            </StackPanel>
+            <StackPanel Margin="0,0,10,8" Width="55">
+                <TextBlock Text="Check" TextWrapping="Wrap"/>
+                <TextBox TextAlignment="Center" Text="{Binding Check, UpdateSourceTrigger=PropertyChanged}"/>
+            </StackPanel>
+            <StackPanel Margin="0,0,10,8" Width="55">
+                <TextBlock Text="Class"/>
+                <TextBox TextAlignment="Center" Text="{Binding Class, UpdateSourceTrigger=PropertyChanged}"/>
+            </StackPanel>
+            <StackPanel Margin="0,0,10,8" Width="60">
+                <TextBlock Text="Seq #" TextWrapping="Wrap"/>
+                <TextBox TextAlignment="Center" Text="{Binding StxSerial, UpdateSourceTrigger=PropertyChanged}"/>
+            </StackPanel>
+            <StackPanel Margin="0,0,10,8" Width="80">
+                <TextBlock Text="SKCC #" TextWrapping="Wrap"/>
+                <TextBox TextAlignment="Center" Text="{Binding SkccNr, UpdateSourceTrigger=PropertyChanged}"/>
+            </StackPanel>
+            <StackPanel Margin="0,0,0,8" Width="90">
+                <TextBlock Text="My SKCC #" TextWrapping="Wrap"/>
+                <TextBox TextAlignment="Center" Text="{Binding MySkccNr, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
         </WrapPanel>
 

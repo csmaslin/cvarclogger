@@ -32,6 +32,7 @@ public partial class BulkEditViewModel : ObservableObject
     [ObservableProperty] private int qsoCount;
 
     [ObservableProperty] private string? qsoDateTimeUtcText;
+    [ObservableProperty] private string? qsoDateTimeOffUtcText;
     [ObservableProperty] private string? callsign;
     [ObservableProperty] private string? band;
     [ObservableProperty] private string? mode;
@@ -74,6 +75,12 @@ public partial class BulkEditViewModel : ObservableObject
     [ObservableProperty] private string? op;
     [ObservableProperty] private string? utcOffsetHours;
     [ObservableProperty] private string observesDaylightSavingTimeOption = NoChangeOption;
+    [ObservableProperty] private string? precedence;
+    [ObservableProperty] private string? check;
+    [ObservableProperty] private string? @class;
+    [ObservableProperty] private string? stxSerial;
+    [ObservableProperty] private string? skccNr;
+    [ObservableProperty] private string? mySkccNr;
 
     public ObservableCollection<string> Bands { get; } = new(new[] { "" }.Concat(QsoFieldOptions.Bands));
     public ObservableCollection<string> Modes { get; } = new(new[] { "" }.Concat(QsoFieldOptions.Modes));
@@ -102,7 +109,7 @@ public partial class BulkEditViewModel : ObservableObject
         if (_qsos.Count == 0) return;
 
         bool anyChange =
-            !string.IsNullOrWhiteSpace(QsoDateTimeUtcText) || !string.IsNullOrWhiteSpace(Callsign)
+            !string.IsNullOrWhiteSpace(QsoDateTimeUtcText) || !string.IsNullOrWhiteSpace(QsoDateTimeOffUtcText) || !string.IsNullOrWhiteSpace(Callsign)
             || !string.IsNullOrWhiteSpace(Band) || !string.IsNullOrWhiteSpace(Mode) || !string.IsNullOrWhiteSpace(SubMode)
             || !string.IsNullOrWhiteSpace(FrequencyMhz) || !string.IsNullOrWhiteSpace(FrequencyRxMhz)
             || !string.IsNullOrWhiteSpace(RstSent) || !string.IsNullOrWhiteSpace(RstRcvd) || !string.IsNullOrWhiteSpace(Name)
@@ -119,7 +126,9 @@ public partial class BulkEditViewModel : ObservableObject
             || !string.IsNullOrWhiteSpace(OperatorCallsign) || !string.IsNullOrWhiteSpace(MyGridSquare)
             || !string.IsNullOrWhiteSpace(MyState) || !string.IsNullOrWhiteSpace(MyCounty) || !string.IsNullOrWhiteSpace(Qth)
             || !string.IsNullOrWhiteSpace(Op) || !string.IsNullOrWhiteSpace(UtcOffsetHours)
-            || ObservesDaylightSavingTimeOption != NoChangeOption;
+            || ObservesDaylightSavingTimeOption != NoChangeOption
+            || !string.IsNullOrWhiteSpace(Precedence) || !string.IsNullOrWhiteSpace(Check) || !string.IsNullOrWhiteSpace(Class)
+            || !string.IsNullOrWhiteSpace(StxSerial) || !string.IsNullOrWhiteSpace(SkccNr) || !string.IsNullOrWhiteSpace(MySkccNr);
 
         if (!anyChange)
         {
@@ -137,6 +146,9 @@ public partial class BulkEditViewModel : ObservableObject
             if (!string.IsNullOrWhiteSpace(QsoDateTimeUtcText)
                 && DateTime.TryParseExact(QsoDateTimeUtcText, DateTimeFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out var qsoDateTime))
                 qso.QsoDateTimeOnUtc = DateTime.SpecifyKind(qsoDateTime, DateTimeKind.Utc);
+            if (!string.IsNullOrWhiteSpace(QsoDateTimeOffUtcText)
+                && DateTime.TryParseExact(QsoDateTimeOffUtcText, DateTimeFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out var qsoOffDateTime))
+                qso.QsoDateTimeOffUtc = DateTime.SpecifyKind(qsoOffDateTime, DateTimeKind.Utc);
 
             if (callsignChanged) qso.Callsign = Callsign!.Trim().ToUpperInvariant();
             if (!string.IsNullOrWhiteSpace(Band)) qso.Band = Band;
@@ -194,6 +206,14 @@ public partial class BulkEditViewModel : ObservableObject
                 qso.UtcOffsetHours = utcOffset;
             if (ObservesDaylightSavingTimeOption != NoChangeOption)
                 qso.ObservesDaylightSavingTime = ObservesDaylightSavingTimeOption == "Yes";
+
+            if (!string.IsNullOrWhiteSpace(Precedence)) qso.Precedence = Precedence;
+            if (!string.IsNullOrWhiteSpace(Check)) qso.Check = Check;
+            if (!string.IsNullOrWhiteSpace(Class)) qso.Class = Class;
+            if (!string.IsNullOrWhiteSpace(StxSerial) && int.TryParse(StxSerial, NumberStyles.Integer, CultureInfo.InvariantCulture, out var stxSerial))
+                qso.StxSerial = stxSerial;
+            if (!string.IsNullOrWhiteSpace(SkccNr)) qso.SkccNr = SkccNr.Trim().ToUpperInvariant();
+            if (!string.IsNullOrWhiteSpace(MySkccNr)) qso.MySkccNr = MySkccNr.Trim().ToUpperInvariant();
 
             if (callsignChanged && !qso.DxccEntityOverride)
             {

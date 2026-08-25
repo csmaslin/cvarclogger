@@ -325,4 +325,18 @@ public partial class ImportExportViewModel : ObservableObject
             IsBusy = false;
         }
     }
+
+    [RelayCommand]
+    private async Task ImportCsvAsync()
+    {
+        _dialogService.ShowInfo("CSV import is not yet implemented. Please use ADIF or Cabrillo format for now.");
+        await Task.CompletedTask;
+    }
+
+    [RelayCommand]
+    private async Task ExportCsvAsync()
+    {
+        _dialogService.ShowInfo("CSV export is not yet implemented. Please use ADIF or Cabrillo format for now.");
+        await Task.CompletedTask;
+    }
 }

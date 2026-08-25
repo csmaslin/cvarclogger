@@ -245,5 +245,11 @@ public partial class FileOperationsWindow : Window
         await RunWithProgress("Exporting Cabrillo...", vm => vm.ExportCabrilloCommand.ExecuteAsync(dialog.Result));
     }
 
+    private async void ImportCSV_Click(object sender, RoutedEventArgs e) =>
+        await RunWithProgress("Importing CSV...", vm => vm.ImportCsvCommand.ExecuteAsync(null));
+
+    private async void ExportCSV_Click(object sender, RoutedEventArgs e) =>
+        await RunWithProgress("Exporting CSV...", vm => vm.ExportCsvCommand.ExecuteAsync(null));
+
     private void Close_Click(object sender, RoutedEventArgs e) => Close();
 }
