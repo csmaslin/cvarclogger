@@ -113,6 +113,10 @@
                                  Checked="ContestNav_Checked" Tag="5">
                         <emoji:TextBlock Text="🇺🇸  ARRL Contests (Beta)" FontSize="14"/>
                     </RadioButton>
+                    <RadioButton x:Name="SkccNavItem" GroupName="ContestNav" Style="{StaticResource SidebarNavItem}"
+                                 Checked="ContestNav_Checked" Tag="6">
+                        <emoji:TextBlock Text="💻  SKCC (Coming Soon)" FontSize="14"/>
+                    </RadioButton>
                 </StackPanel>
             </DockPanel>
         </Border>
@@ -225,6 +229,23 @@
                                    HorizontalAlignment="Center" Width="480" TextAlignment="Center" Margin="0,0,0,20"/>
                         <Button Content="Open ARRL Contests Scorer" Style="{StaticResource PrimaryButton}"
                                 HorizontalAlignment="Center" Click="ArrlContests_Click"/>
+                    </StackPanel>
+                </TabItem>
+
+                <TabItem>
+                    <TabItem.Header>
+                        <emoji:TextBlock Text="💻  SKCC (Coming Soon)" FontSize="14"/>
+                    </TabItem.Header>
+                    <StackPanel Margin="30" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <emoji:TextBlock Text="💻" FontSize="64" HorizontalAlignment="Center" Foreground="#404040"/>
+                        <TextBlock Text="SKCC" FontSize="20" FontWeight="Bold"
+                                   HorizontalAlignment="Center" Margin="0,10,0,6"/>
+                        <TextBlock Text="Straight Key Century Club contest tracking and scoring."
+                                   FontSize="13" Foreground="#666666" TextWrapping="Wrap"
+                                   HorizontalAlignment="Center" Width="480" TextAlignment="Center" Margin="0,0,0,20"/>
+                        <TextBlock Text="(Scoring implementation coming in the next phase)"
+                                   FontSize="12" Foreground="#999999" FontStyle="Italic" TextWrapping="Wrap"
+                                   HorizontalAlignment="Center" Width="480" TextAlignment="Center"/>
                     </StackPanel>
                 </TabItem>
             </TabControl>

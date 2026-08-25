@@ -56,6 +56,9 @@ public partial class ContestsMenuWindow : Window
             case 5:
                 OpenArrlContestsScorer();
                 break;
+            case 6:
+                // SKCC tab is placeholder; implementation coming in next phase
+                break;
         }
     }
 
