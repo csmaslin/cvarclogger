@@ -311,10 +311,6 @@
               "Highlights"
             ],
             [
-              "2.09 (Beta)",
-              "Documentation-only release. User manual updated: page numbers added to every page, a new Appendix C walks through every contest scoring tool step by step (Field Day, Sweepstakes, CQ WW, Sprints, NAQP, and SKCC), the version-history table's missing 2.07a/2.08 rows were added, and the title page's version stamp was corrected."
-            ],
-            [
               "2.08 (Beta)",
               "SKCC (Straight Key Century Club) support: automatic and manual SKCC # lookup from the local member roster in the QSO edit window, Bulk Edit (\u201cLookup SKCC # for Selected\u201d), and automatically when logging a QSO. Entry form gained a member tier badge (gold/silver/bronze for Senator/Tribune/Centurion) and a live exchange-preview line next to the SKCC # field. New SKCC scorer under Contests: Weekday Sprint, Weekend Sprintathon, Europe Sprint, Asia Sprint, and QSO Party, scored against SKCC's own published rules. See Appendix C for a full walkthrough."
             ],

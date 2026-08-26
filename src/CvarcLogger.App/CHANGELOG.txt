@@ -5,17 +5,13 @@ build meant to reach the user (see AppVersion.cs) -- before running publish.ps1.
 
 Versions before 1.17 predate this changelog and are not documented here.
 
-2.09 (Beta)
------------
-- No code changes -- documentation-only release. User manual updated: page numbers added to every
-  page (none existed before), a new Appendix C walks through every contest scoring tool step by step
-  (Field Day, Sweepstakes, CQ WW, Sprints, NAQP, and SKCC, including SKCC member-number lookup and the
-  member tier badge/exchange preview), the version-history table's missing 2.07a/2.08 rows were added,
-  and the title page's version stamp was corrected. In-app Help window's manual content regenerated to
-  match (15 chapters, up from 14).
-
 2.08 (Beta)
 -----------
+- User manual updated: page numbers added to every page (none existed before), a new Appendix C walks
+  through every contest scoring tool step by step (Field Day, Sweepstakes, CQ WW, Sprints, NAQP, and
+  SKCC, including SKCC member-number lookup and the member tier badge/exchange preview), the
+  version-history table's missing 2.07a row was added, and the title page's version stamp was kept in
+  sync. In-app Help window's manual content regenerated to match (15 chapters, up from 14).
 - SKCC (Straight Key Century Club) support, first pass:
   - SKCC # lookup by callsign against the local member roster (SkccRefDatabase, downloaded from
     skccgroup.com/search/skcclist.txt): in the QSO edit window ("Lookup" button), in Bulk Edit
