@@ -1117,6 +1117,18 @@ public partial class QsoEntryViewModel : ObservableObject
             }
         }
 
+        // If the operator didn't type in an SKCC # (the normal case -- SkccNr above is only populated when
+        // the other station reads their number out over the air), fall back to a local roster lookup by
+        // callsign so the QSO still gets credited without requiring the operator to ask/remember. Best
+        // effort: an unavailable/stale roster or a non-member callsign just leaves SkccNr blank, same as
+        // today, rather than blocking the log.
+        string? skccNrToLog = SkccNr;
+        if (string.IsNullOrWhiteSpace(skccNrToLog))
+        {
+            var skccMatch = await _skccRefDb.LookupByNameAsync(Callsign.Trim());
+            skccNrToLog = skccMatch?.Reference;
+        }
+
         var qso = new Qso
         {
             Callsign = Callsign.Trim().ToUpperInvariant(),
@@ -1144,7 +1156,7 @@ public partial class QsoEntryViewModel : ObservableObject
             SotaRef = SotaRef,
             MySigInfo = MySigInfo,
             SigInfo = SigInfo,
-            SkccNr = SkccNr,
+            SkccNr = skccNrToLog,
             Precedence = Precedence,
             Check = Check,
             Class = QsoClass,
