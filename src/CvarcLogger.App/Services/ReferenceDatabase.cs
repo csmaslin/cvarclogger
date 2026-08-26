@@ -151,6 +151,26 @@ public abstract class ReferenceDatabase
         }, ct).ConfigureAwait(false);
     }
 
+    /// <summary>Reverse lookup by the "name" column instead of "ref" -- for SkccRefDatabase, where ref is
+    /// the SKCC number and name is the callsign (see SkccRefDatabase.MapRow), so this resolves a callsign
+    /// to its SKCC record. Not indexed (no idx on name), but the roster is small enough for a table scan
+    /// to be fast in practice.</summary>
+    public async Task<RefInfo?> LookupByNameAsync(string name, CancellationToken ct = default)
+    {
+        if (!IsAvailable || string.IsNullOrWhiteSpace(name)) return null;
+
+        return await Task.Run(() =>
+        {
+            using var db = new SqliteConnection($"Data Source={DbPath};Mode=ReadOnly");
+            db.Open();
+            using var cmd = db.CreateCommand();
+            cmd.CommandText = "SELECT ref, name, detail FROM records WHERE name = $n COLLATE NOCASE LIMIT 1";
+            cmd.Parameters.AddWithValue("$n", name.Trim());
+            using var reader = cmd.ExecuteReader();
+            return reader.Read() ? new RefInfo(reader.GetString(0), reader.GetString(1), reader.GetString(2)) : null;
+        }, ct).ConfigureAwait(false);
+    }
+
     /// <summary>Batched version of LookupAsync: opens the connection once and resolves every reference
     /// in a single pass, instead of one new SqliteConnection per call. Prefer this over calling
     /// LookupAsync in a loop for anything beyond a handful of lookups -- a caller resolving hundreds of

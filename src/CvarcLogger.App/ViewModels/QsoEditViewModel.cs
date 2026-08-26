@@ -18,6 +18,7 @@ public partial class QsoEditViewModel : ObservableObject
     private readonly IGridZoneResolver _gridZoneResolver;
     private readonly DialogService _dialogService;
     private readonly GridTrackerBroadcastService _gridTrackerBroadcast;
+    private readonly SkccRefDatabase _skccRefDatabase;
     private Qso? _qso;
 
     /// <summary>Guards QsoDateTimeUtcText/LocalDateTimeText's bidirectional sync against re-entrant
@@ -57,6 +58,7 @@ public partial class QsoEditViewModel : ObservableObject
     [ObservableProperty] private string? sigInfo;
     [ObservableProperty] private string? txPowerWatts;
     [ObservableProperty] private string? comment;
+    [ObservableProperty] private string? skccNr;
     [ObservableProperty] private QslStatus qslSent;
     [ObservableProperty] private QslStatus qslRcvd;
     [ObservableProperty] private string? qslSentDateText;
@@ -93,7 +95,8 @@ public partial class QsoEditViewModel : ObservableObject
         ICallsignEntityResolver entityResolver,
         IGridZoneResolver gridZoneResolver,
         DialogService dialogService,
-        GridTrackerBroadcastService gridTrackerBroadcast)
+        GridTrackerBroadcastService gridTrackerBroadcast,
+        SkccRefDatabase skccRefDatabase)
     {
         _qsoRepository = qsoRepository;
         _lookupCoordinator = lookupCoordinator;
@@ -101,6 +104,7 @@ public partial class QsoEditViewModel : ObservableObject
         _gridZoneResolver = gridZoneResolver;
         _dialogService = dialogService;
         _gridTrackerBroadcast = gridTrackerBroadcast;
+        _skccRefDatabase = skccRefDatabase;
     }
 
     public void Load(Qso qso)
@@ -150,6 +154,7 @@ public partial class QsoEditViewModel : ObservableObject
         SigInfo = qso.SigInfo;
         TxPowerWatts = qso.TxPowerWatts?.ToString("0.###", CultureInfo.InvariantCulture);
         Comment = qso.Comment;
+        SkccNr = qso.SkccNr;
         QslSent = qso.QslSent;
         QslRcvd = qso.QslRcvd;
         QslSentDateText = qso.QslSentDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
@@ -358,6 +363,7 @@ public partial class QsoEditViewModel : ObservableObject
         _qso.SigInfo = SigInfo;
         _qso.TxPowerWatts = decimal.TryParse(TxPowerWatts, NumberStyles.Number, CultureInfo.InvariantCulture, out var txPower) ? txPower : null;
         _qso.Comment = Comment;
+        _qso.SkccNr = SkccNr;
         _qso.QslSent = QslSent;
         _qso.QslRcvd = QslRcvd;
         _qso.QslSentDate = DateTime.TryParseExact(QslSentDateText, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var qslSentDate) ? qslSentDate : null;
@@ -386,5 +392,35 @@ public partial class QsoEditViewModel : ObservableObject
         await _qsoRepository.UpdateAsync(_qso);
         _gridTrackerBroadcast.BroadcastQso(_qso);
         Saved?.Invoke(this, EventArgs.Empty);
+    }
+
+    [RelayCommand]
+    private async Task SkccLookupAsync()
+    {
+        if (string.IsNullOrWhiteSpace(Callsign)) return;
+
+        if (!_skccRefDatabase.IsAvailable)
+        {
+            _dialogService.ShowInfo("The SKCC member roster hasn't been downloaded yet. Update it from the SKCC awards tab first.");
+            return;
+        }
+
+        try
+        {
+            IsLookingUp = true;
+            var result = await _skccRefDatabase.LookupByNameAsync(Callsign.Trim());
+            if (result is not null)
+            {
+                SkccNr = result.Reference;
+            }
+            else
+            {
+                _dialogService.ShowInfo($"No SKCC member found for {Callsign}");
+            }
+        }
+        finally
+        {
+            IsLookingUp = false;
+        }
     }
 }

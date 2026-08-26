@@ -144,7 +144,7 @@ namespace CvarcLogger.Data.Migrations
 
                     b.HasIndex("ModifiedAtUtc");
 
-                    b.ToTable("ContestSubmissions");
+                    b.ToTable("ContestSubmissions", (string)null);
                 });
 
             modelBuilder.Entity("CvarcLogger.Core.Models.DxccEntity", b =>
@@ -174,7 +174,7 @@ namespace CvarcLogger.Data.Migrations
 
                     b.HasKey("EntityCode");
 
-                    b.ToTable("DxccEntities");
+                    b.ToTable("DxccEntities", (string)null);
                 });
 
             modelBuilder.Entity("CvarcLogger.Core.Models.PotaActivation", b =>
@@ -204,7 +204,7 @@ namespace CvarcLogger.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("PotaActivations");
+                    b.ToTable("PotaActivations", (string)null);
                 });
 
             modelBuilder.Entity("CvarcLogger.Core.Models.PrefixMapping", b =>
@@ -228,7 +228,7 @@ namespace CvarcLogger.Data.Migrations
                     b.HasIndex("Prefix")
                         .IsUnique();
 
-                    b.ToTable("PrefixMappings");
+                    b.ToTable("PrefixMappings", (string)null);
                 });
 
             modelBuilder.Entity("CvarcLogger.Core.Models.Qso", b =>
@@ -442,7 +442,7 @@ namespace CvarcLogger.Data.Migrations
 
                     b.HasIndex("StationProfileId");
 
-                    b.ToTable("Qsos");
+                    b.ToTable("Qsos", (string)null);
                 });
 
             modelBuilder.Entity("CvarcLogger.Core.Models.SkccMember", b =>
@@ -475,7 +475,7 @@ namespace CvarcLogger.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("SkccMembers");
+                    b.ToTable("SkccMembers", (string)null);
                 });
 
             modelBuilder.Entity("CvarcLogger.Core.Models.SotaActivation", b =>
@@ -505,7 +505,7 @@ namespace CvarcLogger.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("SotaActivations");
+                    b.ToTable("SotaActivations", (string)null);
                 });
 
             modelBuilder.Entity("CvarcLogger.Core.Models.StationProfile", b =>
@@ -555,7 +555,7 @@ namespace CvarcLogger.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("StationProfiles");
+                    b.ToTable("StationProfiles", (string)null);
                 });
 
             modelBuilder.Entity("CvarcLogger.Core.Models.PrefixMapping", b =>
