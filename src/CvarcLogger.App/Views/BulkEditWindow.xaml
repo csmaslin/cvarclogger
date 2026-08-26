@@ -230,9 +230,14 @@
                 <TextBlock Text="SKCC #" TextWrapping="Wrap"/>
                 <TextBox TextAlignment="Center" Text="{Binding SkccNr, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
-            <StackPanel Margin="0,0,0,8" Width="90">
+            <StackPanel Margin="0,0,10,8" Width="90">
                 <TextBlock Text="My SKCC #" TextWrapping="Wrap"/>
                 <TextBox TextAlignment="Center" Text="{Binding MySkccNr, UpdateSourceTrigger=PropertyChanged}"/>
+            </StackPanel>
+            <StackPanel Margin="0,0,0,8" VerticalAlignment="Bottom">
+                <Button Content="Lookup SKCC # for Selected" Command="{Binding SkccBulkLookupCommand}"
+                        ToolTip="Look up each selected QSO's own callsign against the SKCC roster and fill in its SKCC # individually (does not use the SKCC # box above)"
+                        Padding="14,4" Background="#FF9800" Foreground="White" BorderThickness="0" FontWeight="SemiBold" Cursor="Hand"/>
             </StackPanel>
         </WrapPanel>
 

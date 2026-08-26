@@ -21,6 +21,7 @@ public partial class BulkEditViewModel : ObservableObject
     private readonly IQsoRepository _qsoRepository;
     private readonly ICallsignEntityResolver _entityResolver;
     private readonly DialogService _dialogService;
+    private readonly SkccRefDatabase _skccRefDatabase;
     private IReadOnlyList<Qso> _qsos = Array.Empty<Qso>();
 
     private const string DateTimeFormat = "yyyy-MM-dd HH:mm";
@@ -30,6 +31,7 @@ public partial class BulkEditViewModel : ObservableObject
     public event EventHandler? Saved;
 
     [ObservableProperty] private int qsoCount;
+    [ObservableProperty] private bool isLookingUpSkcc;
 
     [ObservableProperty] private string? qsoDateTimeUtcText;
     [ObservableProperty] private string? qsoDateTimeOffUtcText;
@@ -90,11 +92,12 @@ public partial class BulkEditViewModel : ObservableObject
     public ObservableCollection<string> QslStatusOptions { get; } = new(new[] { NoChangeOption }.Concat(Enum.GetNames<QslStatus>()));
     public ObservableCollection<string> YesNoOptions { get; } = new(new[] { NoChangeOption, "Yes", "No" });
 
-    public BulkEditViewModel(IQsoRepository qsoRepository, ICallsignEntityResolver entityResolver, DialogService dialogService)
+    public BulkEditViewModel(IQsoRepository qsoRepository, ICallsignEntityResolver entityResolver, DialogService dialogService, SkccRefDatabase skccRefDatabase)
     {
         _qsoRepository = qsoRepository;
         _entityResolver = entityResolver;
         _dialogService = dialogService;
+        _skccRefDatabase = skccRefDatabase;
     }
 
     public void Load(IReadOnlyList<Qso> qsos)
@@ -225,5 +228,50 @@ public partial class BulkEditViewModel : ObservableObject
         }
 
         Saved?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>Unlike the SKCC # box above (one typed value applied to every selected QSO), this looks
+    /// up each selected QSO's own callsign against the SKCC roster individually and fills in that QSO's
+    /// own SkccNr. Saves immediately per-QSO rather than waiting for the main Save button, since this is
+    /// its own self-contained action distinct from the rest of the bulk-edit form.</summary>
+    [RelayCommand]
+    private async Task SkccBulkLookupAsync()
+    {
+        if (_qsos.Count == 0) return;
+
+        if (!_skccRefDatabase.IsAvailable)
+        {
+            _dialogService.ShowInfo("The SKCC member roster hasn't been downloaded yet. Update it from the SKCC awards tab first.");
+            return;
+        }
+
+        try
+        {
+            IsLookingUpSkcc = true;
+
+            var distinctCalls = _qsos.Select(q => q.Callsign).Where(c => !string.IsNullOrWhiteSpace(c)).Distinct(StringComparer.OrdinalIgnoreCase);
+            var found = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var call in distinctCalls)
+            {
+                var result = await _skccRefDatabase.LookupByNameAsync(call);
+                if (result is not null) found[call] = result.Reference;
+            }
+
+            int updated = 0;
+            foreach (var qso in _qsos)
+            {
+                if (!found.TryGetValue(qso.Callsign, out var skccNr)) continue;
+                qso.SkccNr = skccNr;
+                await _qsoRepository.UpdateAsync(qso);
+                updated++;
+            }
+
+            _dialogService.ShowInfo($"Found SKCC numbers for {updated} of {_qsos.Count} selected QSO(s).");
+            if (updated > 0) Saved?.Invoke(this, EventArgs.Empty);
+        }
+        finally
+        {
+            IsLookingUpSkcc = false;
+        }
     }
 }
