@@ -5,6 +5,25 @@ build meant to reach the user (see AppVersion.cs) -- before running publish.ps1.
 
 Versions before 1.17 predate this changelog and are not documented here.
 
+2.08 (Beta)
+-----------
+- SKCC (Straight Key Century Club) support, first pass:
+  - SKCC # lookup by callsign against the local member roster (SkccRefDatabase, downloaded from
+    skccgroup.com/search/skcclist.txt): in the QSO edit window ("Lookup" button), in Bulk Edit
+    ("Lookup SKCC # for Selected", looks up each selected QSO's own callsign individually rather
+    than applying one typed value to all), and automatically on the entry form when a QSO is logged
+    without a manually-typed SKCC #.
+  - Entry form: member tier badge (gold/silver/bronze circle for Senator/Tribune/Centurion) next to
+    the SKCC # field, and a live exchange-preview line (callsign, RST received, state, name, SKCC #)
+    that fills in as those fields are typed.
+  - New SKCC scorer (Contests > SKCC tab, previously "Coming Soon"): scores Weekday Sprint, Weekend
+    Sprintathon, Europe Sprint, Asia Sprint, and QSO Party against the club's actual published rules
+    (fetched directly from skccgroup.com, not a guessed formula) -- (QSO points x Multipliers) +
+    Bonus points, with QSO points/multipliers/tier bonuses (C=5, T=10, S=15) computed from the log,
+    plus event-specific bonuses (KS1KCC contacts, grid squares, birthday stations) where derivable.
+    South America Sprint and Slow Speed Saunter are not scored: no confirmed official rules exist for
+    them yet.
+
 2.07a (Beta)
 ------------
 - Fix: crash on opening the Field Day scorer (from the Contests menu or its sidebar tab), introduced
