@@ -9,13 +9,19 @@ public enum SkccEventType
     /// <summary>WES: Weekend Sprintathon. 36-hour relaxed sprint from Saturday through Sunday.</summary>
     WeekendSprintathon,
 
-    /// <summary>SKSE: Europe Sprint. Regional variant for European time zones.</summary>
+    /// <summary>SKSE: Europe Sprint. Regional variant timed for European operators, officially open to
+    /// all licensed amateurs worldwide.</summary>
     EuropeSprint,
 
-    /// <summary>SKSA: South America Sprint. Regional variant for South American time zones.</summary>
+    /// <summary>Not a confirmed official SKCC event -- skccgroup.com/operating_activities/sksa/ (which the
+    /// original plan assumed was "South America") is actually the Asia Sprint, see AsiaSprint below.
+    /// Kept as an enum member so it isn't a breaking rename, but SkccScorer does not support it: there is
+    /// no confirmed South America-specific SKCC sprint to score against.</summary>
     SouthAmericaSprint,
 
-    /// <summary>SKS-A: Asia Sprint. Regional variant for Asian time zones.</summary>
+    /// <summary>SKSA: Asia Sprint. Regional variant timed for ITU Region 3 (Asia) operators, officially
+    /// open to all licensed amateurs worldwide. (Not "South America" -- corrected from the original plan
+    /// after checking skccgroup.com/operating_activities/sksa/ directly.)</summary>
     AsiaSprint,
 
     /// <summary>SKCC-QSO: Annual QSO Party with expanded exchange (includes grid square).</summary>

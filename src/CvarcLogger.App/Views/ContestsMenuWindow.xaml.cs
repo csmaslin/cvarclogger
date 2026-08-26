@@ -57,7 +57,7 @@ public partial class ContestsMenuWindow : Window
                 OpenArrlContestsScorer();
                 break;
             case 6:
-                // SKCC tab is placeholder; implementation coming in next phase
+                OpenSkccScorer();
                 break;
         }
     }
@@ -73,6 +73,8 @@ public partial class ContestsMenuWindow : Window
     private void Naqp_Click(object sender, RoutedEventArgs e) => OpenNaqpScorer();
 
     private void ArrlContests_Click(object sender, RoutedEventArgs e) => OpenArrlContestsScorer();
+
+    private void Skcc_Click(object sender, RoutedEventArgs e) => OpenSkccScorer();
 
     private void OpenFieldDayScorer()
     {
@@ -107,6 +109,12 @@ public partial class ContestsMenuWindow : Window
     private void OpenArrlContestsScorer()
     {
         var window = new ArrlContestsScoringWindow { Owner = this };
+        window.Show();
+    }
+
+    private void OpenSkccScorer()
+    {
+        var window = new SkccScoringWindow { Owner = this };
         window.Show();
     }
 }
