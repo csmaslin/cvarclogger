@@ -175,6 +175,8 @@ public partial class QsoEntryViewModel : ObservableObject
         _settings.SaveEntryFormFieldPositions();
     }
 
+    [NotifyPropertyChangedFor(nameof(SkccExchangePreview))]
+    [NotifyPropertyChangedFor(nameof(ShowSkccExchangePreview))]
     [ObservableProperty] private string callsign = string.Empty;
 
     /// <summary>Dupe Check checkbox above the Callsign field. While checked, MainViewModel mirrors every
@@ -190,10 +192,16 @@ public partial class QsoEntryViewModel : ObservableObject
     [ObservableProperty] private string mode = "SSB";
     [ObservableProperty] private string? frequencyMhz;
     [ObservableProperty] private string? rstSent = "59";
+    [NotifyPropertyChangedFor(nameof(SkccExchangePreview))]
+    [NotifyPropertyChangedFor(nameof(ShowSkccExchangePreview))]
     [ObservableProperty] private string? rstRcvd = "59";
+    [NotifyPropertyChangedFor(nameof(SkccExchangePreview))]
+    [NotifyPropertyChangedFor(nameof(ShowSkccExchangePreview))]
     [ObservableProperty] private string? name;
     [ObservableProperty] private string? gridSquare;
     [ObservableProperty] private string? city;
+    [NotifyPropertyChangedFor(nameof(SkccExchangePreview))]
+    [NotifyPropertyChangedFor(nameof(ShowSkccExchangePreview))]
     [ObservableProperty] private string? state;
     [ObservableProperty] private string? county;
     [ObservableProperty] private string? country;
@@ -329,6 +337,11 @@ public partial class QsoEntryViewModel : ObservableObject
 
     // Contest/SKCC fields. These describe the *contacted* station (what they sent), so -- like SotaRef/
     // SigInfo above -- they reset per QSO, not sticky.
+    [NotifyPropertyChangedFor(nameof(SkccExchangePreview))]
+    [NotifyPropertyChangedFor(nameof(ShowSkccExchangePreview))]
+    [NotifyPropertyChangedFor(nameof(SkccTierBadgeText))]
+    [NotifyPropertyChangedFor(nameof(ShowSkccTierBadge))]
+    [NotifyPropertyChangedFor(nameof(SkccTierBadgeBrush))]
     [ObservableProperty] private string? skccNr;
     [ObservableProperty] private string? precedence;
     [ObservableProperty] private string? check;
@@ -340,6 +353,35 @@ public partial class QsoEntryViewModel : ObservableObject
     // immediately instead of only surfacing it later in an award/export tool.
     [ObservableProperty] private string? skccLookupText;
     public Visibility ShowSkccLookupText => string.IsNullOrEmpty(SkccLookupText) ? Visibility.Collapsed : Visibility.Visible;
+
+    // Member tier badge -- SKCC numbers carry an award-level suffix once earned (see SkccRefDatabase's
+    // MapRow doc): "1234C" = Centurion, "1234T" = Tribune, "1234S" = Senator, no suffix = plain member.
+    // Read straight off the typed/resolved SkccNr rather than a separate lookup -- the suffix IS the tier.
+    public string SkccTierBadgeText => SkccNr?.Trim().ToUpperInvariant() is { Length: > 0 } nr && nr[^1] is 'C' or 'T' or 'S'
+        ? nr[^1].ToString()
+        : string.Empty;
+    public Visibility ShowSkccTierBadge => SkccTierBadgeText.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
+    public System.Windows.Media.Brush SkccTierBadgeBrush => SkccTierBadgeText switch
+    {
+        "S" => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xD4, 0xAF, 0x37)), // gold
+        "T" => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xA8, 0xA9, 0xAD)), // silver
+        "C" => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xCD, 0x7F, 0x32)), // bronze
+        _ => System.Windows.Media.Brushes.Transparent,
+    };
+
+    /// <summary>Live readback of the exchange info gathered so far for this QSO -- callsign, RST received,
+    /// state, name, and SKCC # -- so the operator can sanity-check what they've copied before logging,
+    /// without needing to look at each field separately. Blank pieces are simply omitted.</summary>
+    public string SkccExchangePreview
+    {
+        get
+        {
+            var parts = new[] { Callsign?.Trim(), RstRcvd?.Trim(), State?.Trim(), Name?.Trim(), SkccNr?.Trim() }
+                .Where(p => !string.IsNullOrEmpty(p));
+            return string.Join(" ", parts);
+        }
+    }
+    public Visibility ShowSkccExchangePreview => SkccExchangePreview.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
 
     partial void OnSkccNrChanged(string? value)
     {
