@@ -30,7 +30,7 @@ public class SotaSummitLookupService
         _httpClient = httpClient;
     }
 
-    private static string CachePath => Path.Combine(App.DataDirectory, "sota-summitslist.csv");
+    private static string CachePath => Path.Combine(App.AppDirectory, "sota-summitslist.csv");
 
     public async Task<SotaSummitInfo?> LookupAsync(string summitCode, CancellationToken ct = default)
     {
@@ -124,7 +124,7 @@ public class SotaSummitLookupService
             (DateTime.UtcNow - File.GetLastWriteTimeUtc(CachePath)) > MaxCacheAge;
         if (!stale) return;
 
-        Directory.CreateDirectory(App.DataDirectory);
+        Directory.CreateDirectory(App.AppDirectory);
         byte[] data = await _httpClient.GetByteArrayAsync(SummitsListUrl, ct).ConfigureAwait(false);
         await File.WriteAllBytesAsync(CachePath, data, ct).ConfigureAwait(false);
     }

@@ -34,6 +34,7 @@ public partial class QsoEditViewModel : ObservableObject
     /// ObservesDaylightSavingTime (see OnQsoDateTimeUtcTextChanged) -- not an independently persisted
     /// field, same relationship as Qso.LocalDateTimeOn. Editing it recomputes QsoDateTimeUtcText instead.</summary>
     [ObservableProperty] private string localDateTimeText = string.Empty;
+    [ObservableProperty] private string? qsoDateTimeOffUtcText;
     [ObservableProperty] private string callsign = string.Empty;
     [ObservableProperty] private string band = string.Empty;
     [ObservableProperty] private string mode = string.Empty;
@@ -77,6 +78,8 @@ public partial class QsoEditViewModel : ObservableObject
     [ObservableProperty] private string? op;
     [ObservableProperty] private string utcOffsetHours = "0";
     [ObservableProperty] private bool observesDaylightSavingTime;
+    [ObservableProperty] private string? contestId;
+    [ObservableProperty] private string? mySkccNr;
     [ObservableProperty] private bool isLookingUp;
 
     public ObservableCollection<string> Bands { get; } = new(QsoFieldOptions.Bands);
@@ -124,6 +127,7 @@ public partial class QsoEditViewModel : ObservableObject
             ObservesDaylightSavingTime = qso.ObservesDaylightSavingTime;
             QsoDateTimeUtcText = qso.QsoDateTimeOnUtc.ToString(DateTimeFormat, CultureInfo.InvariantCulture);
             LocalDateTimeText = qso.LocalDateTimeOn.ToString(DateTimeFormat, CultureInfo.InvariantCulture);
+            QsoDateTimeOffUtcText = qso.QsoDateTimeOffUtc?.ToString(DateTimeFormat, CultureInfo.InvariantCulture);
         }
         finally
         {
@@ -155,6 +159,8 @@ public partial class QsoEditViewModel : ObservableObject
         TxPowerWatts = qso.TxPowerWatts?.ToString("0.###", CultureInfo.InvariantCulture);
         Comment = qso.Comment;
         SkccNr = qso.SkccNr;
+        MySkccNr = qso.MySkccNr;
+        ContestId = qso.ContestId;
         QslSent = qso.QslSent;
         QslRcvd = qso.QslRcvd;
         QslSentDateText = qso.QslSentDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
@@ -334,10 +340,11 @@ public partial class QsoEditViewModel : ObservableObject
             return;
         }
 
-        // QsoDateTimeOffUtc is no longer editable from this window -- Local Date/Time replaced that
-        // field's UI slot (see LocalDateTimeText) and isn't an independently persisted value, so
-        // whatever QsoDateTimeOffUtc already held (e.g. from ADIF import) is left untouched here.
         _qso.QsoDateTimeOnUtc = DateTime.SpecifyKind(qsoDateTime, DateTimeKind.Utc);
+        _qso.QsoDateTimeOffUtc = !string.IsNullOrWhiteSpace(QsoDateTimeOffUtcText)
+            && DateTime.TryParseExact(QsoDateTimeOffUtcText, DateTimeFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out var qsoDateTimeOff)
+            ? DateTime.SpecifyKind(qsoDateTimeOff, DateTimeKind.Utc)
+            : null;
         _qso.Callsign = Callsign.Trim().ToUpperInvariant();
         _qso.Band = Band;
         _qso.Mode = Mode;
@@ -364,6 +371,8 @@ public partial class QsoEditViewModel : ObservableObject
         _qso.TxPowerWatts = decimal.TryParse(TxPowerWatts, NumberStyles.Number, CultureInfo.InvariantCulture, out var txPower) ? txPower : null;
         _qso.Comment = Comment;
         _qso.SkccNr = SkccNr;
+        _qso.MySkccNr = MySkccNr;
+        _qso.ContestId = string.IsNullOrWhiteSpace(ContestId) ? null : ContestId.Trim().ToUpperInvariant();
         _qso.QslSent = QslSent;
         _qso.QslRcvd = QslRcvd;
         _qso.QslSentDate = DateTime.TryParseExact(QslSentDateText, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var qslSentDate) ? qslSentDate : null;

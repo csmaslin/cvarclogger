@@ -87,7 +87,7 @@
         <!-- Fixed Width so the WrapPanels below wrap predictably regardless of window size. Viewbox
              always measures its child at infinite available size to learn its natural size. -->
         <Viewbox Stretch="Uniform">
-    <StackPanel Margin="14" Width="660">
+    <StackPanel Margin="14" Width="800">
         <WrapPanel>
             <StackPanel Margin="0,0,10,8" Width="150">
                 <TextBlock Text="Date/Time On (UTC)"/>
@@ -97,6 +97,11 @@
             <StackPanel Margin="0,0,10,8" Width="150">
                 <TextBlock Text="Local Date/Time"/>
                 <TextBox TextAlignment="Center" Text="{Binding LocalDateTimeText, UpdateSourceTrigger=PropertyChanged}"
+                         behaviors:DateInputMask.Format="yyyy-MM-dd HH:mm"/>
+            </StackPanel>
+            <StackPanel Margin="0,0,10,8" Width="150">
+                <TextBlock Text="Time Off (UTC)"/>
+                <TextBox TextAlignment="Center" Text="{Binding QsoDateTimeOffUtcText, UpdateSourceTrigger=PropertyChanged}"
                          behaviors:DateInputMask.Format="yyyy-MM-dd HH:mm"/>
             </StackPanel>
             <StackPanel Margin="0,0,10,8" Width="100">
@@ -218,8 +223,12 @@
                 <TextBlock Text="UTC Offset (h)"/>
                 <TextBox TextAlignment="Center" Text="{Binding UtcOffsetHours, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
-            <StackPanel Margin="0,0,0,8" Width="110" VerticalAlignment="Bottom">
+            <StackPanel Margin="0,0,10,8" Width="110" VerticalAlignment="Bottom">
                 <CheckBox Content="Observes DST" IsChecked="{Binding ObservesDaylightSavingTime}"/>
+            </StackPanel>
+            <StackPanel Margin="0,0,0,8" Width="120">
+                <TextBlock Text="Contest ID" TextWrapping="Wrap"/>
+                <TextBox TextAlignment="Center" Text="{Binding ContestId, UpdateSourceTrigger=PropertyChanged}" CharacterCasing="Upper"/>
             </StackPanel>
         </WrapPanel>
 
@@ -259,6 +268,10 @@
             <StackPanel Margin="0,0,10,8" Width="100">
                 <TextBlock Text="SKCC #"/>
                 <TextBox TextAlignment="Center" Text="{Binding SkccNr, UpdateSourceTrigger=PropertyChanged}"/>
+            </StackPanel>
+            <StackPanel Margin="0,0,10,8" Width="100">
+                <TextBlock Text="My SKCC #"/>
+                <TextBox TextAlignment="Center" Text="{Binding MySkccNr, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
             <StackPanel Margin="0,0,0,8" VerticalAlignment="Bottom">
                 <Button Content="Lookup" Command="{Binding SkccLookupCommand}" ToolTip="Look up this callsign's SKCC number from the member roster"

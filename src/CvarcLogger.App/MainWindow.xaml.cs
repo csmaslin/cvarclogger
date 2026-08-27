@@ -53,7 +53,11 @@ public partial class MainWindow : Window
         // CheckHamlibAvailability();
     }
 
-    private void Window_Closing(object sender, CancelEventArgs e) => SaveEntryLogSplit();
+    private void Window_Closing(object sender, CancelEventArgs e)
+    {
+        SaveEntryLogSplit();
+        LogGridView.SaveAllColumnWidths();
+    }
 
     /// <summary>Also saves on drag release, not just on exit, so a crash or a forced kill doesn't cost
     /// the operator the layout they just set up.</summary>

@@ -16,7 +16,7 @@ public class DpapiCredentialStore : ICredentialStore
 
     public DpapiCredentialStore(string? filePath = null)
     {
-        _filePath = filePath ?? Path.Combine(App.DataDirectory, "credentials.dpapi");
+        _filePath = filePath ?? Path.Combine(App.DatabaseDirectory, "credentials.dpapi");
     }
 
     public async Task SaveAsync(string key, string username, string password, CancellationToken ct = default)

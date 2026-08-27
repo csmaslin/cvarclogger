@@ -26,7 +26,8 @@ public abstract class ReferenceDatabase
 
     protected ReferenceDatabase(HttpClient httpClient) => _httpClient = httpClient;
 
-    /// <summary>File name inside App.DataDirectory, e.g. "sota-ref.db".</summary>
+    /// <summary>File name inside App.AppDirectory, e.g. "sota-ref.db". Reference databases are shared
+    /// across all databases from this app installation (cached lookup data, not per-database).</summary>
     protected abstract string FileName { get; }
 
     /// <summary>Where the reference CSV is downloaded from.</summary>
@@ -36,7 +37,7 @@ public abstract class ReferenceDatabase
     /// (malformed, inactive) are simply not yielded.</summary>
     protected abstract IEnumerable<(string Reference, string Name, string Detail)> Parse(string csvPath);
 
-    public string DbPath => Path.Combine(App.DataDirectory, FileName);
+    public string DbPath => Path.Combine(App.AppDirectory, FileName);
 
     public bool IsAvailable => File.Exists(DbPath);
 
@@ -48,7 +49,7 @@ public abstract class ReferenceDatabase
         string tmpDb = DbPath + ".tmp";
         try
         {
-            Directory.CreateDirectory(App.DataDirectory);
+            Directory.CreateDirectory(App.AppDirectory);
             progress?.Report("Downloading...");
             // pota.app sits behind a CDN that returns 403 to requests with no User-Agent -- identify
             // ourselves like any browser or well-behaved client would.

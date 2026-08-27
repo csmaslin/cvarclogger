@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using CvarcLogger.Core.Rig;
 
 namespace CvarcLogger.App.Services;
@@ -38,9 +39,25 @@ public class SettingsService
 
     public SettingsService()
     {
-        _filePath = Path.Combine(App.DataDirectory, "settings.json");
+        // Full settings live in the database folder for portability.
+        _filePath = Path.Combine(App.DatabaseDirectory, "settings.json");
         _data = Load();
         if (MigrateRadioProfiles(_data)) Save();
+        // After loading, update the minimal pointer in the app folder so next launch knows the db location.
+        SaveAppSettings();
+    }
+
+    /// <summary>Save minimal app settings (just CurrentDatabasePath) to app folder, so next launch
+    /// can find the database without needing to search.</summary>
+    private void SaveAppSettings()
+    {
+        try
+        {
+            string appSettingsPath = Path.Combine(App.AppDirectory, "app-settings.json");
+            var appData = new { CurrentDatabasePath = _data.CurrentDatabasePath };
+            File.WriteAllText(appSettingsPath, JsonSerializer.Serialize(appData, new JsonSerializerOptions { WriteIndented = true }));
+        }
+        catch { /* Best-effort; if this fails, next launch will just use the default. */ }
     }
 
     public int? LastUsedStationProfileId
@@ -361,55 +378,36 @@ public class SettingsService
     /// needs to run.</summary>
     public int LogColumnDefaultsVersion => _data.LogColumnDefaultsVersion;
 
-    /// <summary>Full path to the active QSO database, or null to use the default (see
-    /// DefaultDatabasePath). Switching this takes effect on next launch — the DbContext's connection
-    /// string is fixed for the process's lifetime.</summary>
+    /// <summary>Full path to the active QSO database. Switching this takes effect on next launch —
+    /// the DbContext's connection string is fixed for the process's lifetime.</summary>
     public string? CurrentDatabasePath
     {
         get => _data.CurrentDatabasePath;
-        set { _data.CurrentDatabasePath = value; Save(); }
+        set { _data.CurrentDatabasePath = value; Save(); SaveAppSettings(); }
     }
 
-    /// <summary>Resolves the effective database path without needing a full SettingsService instance
-    /// (used at startup, before the DI container that would normally provide one exists). Reads
-    /// settings.json directly; falls back to the default path on any error, same as normal Load().</summary>
+    /// <summary>Resolves the effective database path without needing a full SettingsService instance.
+    /// Reads the pointer from app-settings.json in AppDirectory, falling back to the default.</summary>
     public static string ResolveActiveDatabasePath()
     {
-        string settingsPath = Path.Combine(App.DataDirectory, "settings.json");
+        string appSettingsPath = Path.Combine(App.AppDirectory, "app-settings.json");
 
-        if (File.Exists(settingsPath))
+        if (File.Exists(appSettingsPath))
         {
             try
             {
-                var data = JsonSerializer.Deserialize<AppSettingsData>(File.ReadAllText(settingsPath));
-                if (data is not null && !string.IsNullOrWhiteSpace(data.CurrentDatabasePath))
+                var json = JsonSerializer.Deserialize<JsonElement>(File.ReadAllText(appSettingsPath));
+                if (json.TryGetProperty("CurrentDatabasePath", out var pathElem) && pathElem.GetString() is string path && File.Exists(path))
                 {
-                    string? dir = Path.GetDirectoryName(data.CurrentDatabasePath);
-                    if (!string.IsNullOrEmpty(dir) && Directory.Exists(dir)) return data.CurrentDatabasePath;
-
-                    // The folder that used to hold this log is gone -- most often an old app version's
-                    // install/publish folder that was since replaced or deleted, or removable media
-                    // that's no longer attached. Trusting this path would make SQLite fail to even
-                    // create the file (the parent directory doesn't exist), crashing the app before any
-                    // window can show. Clear it so future launches fall back to the default path instead
-                    // of repeating this failure forever.
-                    data.CurrentDatabasePath = null;
-                    try { File.WriteAllText(settingsPath, JsonSerializer.Serialize(data)); } catch { /* best-effort */ }
+                    return path;
                 }
             }
-            catch
-            {
-                // Fall through to the default below, same as a missing settings file.
-            }
+            catch { /* Fall through to default */ }
         }
 
-        return DefaultDatabasePath();
+        return Path.Combine(App.AppDirectory, "cvarclogger.db");
     }
 
-    /// <summary>Where a brand-new database is created when nothing else has been chosen: alongside
-    /// everything else CvarcLogger creates -- see App.DataDirectory for the legacy-preserving logic that
-    /// decides whether that's next to the exe or an existing %LOCALAPPDATA% install.</summary>
-    private static string DefaultDatabasePath() => Path.Combine(App.DataDirectory, "cvarclogger.db");
 
     private AppSettingsData Load()
     {

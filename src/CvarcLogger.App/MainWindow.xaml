@@ -346,6 +346,12 @@
                             <emoji:TextBlock Text="{Binding QsoEntry.CatConnectButtonLabel}" FontSize="13" Foreground="White"/>
                         </Button>
 
+                        <!-- Delete acts on the log grid's current selection (QsoLog.SelectedQsos, falling
+                             back to SelectedQso). Positioned here (between Connect CAT and Start Clock)
+                             per operator request. -->
+                        <Button Content="Delete" Command="{Binding QsoLog.DeleteSelectedCommand}" ToolTip="Delete the selected QSO(s) from the log grid"
+                               Style="{StaticResource RibbonButtonStyle}" Background="#c0392b" HorizontalAlignment="Center"/>
+
                         <!-- Start Time Button: freezes Date/Time UTC at the current instant (see
                              QsoEntryViewModel.SetStartTime). Local Time keeps live-ticking independently. -->
                         <Button Command="{Binding QsoEntry.SetStartTimeCommand}" ToolTip="Freeze the current time into Date/Time (UTC)"
@@ -360,23 +366,19 @@
                             <emoji:TextBlock Text="⏹️ End Clock" FontSize="13" Foreground="White"/>
                         </Button>
 
-                        <!-- Lookup/Log QSO moved here from the entry form's bottom (see QsoEntryView.xaml)
-                             so they're reachable regardless of how the form's fields scroll or how tall
-                             the current mode's layout gets. -->
+                        <!-- Lookup moved here from the entry form's bottom (see QsoEntryView.xaml) so it's
+                             reachable regardless of how the form's fields scroll or how tall the current
+                             mode's layout gets. -->
                         <Button Content="Call Lookup" Command="{Binding QsoEntry.LookupCommand}" ToolTip="Look up the entered callsign online"
                                Style="{StaticResource RibbonButtonStyle}" Background="#3498db" HorizontalAlignment="Center"/>
-                        <Button Content="Log QSO" Command="{Binding QsoEntry.LogQsoCommand}" ToolTip="Save this contact to the log"
-                               Style="{StaticResource RibbonButtonStyle}" Background="#2E7D32" HorizontalAlignment="Center"/>
                         <Button Name="GridColumnsButton" Click="GridColumnsButton_Click" ToolTip="Choose which fields and columns are shown"
                                Style="{StaticResource RibbonButtonStyle}" Background="#3498db" HorizontalAlignment="Center">
                             <emoji:TextBlock Text="⚙️ Columns/Tabs" FontSize="13" Foreground="White"/>
                         </Button>
 
-                        <!-- Delete acts on the log grid's current selection (QsoLog.SelectedQsos, falling
-                             back to SelectedQso); it was previously missing from the UI entirely despite
-                             QsoLogViewModel.DeleteSelectedCommand still existing. -->
-                        <Button Content="Delete" Command="{Binding QsoLog.DeleteSelectedCommand}" ToolTip="Delete the selected QSO(s) from the log grid"
-                               Style="{StaticResource RibbonButtonStyle}" Background="#c0392b" HorizontalAlignment="Center"/>
+                        <!-- Log QSO: last button on the ribbon per operator request. -->
+                        <Button Content="Log QSO" Command="{Binding QsoEntry.LogQsoCommand}" ToolTip="Save this contact to the log"
+                               Style="{StaticResource RibbonButtonStyle}" Background="#2E7D32" HorizontalAlignment="Center"/>
                     </UniformGrid>
                 </Border>
 
@@ -396,7 +398,7 @@
 
                 <!-- CONTACT LOG GRID -->
                 <Border Grid.Row="2" Background="White" BorderBrush="#cccccc" BorderThickness="2" CornerRadius="4">
-                    <views:QsoLogGridView DataContext="{Binding QsoLog}"/>
+                    <views:QsoLogGridView x:Name="LogGridView" DataContext="{Binding QsoLog}"/>
                 </Border>
             </Grid>
         </Grid>

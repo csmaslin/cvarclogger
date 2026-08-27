@@ -16,9 +16,13 @@ public partial class QsoLogGridView : UserControl
     /// point for the next Shift-right-click range selection.</summary>
     private Qso? _rangeAnchorQso;
 
-    /// <summary>Guards against re-attaching the column-resize-thumb listeners more than once, in case
-    /// DataContextChanged ever fires again after the first real DataContext is set.</summary>
-    private bool _hasHookedColumnResizeThumbs;
+    /// <summary>Every resize-gripper Thumb already wired to OnColumnResizeDragCompleted, so a re-scan
+    /// (see HookColumnResizeThumbs) can skip thumbs it's already hooked instead of double-subscribing
+    /// them. Column headers get regenerated when a column's Visibility is toggled off then back on (the
+    /// Columns/Tabs picker), which silently orphans the old hook -- tracking by instance, and re-scanning
+    /// after every visibility change, means a column resized after being re-shown still gets saved instead
+    /// of the resize being silently dropped forever.</summary>
+    private readonly HashSet<System.Windows.Controls.Primitives.Thumb> _hookedResizeThumbs = new();
 
     public QsoLogGridView()
     {
@@ -76,26 +80,34 @@ public partial class QsoLogGridView : UserControl
     /// squeezed ones (tried gating on both the initial ApplyColumnWidths call and the Loaded event;
     /// neither was late enough). Thumb.DragCompleted only fires for an actual mouse drag, sidestepping
     /// the timing question entirely.</summary>
-    private void OnLoaded(object sender, RoutedEventArgs e)
-    {
-        if (_hasHookedColumnResizeThumbs) return;
-        _hasHookedColumnResizeThumbs = true;
+    private void OnLoaded(object sender, RoutedEventArgs e) =>
         Dispatcher.BeginInvoke(new Action(HookColumnResizeThumbs), System.Windows.Threading.DispatcherPriority.Loaded);
-    }
 
+    /// <summary>Scans every column header currently in the visual tree and wires up any resize-gripper
+    /// Thumb not already in _hookedResizeThumbs. Safe to call repeatedly (e.g. after every visibility
+    /// change, see OnColumnVisibilityChanged) -- already-hooked thumbs are skipped, and a thumb that gets
+    /// torn down when its column is hidden simply drops out of future scans on its own.</summary>
     private void HookColumnResizeThumbs()
     {
         foreach (var header in FindVisualChildren<System.Windows.Controls.Primitives.DataGridColumnHeader>(LogDataGrid))
         {
             foreach (var thumb in FindVisualChildren<System.Windows.Controls.Primitives.Thumb>(header))
             {
-                if (thumb.Name is "PART_LeftHeaderGripper" or "PART_RightHeaderGripper")
+                if (thumb.Name is "PART_LeftHeaderGripper" or "PART_RightHeaderGripper" && _hookedResizeThumbs.Add(thumb))
                     thumb.DragCompleted += OnColumnResizeDragCompleted;
             }
         }
     }
 
-    private void OnColumnResizeDragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
+    private void OnColumnResizeDragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e) =>
+        SaveAllColumnWidths();
+
+    /// <summary>Snapshots every column's current pixel width and saves it. Called immediately after a
+    /// drag (crash-safe, matches MainWindow's entry/log split save-on-drag-release) and again from
+    /// MainWindow's Window_Closing as a guaranteed backstop -- if a resize's thumb hook was somehow
+    /// missed (e.g. a header regenerated after a visibility toggle, before HookColumnResizeThumbs got to
+    /// rescan it), the width the operator ends the session with is still captured on the way out.</summary>
+    public void SaveAllColumnWidths()
     {
         if (DataContext is not QsoLogViewModel viewModel) return;
 
@@ -153,7 +165,13 @@ public partial class QsoLogGridView : UserControl
         viewModel.SaveColumnOrder(keysInDisplayOrder);
     }
 
-    private void OnColumnVisibilityChanged(object? sender, EventArgs e) => ApplyColumnVisibility();
+    private void OnColumnVisibilityChanged(object? sender, EventArgs e)
+    {
+        ApplyColumnVisibility();
+        // A column that was hidden then re-shown gets a freshly regenerated header, whose resize thumb
+        // was never hooked -- rescan once the new header has actually rendered.
+        Dispatcher.BeginInvoke(new Action(HookColumnResizeThumbs), System.Windows.Threading.DispatcherPriority.Loaded);
+    }
 
     private void ApplyColumnVisibility()
     {

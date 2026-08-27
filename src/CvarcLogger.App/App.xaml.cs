@@ -1,4 +1,5 @@
 using System.IO;
+using System.Text.Json;
 using System.Windows;
 using CvarcLogger.App.Platform;
 using CvarcLogger.App.Services;
@@ -23,15 +24,17 @@ public partial class App : Application
     private IHost? _host;
     private IServiceScope? _scope;
 
-    /// <summary>Where CvarcLogger stores everything it creates: settings, logs, backups, credentials,
-    /// the database (see SettingsService.ResolveActiveDatabasePath -- also overridable per-install via
-    /// New/Open Log), and cached reference data (e.g. the SOTA summits list). Defaults to right next to
-    /// the exe, so a copied/portable install carries everything with it. An install from before this
-    /// changed keeps using its existing %LOCALAPPDATA%\CVARC Logger folder instead of silently starting
-    /// fresh (and looking like all its data vanished) next to the exe.</summary>
-    public static string DataDirectory { get; } = ResolveDataDirectory();
+    /// <summary>The app installation folder: contains hamlib/, reference database cache (sota-ref.db, etc.),
+    /// and a minimal settings.json with just the CurrentDatabasePath pointer. Defaults to next to the exe;
+    /// legacy installs use %LOCALAPPDATA%\CVARC Logger if it has any pre-existing data.</summary>
+    public static string AppDirectory { get; } = ResolveAppDirectory();
 
-    private static string ResolveDataDirectory()
+    /// <summary>Where the active database file lives (and where logs, backups, credentials, full settings
+    /// are stored). Resolved from CurrentDatabasePath in AppDirectory/settings.json. Each database folder
+    /// is self-contained and portable.</summary>
+    public static string DatabaseDirectory { get; private set; } = "";
+
+    private static string ResolveAppDirectory()
     {
         string legacyDir = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CVARC Logger");
@@ -42,6 +45,37 @@ public partial class App : Application
             File.Exists(Path.Combine(legacyDir, "credentials.dpapi"));
 
         return legacyHasData ? legacyDir : AppContext.BaseDirectory;
+    }
+
+    /// <summary>Initialize DatabaseDirectory from the active database path. Called early in OnStartup
+    /// before any services are created.</summary>
+    private static void ResolveDatabaseDirectory()
+    {
+        string appSettingsPath = Path.Combine(AppDirectory, "app-settings.json");
+        string? databasePath = null;
+
+        // Try to read the database path from minimal app settings
+        if (File.Exists(appSettingsPath))
+        {
+            try
+            {
+                var json = JsonSerializer.Deserialize<JsonElement>(File.ReadAllText(appSettingsPath));
+                if (json.TryGetProperty("CurrentDatabasePath", out var pathElem) && pathElem.GetString() is string path)
+                {
+                    databasePath = path;
+                }
+            }
+            catch { /* Fall through to default */ }
+        }
+
+        // Default to app directory if no path stored
+        if (string.IsNullOrWhiteSpace(databasePath) || !File.Exists(databasePath))
+        {
+            databasePath = Path.Combine(AppDirectory, "cvarclogger.db");
+        }
+
+        DatabaseDirectory = Path.GetDirectoryName(databasePath) ?? AppDirectory;
+        Directory.CreateDirectory(DatabaseDirectory);
     }
 
     /// <summary>Resolves from one long-lived scope created at startup (this is a single-window desktop
@@ -59,12 +93,14 @@ public partial class App : Application
         // WPF would see zero open windows and start tearing the app down mid-startup.
         ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
-        Directory.CreateDirectory(DataDirectory);
-        Directory.CreateDirectory(Path.Combine(DataDirectory, "backups"));
+        Directory.CreateDirectory(AppDirectory);
+        ResolveDatabaseDirectory();
+        Directory.CreateDirectory(DatabaseDirectory);
+        Directory.CreateDirectory(Path.Combine(DatabaseDirectory, "backups"));
 
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Information()
-            .WriteTo.File(Path.Combine(DataDirectory, "logs", "cvarclogger-.log"), rollingInterval: RollingInterval.Day)
+            .WriteTo.File(Path.Combine(DatabaseDirectory, "logs", "cvarclogger-.log"), rollingInterval: RollingInterval.Day)
             .CreateLogger();
 
         string dbPath = SettingsService.ResolveActiveDatabasePath();
@@ -215,7 +251,7 @@ public partial class App : Application
             string dbPath = SettingsService.ResolveActiveDatabasePath();
             if (!File.Exists(dbPath)) return;
 
-            string backupDir = Path.Combine(DataDirectory, "backups");
+            string backupDir = Path.Combine(DatabaseDirectory, "backups");
             Directory.CreateDirectory(backupDir);
 
             // Prefix backups with the source DB's own name so switching logs (File > New Log) doesn't
