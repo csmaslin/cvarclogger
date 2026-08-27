@@ -1,0 +1,2437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CVARC Logger - GUI Prototype</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Colors: Professional Grey with Blue Accents */
+        :root {
+            --dove-grey: #404040;
+            --light-blue: #34495e;
+            --red-accent: #3498db;
+            --sticky-bg: #ecf0f1;
+            --border-color: #555;
+            --text-dark: #ecf0f1;
+        }
+
+        /* TOP BAR */
+        .top-bar {
+            background-color: var(--red-accent);
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .logo-placeholder {
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            flex-shrink: 0;
+            max-width: auto;
+        }
+
+        .logos-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .app-title {
+            color: white;
+            font-size: 36px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* MAIN CONTAINER */
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 20%;
+            background-color: var(--light-blue);
+            border-right: 2px solid #999;
+            padding: 20px 10px;
+            overflow-y: auto;
+            min-width: 300px;
+        }
+
+        .tab-button {
+            width: 100%;
+            padding: 20px;
+            margin-bottom: 10px;
+            border: 1px solid #999;
+            border-radius: 4px;
+            background-color: var(--dove-grey);
+            color: var(--text-dark);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        .tab-button:hover {
+            background-color: rgba(184, 179, 173, 0.9);
+        }
+
+        .tab-button.active {
+            background-color: var(--red-accent);
+            color: white;
+            font-weight: 600;
+            border-color: #999;
+        }
+
+        .tab-divider {
+            height: 2px;
+            background: rgba(153, 153, 153, 0.5);
+            margin: 20px 0;
+        }
+
+        /* MAIN CONTENT AREA */
+        .content-area {
+            flex: 1;
+            background-color: var(--dove-grey);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        /* ENTRY FORM */
+        .entry-form {
+            background: white;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+            padding: 20px;
+            max-height: 60%;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .form-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #000000;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 10px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-input,
+        .form-select {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            font-size: 14px;
+            font-family: inherit;
+            background: white;
+            color: var(--text-dark);
+        }
+
+        .form-input:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: #2E7DD1;
+            box-shadow: 0 0 0 2px rgba(46, 125, 209, 0.1);
+        }
+
+        .form-input.sticky,
+        .form-select.sticky {
+            background-color: var(--sticky-bg);
+        }
+
+        .sticky-note {
+            font-size: 10px;
+            color: #999;
+            margin-top: 3px;
+            font-style: italic;
+        }
+
+        .form-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background-color: #2E7D32;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #256b2b;
+        }
+
+        .btn-secondary {
+            background-color: var(--red-accent);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #c23535;
+        }
+
+        /* LOOKUP SOURCE MODAL */
+        .lookup-modal-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        .lookup-section {
+            margin-bottom: 20px;
+        }
+
+        .lookup-section-title {
+            font-size: 13px;
+            font-weight: bold;
+            color: #000000;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 8px;
+        }
+
+        .lookup-description {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .lookup-status {
+            font-size: 12px;
+            color: #666;
+            font-style: italic;
+            margin: 10px 0;
+            padding: 8px;
+            background-color: #f9f9f9;
+            border-radius: 3px;
+        }
+
+        /* CAT CONTROL MODAL */
+        .cat-modal-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        .cat-section {
+            margin-bottom: 20px;
+        }
+
+        .cat-section-title {
+            font-size: 13px;
+            font-weight: bold;
+            color: #000000;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 8px;
+        }
+
+        .cat-description {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .radio-options {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .radio-option input[type="radio"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .radio-option label {
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .cat-status {
+            font-size: 12px;
+            color: #666;
+            font-style: italic;
+            margin: 12px 0;
+            padding: 8px;
+            background-color: #f9f9f9;
+            border-radius: 3px;
+        }
+
+        /* STATION CONFIGURATION MODAL */
+        .station-modal-layout {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 20px;
+            min-height: 400px;
+        }
+
+        .station-list-panel {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 12px;
+            background-color: #f9f9f9;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .station-listbox {
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 8px;
+            background: white;
+            max-height: 300px;
+            overflow-y: auto;
+            flex: 1;
+            font-size: 13px;
+        }
+
+        .station-item {
+            padding: 8px;
+            cursor: pointer;
+            border-radius: 3px;
+            margin-bottom: 4px;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+        }
+
+        .station-item:hover {
+            background-color: #e8e8e8;
+        }
+
+        .station-item.selected {
+            background-color: #3498db;
+            color: white;
+            border-color: #2980b9;
+        }
+
+        .station-form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .form-field label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #000000;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-field input[type="text"],
+        .form-field input[type="number"] {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-size: 13px;
+        }
+
+        .form-field input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .checkbox-field {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .required-note {
+            font-size: 11px;
+            color: #999;
+            margin-top: 10px;
+        }
+
+        /* FILE OPERATIONS MODAL */
+        .file-section {
+            margin-bottom: 25px;
+        }
+
+        .file-section-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #000000;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 8px;
+        }
+
+        .file-button {
+            display: block;
+            width: 100%;
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+            color: #2c2c2c;
+            font-size: 14px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .file-button:hover {
+            background-color: #3498db;
+            color: white;
+            border-color: #2980b9;
+        }
+
+        /* RIBBON BAR */
+        .grid-ribbon {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 20px;
+            background-color: var(--dove-grey);
+            border: 1px solid #ccc;
+            border-radius: 4px 4px 0 0;
+            margin-bottom: 0;
+        }
+
+        .grid-ribbon-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-right: auto;
+        }
+
+        .grid-ribbon .btn {
+            padding: 8px 16px;
+            font-size: 12px;
+        }
+
+        /* LOG GRID */
+        .log-grid-container {
+            background: white;
+            border: 2px solid #ccc;
+            border-radius: 0 0 4px 4px;
+            padding: 20px;
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .log-table-wrapper {
+            flex: 1;
+            overflow-x: auto;
+            overflow-y: auto;
+            border-radius: 4px;
+        }
+
+        .grid-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #000000;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 10px;
+        }
+
+        .log-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .log-table thead {
+            background-color: #f5f5f5;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .log-table th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #000000;
+            background-color: #f5f5f5;
+        }
+
+        .log-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e0e0e0;
+            color: #555;
+        }
+
+        .log-table tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        /* TAB CONTENT - Hidden by default */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* FIELD VISIBILITY PER MODE */
+        .normal-mode .contest-only,
+        .normal-mode .sota-only,
+        .normal-mode .pota-only {
+            display: none;
+        }
+
+        .contest-mode .sota-only,
+        .contest-mode .pota-only,
+        .contest-mode .normal-only {
+            display: none;
+        }
+
+        .sota-mode .contest-only,
+        .sota-mode .pota-only,
+        .sota-mode .normal-only {
+            display: none;
+        }
+
+        .pota-mode .contest-only,
+        .pota-mode .sota-only,
+        .pota-mode .normal-only {
+            display: none;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* COLUMN VISIBILITY MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #000000;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
+        }
+
+        .modal-button-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .modal-button-row .btn {
+            flex: 1;
+            padding: 12px 16px;
+        }
+
+        .column-list {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 10px;
+            border: 1px solid #e0e0e0;
+            padding: 15px;
+            border-radius: 4px;
+        }
+
+        .column-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .column-item input[type="checkbox"] {
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+            accent-color: var(--red-accent);
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .column-item label {
+            cursor: pointer;
+            font-size: 13px;
+            color: #000000;
+            line-height: 1.3;
+            word-break: break-word;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .modal-buttons .btn {
+            padding: 10px 20px;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <!-- TOP BAR -->
+    <div class="top-bar">
+        <div class="logos-container">
+            <img src="BannerLogo.png" alt="CVARC Logo" class="logo-placeholder">
+            <img src="ArrlLogo.png" alt="ARRL Logo" class="logo-placeholder">
+        </div>
+        <div class="app-title">CVARC LOGGER</div>
+    </div>
+
+    <!-- MAIN CONTAINER -->
+    <div class="main-container">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <button class="tab-button active" data-tab="file">📁 File</button>
+            <button class="tab-button" data-tab="station">📍 Station</button>
+            <button class="tab-button" data-tab="cat">📡 CAT</button>
+            <button class="tab-button" data-tab="lookup">🔍 Lookup</button>
+            <button class="tab-button" data-tab="columns" id="columns-btn">⚙️ Columns</button>
+
+            <div class="tab-divider"></div>
+
+            <button class="tab-button active" data-tab="normal">📝 Normal</button>
+            <button class="tab-button" data-tab="contest">🏆 Contest</button>
+            <button class="tab-button" data-tab="sota">⛰️ SOTA</button>
+            <button class="tab-button" data-tab="pota">🪑 POTA</button>
+            <button class="tab-button" data-tab="all">📊 All</button>
+        </div>
+
+        <!-- CONTENT AREA -->
+        <div class="content-area">
+            <!-- ENTRY FORM -->
+            <div class="entry-form">
+                <div class="form-title">Entry Form - <span id="current-mode">Normal</span> Mode (Fields are movable within tabs)</div>
+
+                <!-- Normal Mode Form -->
+                <div id="normal-form" class="tab-content active normal-mode">
+                    <!-- Row 1 -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Station <span class="sticky-note">(static)</span></label>
+                            <select class="form-select sticky">
+                                <option>Select Station</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Callsign</label>
+                            <input type="text" class="form-input" placeholder="W5XYZ">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Date/Time UTC</label>
+                            <input type="datetime-local" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Band <span class="sticky-note">(static)</span></label>
+                            <select class="form-select sticky">
+                                <option>20m</option>
+                                <option>40m</option>
+                                <option>80m</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Freq (MHz)</label>
+                            <input type="text" class="form-input" placeholder="14.200">
+                        </div>
+                    </div>
+
+                    <!-- Row 2 -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Mode <span class="sticky-note">(static)</span></label>
+                            <select class="form-select sticky">
+                                <option>SSB</option>
+                                <option>CW</option>
+                                <option>FT8</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Sub-Mode <span class="sticky-note">(static)</span></label>
+                            <select class="form-select sticky">
+                                <option>—</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Local Time</label>
+                            <input type="datetime-local" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Time Off (UTC)</label>
+                            <input type="datetime-local" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">RST Sent <span class="sticky-note">(static)</span></label>
+                            <input type="text" class="form-input sticky" placeholder="599">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">RST Rcvd <span class="sticky-note">(static)</span></label>
+                            <input type="text" class="form-input sticky" placeholder="599">
+                        </div>
+                    </div>
+
+                    <!-- Row 3 -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Name</label>
+                            <input type="text" class="form-input" placeholder="John">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Grid</label>
+                            <input type="text" class="form-input" placeholder="DN70">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">City</label>
+                            <input type="text" class="form-input" placeholder="Dallas">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">State</label>
+                            <input type="text" class="form-input" placeholder="TX">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">County</label>
+                            <input type="text" class="form-input" placeholder="Dallas County">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Country</label>
+                            <input type="text" class="form-input" placeholder="USA">
+                        </div>
+                    </div>
+
+                    <!-- Row 4 -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">ARRL Section</label>
+                            <input type="text" class="form-input" placeholder="NTX">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">CQ Zone</label>
+                            <input type="text" class="form-input" placeholder="5">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">ITU Zone</label>
+                            <input type="text" class="form-input" placeholder="27">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Comment</label>
+                            <input type="text" class="form-input" placeholder="Strong signal">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">OP <span class="sticky-note">(static)</span></label>
+                            <input type="text" class="form-input sticky" placeholder="W5ABC">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">TX(W) <span class="sticky-note">(static)</span></label>
+                            <input type="text" class="form-input sticky" placeholder="100">
+                        </div>
+                    </div>
+
+                    <div class="form-buttons">
+                        <button class="btn btn-secondary">Lookup</button>
+                        <button class="btn btn-primary">Log QSO</button>
+                    </div>
+                </div>
+
+                <!-- Contest Mode Form -->
+                <div id="contest-form" class="tab-content contest-mode">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Station <span class="sticky-note">(static)</span></label>
+                            <select class="form-select sticky">
+                                <option>Select Station</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Callsign</label>
+                            <input type="text" class="form-input" placeholder="W5XYZ">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Sequence #</label>
+                            <input type="text" class="form-input" placeholder="123">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Band <span class="sticky-note">(static)</span></label>
+                            <select class="form-select sticky">
+                                <option>20m</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Mode <span class="sticky-note">(static)</span></label>
+                            <select class="form-select sticky">
+                                <option>SSB</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Frequency (MHz)</label>
+                            <input type="text" class="form-input" placeholder="14.200">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Date/Time UTC</label>
+                            <input type="datetime-local" class="form-input">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">RST Sent <span class="sticky-note">(static)</span></label>
+                            <input type="text" class="form-input sticky" placeholder="59">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">RST Rcvd <span class="sticky-note">(static)</span></label>
+                            <input type="text" class="form-input sticky" placeholder="59">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Precedence</label>
+                            <select class="form-select">
+                                <option>Emergency</option>
+                                <option>Welfare</option>
+                                <option>Check</option>
+                                <option>Routine</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Check</label>
+                            <input type="text" class="form-input" placeholder="25">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Class</label>
+                            <input type="text" class="form-input" placeholder="A">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">OP <span class="sticky-note">(static)</span></label>
+                            <input type="text" class="form-input sticky" placeholder="W5ABC">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">TX(W) <span class="sticky-note">(static)</span></label>
+                            <input type="text" class="form-input sticky" placeholder="100">
+                        </div>
+                    </div>
+
+                    <div class="form-buttons">
+                        <button class="btn btn-secondary">Lookup</button>
+                        <button class="btn btn-primary">Log QSO</button>
+                    </div>
+                </div>
+
+                <!-- SOTA Mode Form -->
+                <div id="sota-form" class="tab-content sota-mode">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Station <span class="sticky-note">(static)</span></label>
+                            <select class="form-select sticky">
+                                <option>Select Station</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">My SOTA <span class="sticky-note">(static)</span></label>
+                            <input type="text" class="form-input sticky" placeholder="W5/CO-001">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Callsign</label>
+                            <input type="text" class="form-input" placeholder="W5XYZ">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">SOTA Reference</label>
+                            <input type="text" class="form-input" placeholder="W5/CO-002">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Band <span class="sticky-note">(static)</span></label>
+                            <select class="form-select sticky">
+                                <option>20m</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Mode <span class="sticky-note">(static)</span></label>
+                            <select class="form-select sticky">
+                                <option>SSB</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Frequency (MHz)</label>
+                            <input type="text" class="form-input" placeholder="14.200">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Date/Time UTC</label>
+                            <input type="datetime-local" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">RST Sent <span class="sticky-note">(static)</span></label>
+                            <input type="text" class="form-input sticky" placeholder="59">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">RST Rcvd <span class="sticky-note">(static)</span></label>
+                            <input type="text" class="form-input sticky" placeholder="59">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Grid</label>
+                            <input type="text" class="form-input" placeholder="DN70">
+                        </div>
+                    </div>
+
+                    <div class="form-buttons">
+                        <button class="btn btn-secondary">Lookup</button>
+                        <button class="btn btn-primary">Log QSO</button>
+                    </div>
+                </div>
+
+                <!-- POTA Mode Form -->
+                <div id="pota-form" class="tab-content pota-mode">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Station <span class="sticky-note">(static)</span></label>
+                            <select class="form-select sticky">
+                                <option>Select Station</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">My POTA <span class="sticky-note">(static)</span></label>
+                            <input type="text" class="form-input sticky" placeholder="K-0001">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Callsign</label>
+                            <input type="text" class="form-input" placeholder="W5XYZ">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">POTA Reference</label>
+                            <input type="text" class="form-input" placeholder="K-0002">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Band <span class="sticky-note">(static)</span></label>
+                            <select class="form-select sticky">
+                                <option>20m</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Mode <span class="sticky-note">(static)</span></label>
+                            <select class="form-select sticky">
+                                <option>SSB</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Frequency (MHz)</label>
+                            <input type="text" class="form-input" placeholder="14.200">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Date/Time UTC</label>
+                            <input type="datetime-local" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">RST Sent <span class="sticky-note">(static)</span></label>
+                            <input type="text" class="form-input sticky" placeholder="59">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">RST Rcvd <span class="sticky-note">(static)</span></label>
+                            <input type="text" class="form-input sticky" placeholder="59">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Grid</label>
+                            <input type="text" class="form-input" placeholder="DN70">
+                        </div>
+                    </div>
+
+                    <div class="form-buttons">
+                        <button class="btn btn-secondary">Lookup</button>
+                        <button class="btn btn-primary">Log QSO</button>
+                    </div>
+                </div>
+
+                <!-- All Mode Form -->
+                <div id="all-form" class="tab-content">
+                    <!-- Row 1 -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Station <span class="sticky-note">(static)</span></label>
+                            <select class="form-select sticky">
+                                <option>Select Station</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Callsign</label>
+                            <input type="text" class="form-input" placeholder="W5XYZ">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Date/Time UTC</label>
+                            <input type="datetime-local" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Band <span class="sticky-note">(static)</span></label>
+                            <select class="form-select sticky">
+                                <option>20m</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Freq (MHz)</label>
+                            <input type="text" class="form-input" placeholder="14.200">
+                        </div>
+                    </div>
+
+                    <!-- Row 2 -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Mode <span class="sticky-note">(static)</span></label>
+                            <select class="form-select sticky">
+                                <option>SSB</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Sub-Mode <span class="sticky-note">(static)</span></label>
+                            <select class="form-select sticky">
+                                <option>—</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Local Time</label>
+                            <input type="datetime-local" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Time Off (UTC)</label>
+                            <input type="datetime-local" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">RST Sent <span class="sticky-note">(static)</span></label>
+                            <input type="text" class="form-input sticky" placeholder="599">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">RST Rcvd <span class="sticky-note">(static)</span></label>
+                            <input type="text" class="form-input sticky" placeholder="599">
+                        </div>
+                    </div>
+
+                    <!-- Row 3 -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Name</label>
+                            <input type="text" class="form-input" placeholder="John">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Grid</label>
+                            <input type="text" class="form-input" placeholder="DN70">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">City</label>
+                            <input type="text" class="form-input" placeholder="Dallas">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">State</label>
+                            <input type="text" class="form-input" placeholder="TX">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">County</label>
+                            <input type="text" class="form-input" placeholder="Dallas County">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Country</label>
+                            <input type="text" class="form-input" placeholder="USA">
+                        </div>
+                    </div>
+
+                    <!-- Row 4 -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">ARRL Section</label>
+                            <input type="text" class="form-input" placeholder="NTX">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">CQ Zone</label>
+                            <input type="text" class="form-input" placeholder="5">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">ITU Zone</label>
+                            <input type="text" class="form-input" placeholder="27">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Comment</label>
+                            <input type="text" class="form-input" placeholder="Strong signal">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">OP <span class="sticky-note">(static)</span></label>
+                            <input type="text" class="form-input sticky" placeholder="W5ABC">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">TX(W) <span class="sticky-note">(static)</span></label>
+                            <input type="text" class="form-input sticky" placeholder="100">
+                        </div>
+                    </div>
+
+                    <!-- Row 5 - Special fields -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">My SOTA <span class="sticky-note">(static)</span></label>
+                            <input type="text" class="form-input sticky" placeholder="W5/CO-001">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">SOTA Reference</label>
+                            <input type="text" class="form-input" placeholder="W5/CO-002">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">My POTA <span class="sticky-note">(static)</span></label>
+                            <input type="text" class="form-input sticky" placeholder="K-0001">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">POTA Reference</label>
+                            <input type="text" class="form-input" placeholder="K-0002">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Sequence #</label>
+                            <input type="text" class="form-input" placeholder="123">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Precedence</label>
+                            <select class="form-select">
+                                <option>Emergency</option>
+                                <option>Welfare</option>
+                                <option>Check</option>
+                                <option>Routine</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Row 6 - Contest fields -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Check</label>
+                            <input type="text" class="form-input" placeholder="25">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Class</label>
+                            <input type="text" class="form-input" placeholder="A">
+                        </div>
+                    </div>
+
+                    <div class="form-buttons">
+                        <button class="btn btn-secondary">Lookup</button>
+                        <button class="btn btn-primary">Log QSO</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LOG GRID RIBBON -->
+            <div class="grid-ribbon" style="justify-content: center; text-align: center;">
+                <div style="display: flex; align-items: center; gap: 12px; justify-content: center;">
+                    <div id="cat-status" style="display: flex; align-items: center; gap: 6px; padding: 4px 12px; background: rgba(255,255,255,0.1); border-radius: 4px; font-size: 12px;">
+                        <span id="cat-indicator" style="width: 10px; height: 10px; border-radius: 50%; background: #999; display: inline-block;"></span>
+                        <span id="cat-status-text">CAT: Disconnected</span>
+                    </div>
+                    <button class="btn btn-secondary" id="cat-control-btn" style="padding: 6px 12px; font-size: 12px;">📡 Connect CAT</button>
+                    <button class="btn btn-secondary" id="grid-columns-btn">⚙️ Columns</button>
+                </div>
+            </div>
+
+            <!-- LOG GRID -->
+            <div class="log-grid-container">
+                <div class="log-table-wrapper">
+                <table class="log-table">
+                    <thead>
+                        <tr>
+                            <th data-adifName="CALL">Callsign</th>
+                            <th data-adifName="QSO_DATE">Date</th>
+                            <th data-adifName="TIME_ON">Time On</th>
+                            <th data-adifName="FREQ">Frequency</th>
+                            <th data-adifName="BAND">Band</th>
+                            <th data-adifName="MODE">Mode</th>
+                            <th data-adifName="RST_SENT">RST Sent</th>
+                            <th data-adifName="NAME">Name</th>
+                            <th data-adifName="GRIDSQUARE">Grid</th>
+                            <th data-adifName="COMMENT">Comment</th>
+                            <th data-adifName="TIME_OFF" style="display:none;">Time Off</th>
+                            <th data-adifName="SUBMODE" style="display:none;">Sub-Mode</th>
+                            <th data-adifName="RST_RCVD" style="display:none;">RST Rcvd</th>
+                            <th data-adifName="TX_PWR" style="display:none;">TX Power</th>
+                            <th data-adifName="RX_FREQ" style="display:none;">RX Freq</th>
+                            <th data-adifName="COUNTRY" style="display:none;">Country</th>
+                            <th data-adifName="STATE" style="display:none;">State</th>
+                            <th data-adifName="CNTY" style="display:none;">County</th>
+                            <th data-adifName="CITY" style="display:none;">City</th>
+                            <th data-adifName="ARRL_SECT" style="display:none;">ARRL Section</th>
+                            <th data-adifName="DXCC" style="display:none;">DXCC</th>
+                            <th data-adifName="CQZ" style="display:none;">CQ Zone</th>
+                            <th data-adifName="ITUZ" style="display:none;">ITU Zone</th>
+                            <th data-adifName="IOTA" style="display:none;">IOTA</th>
+                            <th data-adifName="IOTA_ISLAND_ID" style="display:none;">IOTA Island ID</th>
+                            <th data-adifName="SOTA_REF" style="display:none;">SOTA Ref</th>
+                            <th data-adifName="POTA_REF" style="display:none;">POTA Ref</th>
+                            <th data-adifName="CONTEST_ID" style="display:none;">Contest ID</th>
+                            <th data-adifName="STX" style="display:none;">STX</th>
+                            <th data-adifName="SRX" style="display:none;">SRX</th>
+                            <th data-adifName="CHECK" style="display:none;">Check</th>
+                            <th data-adifName="CLASS" style="display:none;">Class</th>
+                            <th data-adifName="PRECEDENCE" style="display:none;">Precedence</th>
+                            <th data-adifName="OPERATOR" style="display:none;">Operator</th>
+                            <th data-adifName="QSLSDATE" style="display:none;">QSL Sent Date</th>
+                            <th data-adifName="QSLRDATE" style="display:none;">QSL Rcvd Date</th>
+                            <th data-adifName="QSLS" style="display:none;">QSL Sent</th>
+                            <th data-adifName="QSLR" style="display:none;">QSL Rcvd</th>
+                            <th data-adifName="QSL_VIA" style="display:none;">QSL Via</th>
+                            <th data-adifName="NOTES" style="display:none;">Notes</th>
+                            <th data-adifName="CONTACT_DXCC" style="display:none;">Contact DXCC</th>
+                            <th data-adifName="CONTACT_CQ_ZONE" style="display:none;">Contact CQ Zone</th>
+                            <th data-adifName="CONTACT_ITU_ZONE" style="display:none;">Contact ITU Zone</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td data-adifName="CALL">W5XYZ</td>
+                            <td data-adifName="QSO_DATE">2026-08-07</td>
+                            <td data-adifName="TIME_ON">14:22:15</td>
+                            <td data-adifName="FREQ">14.200</td>
+                            <td data-adifName="BAND">20m</td>
+                            <td data-adifName="MODE">SSB</td>
+                            <td data-adifName="RST_SENT">599</td>
+                            <td data-adifName="NAME">John</td>
+                            <td data-adifName="GRIDSQUARE">DN70</td>
+                            <td data-adifName="COMMENT">Strong signal</td>
+                            <td data-adifName="TIME_OFF" style="display:none;">14:35:00</td>
+                            <td data-adifName="SUBMODE" style="display:none;">—</td>
+                            <td data-adifName="RST_RCVD" style="display:none;">599</td>
+                            <td data-adifName="TX_PWR" style="display:none;">100</td>
+                            <td data-adifName="RX_FREQ" style="display:none;">14.200</td>
+                            <td data-adifName="COUNTRY" style="display:none;">USA</td>
+                            <td data-adifName="STATE" style="display:none;">TX</td>
+                            <td data-adifName="CNTY" style="display:none;">Dallas</td>
+                            <td data-adifName="CITY" style="display:none;">Dallas</td>
+                            <td data-adifName="ARRL_SECT" style="display:none;">NTX</td>
+                            <td data-adifName="DXCC" style="display:none;">291</td>
+                            <td data-adifName="CQZ" style="display:none;">5</td>
+                            <td data-adifName="ITUZ" style="display:none;">27</td>
+                            <td data-adifName="IOTA" style="display:none;"></td>
+                            <td data-adifName="IOTA_ISLAND_ID" style="display:none;"></td>
+                            <td data-adifName="SOTA_REF" style="display:none;"></td>
+                            <td data-adifName="POTA_REF" style="display:none;"></td>
+                            <td data-adifName="CONTEST_ID" style="display:none;"></td>
+                            <td data-adifName="STX" style="display:none;"></td>
+                            <td data-adifName="SRX" style="display:none;"></td>
+                            <td data-adifName="CHECK" style="display:none;"></td>
+                            <td data-adifName="CLASS" style="display:none;"></td>
+                            <td data-adifName="PRECEDENCE" style="display:none;"></td>
+                            <td data-adifName="OPERATOR" style="display:none;">W5ABC</td>
+                            <td data-adifName="QSLSDATE" style="display:none;"></td>
+                            <td data-adifName="QSLRDATE" style="display:none;"></td>
+                            <td data-adifName="QSLS" style="display:none;"></td>
+                            <td data-adifName="QSLR" style="display:none;"></td>
+                            <td data-adifName="QSL_VIA" style="display:none;"></td>
+                            <td data-adifName="NOTES" style="display:none;"></td>
+                            <td data-adifName="CONTACT_DXCC" style="display:none;">USA</td>
+                            <td data-adifName="CONTACT_CQ_ZONE" style="display:none;">5</td>
+                            <td data-adifName="CONTACT_ITU_ZONE" style="display:none;">27</td>
+                        </tr>
+                        <tr>
+                            <td data-adifName="CALL">N0ABC</td>
+                            <td data-adifName="QSO_DATE">2026-08-07</td>
+                            <td data-adifName="TIME_ON">14:15:45</td>
+                            <td data-adifName="FREQ">7.100</td>
+                            <td data-adifName="BAND">40m</td>
+                            <td data-adifName="MODE">CW</td>
+                            <td data-adifName="RST_SENT">579</td>
+                            <td data-adifName="NAME">Alice</td>
+                            <td data-adifName="GRIDSQUARE">EM48</td>
+                            <td data-adifName="COMMENT"></td>
+                            <td data-adifName="TIME_OFF" style="display:none;">14:20:00</td>
+                            <td data-adifName="SUBMODE" style="display:none;">—</td>
+                            <td data-adifName="RST_RCVD" style="display:none;">579</td>
+                            <td data-adifName="TX_PWR" style="display:none;">50</td>
+                            <td data-adifName="RX_FREQ" style="display:none;">7.100</td>
+                            <td data-adifName="COUNTRY" style="display:none;">USA</td>
+                            <td data-adifName="STATE" style="display:none;">CO</td>
+                            <td data-adifName="CNTY" style="display:none;">Boulder</td>
+                            <td data-adifName="CITY" style="display:none;">Boulder</td>
+                            <td data-adifName="ARRL_SECT" style="display:none;">CO</td>
+                            <td data-adifName="DXCC" style="display:none;">291</td>
+                            <td data-adifName="CQZ" style="display:none;">5</td>
+                            <td data-adifName="ITUZ" style="display:none;">27</td>
+                            <td data-adifName="IOTA" style="display:none;"></td>
+                            <td data-adifName="IOTA_ISLAND_ID" style="display:none;"></td>
+                            <td data-adifName="SOTA_REF" style="display:none;"></td>
+                            <td data-adifName="POTA_REF" style="display:none;"></td>
+                            <td data-adifName="CONTEST_ID" style="display:none;"></td>
+                            <td data-adifName="STX" style="display:none;"></td>
+                            <td data-adifName="SRX" style="display:none;"></td>
+                            <td data-adifName="CHECK" style="display:none;"></td>
+                            <td data-adifName="CLASS" style="display:none;"></td>
+                            <td data-adifName="PRECEDENCE" style="display:none;"></td>
+                            <td data-adifName="OPERATOR" style="display:none;">N0ABC</td>
+                            <td data-adifName="QSLSDATE" style="display:none;"></td>
+                            <td data-adifName="QSLRDATE" style="display:none;"></td>
+                            <td data-adifName="QSLS" style="display:none;"></td>
+                            <td data-adifName="QSLR" style="display:none;"></td>
+                            <td data-adifName="QSL_VIA" style="display:none;"></td>
+                            <td data-adifName="NOTES" style="display:none;"></td>
+                            <td data-adifName="CONTACT_DXCC" style="display:none;">USA</td>
+                            <td data-adifName="CONTACT_CQ_ZONE" style="display:none;">5</td>
+                            <td data-adifName="CONTACT_ITU_ZONE" style="display:none;">27</td>
+                        </tr>
+                        <tr>
+                            <td data-adifName="CALL">K4DEF</td>
+                            <td data-adifName="QSO_DATE">2026-08-07</td>
+                            <td data-adifName="TIME_ON">14:08:30</td>
+                            <td data-adifName="FREQ">18.100</td>
+                            <td data-adifName="BAND">17m</td>
+                            <td data-adifName="MODE">FT8</td>
+                            <td data-adifName="RST_SENT">-12</td>
+                            <td data-adifName="NAME">Bob</td>
+                            <td data-adifName="GRIDSQUARE">FN20</td>
+                            <td data-adifName="COMMENT">Good copy</td>
+                            <td data-adifName="TIME_OFF" style="display:none;">14:10:00</td>
+                            <td data-adifName="SUBMODE" style="display:none;">FT8</td>
+                            <td data-adifName="RST_RCVD" style="display:none;">-10</td>
+                            <td data-adifName="TX_PWR" style="display:none;">5</td>
+                            <td data-adifName="RX_FREQ" style="display:none;">18.100</td>
+                            <td data-adifName="COUNTRY" style="display:none;">USA</td>
+                            <td data-adifName="STATE" style="display:none;">GA</td>
+                            <td data-adifName="CNTY" style="display:none;">Fulton</td>
+                            <td data-adifName="CITY" style="display:none;">Atlanta</td>
+                            <td data-adifName="ARRL_SECT" style="display:none;">GA</td>
+                            <td data-adifName="DXCC" style="display:none;">291</td>
+                            <td data-adifName="CQZ" style="display:none;">5</td>
+                            <td data-adifName="ITUZ" style="display:none;">27</td>
+                            <td data-adifName="IOTA" style="display:none;"></td>
+                            <td data-adifName="IOTA_ISLAND_ID" style="display:none;"></td>
+                            <td data-adifName="SOTA_REF" style="display:none;"></td>
+                            <td data-adifName="POTA_REF" style="display:none;"></td>
+                            <td data-adifName="CONTEST_ID" style="display:none;"></td>
+                            <td data-adifName="STX" style="display:none;"></td>
+                            <td data-adifName="SRX" style="display:none;"></td>
+                            <td data-adifName="CHECK" style="display:none;"></td>
+                            <td data-adifName="CLASS" style="display:none;"></td>
+                            <td data-adifName="PRECEDENCE" style="display:none;"></td>
+                            <td data-adifName="OPERATOR" style="display:none;">K4DEF</td>
+                            <td data-adifName="QSLSDATE" style="display:none;"></td>
+                            <td data-adifName="QSLRDATE" style="display:none;"></td>
+                            <td data-adifName="QSLS" style="display:none;"></td>
+                            <td data-adifName="QSLR" style="display:none;"></td>
+                            <td data-adifName="QSL_VIA" style="display:none;"></td>
+                            <td data-adifName="NOTES" style="display:none;"></td>
+                            <td data-adifName="CONTACT_DXCC" style="display:none;">USA</td>
+                            <td data-adifName="CONTACT_CQ_ZONE" style="display:none;">5</td>
+                            <td data-adifName="CONTACT_ITU_ZONE" style="display:none;">27</td>
+                        </tr>
+                        <tr>
+                            <td data-adifName="CALL">W2IJY</td>
+                            <td data-adifName="QSO_DATE">2026-08-07</td>
+                            <td data-adifName="TIME_ON">13:55:20</td>
+                            <td data-adifName="FREQ">21.200</td>
+                            <td data-adifName="BAND">15m</td>
+                            <td data-adifName="MODE">SSB</td>
+                            <td data-adifName="RST_SENT">599</td>
+                            <td data-adifName="NAME">Mike</td>
+                            <td data-adifName="GRIDSQUARE">FN12</td>
+                            <td data-adifName="COMMENT"></td>
+                            <td data-adifName="TIME_OFF" style="display:none;">14:05:00</td>
+                            <td data-adifName="SUBMODE" style="display:none;">—</td>
+                            <td data-adifName="RST_RCVD" style="display:none;">599</td>
+                            <td data-adifName="TX_PWR" style="display:none;">75</td>
+                            <td data-adifName="RX_FREQ" style="display:none;">21.200</td>
+                            <td data-adifName="COUNTRY" style="display:none;">USA</td>
+                            <td data-adifName="STATE" style="display:none;">NY</td>
+                            <td data-adifName="CNTY" style="display:none;">New York</td>
+                            <td data-adifName="CITY" style="display:none;">New York</td>
+                            <td data-adifName="ARRL_SECT" style="display:none;">WNY</td>
+                            <td data-adifName="DXCC" style="display:none;">291</td>
+                            <td data-adifName="CQZ" style="display:none;">5</td>
+                            <td data-adifName="ITUZ" style="display:none;">29</td>
+                            <td data-adifName="IOTA" style="display:none;"></td>
+                            <td data-adifName="IOTA_ISLAND_ID" style="display:none;"></td>
+                            <td data-adifName="SOTA_REF" style="display:none;"></td>
+                            <td data-adifName="POTA_REF" style="display:none;"></td>
+                            <td data-adifName="CONTEST_ID" style="display:none;"></td>
+                            <td data-adifName="STX" style="display:none;"></td>
+                            <td data-adifName="SRX" style="display:none;"></td>
+                            <td data-adifName="CHECK" style="display:none;"></td>
+                            <td data-adifName="CLASS" style="display:none;"></td>
+                            <td data-adifName="PRECEDENCE" style="display:none;"></td>
+                            <td data-adifName="OPERATOR" style="display:none;">W2IJY</td>
+                            <td data-adifName="QSLSDATE" style="display:none;"></td>
+                            <td data-adifName="QSLRDATE" style="display:none;"></td>
+                            <td data-adifName="QSLS" style="display:none;"></td>
+                            <td data-adifName="QSLR" style="display:none;"></td>
+                            <td data-adifName="QSL_VIA" style="display:none;"></td>
+                            <td data-adifName="NOTES" style="display:none;"></td>
+                            <td data-adifName="CONTACT_DXCC" style="display:none;">USA</td>
+                            <td data-adifName="CONTACT_CQ_ZONE" style="display:none;">5</td>
+                            <td data-adifName="CONTACT_ITU_ZONE" style="display:none;">29</td>
+                        </tr>
+                        <tr>
+                            <td data-adifName="CALL">VE3ABC</td>
+                            <td data-adifName="QSO_DATE">2026-08-07</td>
+                            <td data-adifName="TIME_ON">13:42:10</td>
+                            <td data-adifName="FREQ">14.200</td>
+                            <td data-adifName="BAND">20m</td>
+                            <td data-adifName="MODE">SSB</td>
+                            <td data-adifName="RST_SENT">599</td>
+                            <td data-adifName="NAME">Dave</td>
+                            <td data-adifName="GRIDSQUARE">EN92</td>
+                            <td data-adifName="COMMENT">Canadian</td>
+                            <td data-adifName="TIME_OFF" style="display:none;">13:50:00</td>
+                            <td data-adifName="SUBMODE" style="display:none;">—</td>
+                            <td data-adifName="RST_RCVD" style="display:none;">599</td>
+                            <td data-adifName="TX_PWR" style="display:none;">100</td>
+                            <td data-adifName="RX_FREQ" style="display:none;">14.200</td>
+                            <td data-adifName="COUNTRY" style="display:none;">Canada</td>
+                            <td data-adifName="STATE" style="display:none;">ON</td>
+                            <td data-adifName="CNTY" style="display:none;">Ontario</td>
+                            <td data-adifName="CITY" style="display:none;">Toronto</td>
+                            <td data-adifName="ARRL_SECT" style="display:none;">VE</td>
+                            <td data-adifName="DXCC" style="display:none;">1</td>
+                            <td data-adifName="CQZ" style="display:none;">2</td>
+                            <td data-adifName="ITUZ" style="display:none;">12</td>
+                            <td data-adifName="IOTA" style="display:none;"></td>
+                            <td data-adifName="IOTA_ISLAND_ID" style="display:none;"></td>
+                            <td data-adifName="SOTA_REF" style="display:none;"></td>
+                            <td data-adifName="POTA_REF" style="display:none;"></td>
+                            <td data-adifName="CONTEST_ID" style="display:none;"></td>
+                            <td data-adifName="STX" style="display:none;"></td>
+                            <td data-adifName="SRX" style="display:none;"></td>
+                            <td data-adifName="CHECK" style="display:none;"></td>
+                            <td data-adifName="CLASS" style="display:none;"></td>
+                            <td data-adifName="PRECEDENCE" style="display:none;"></td>
+                            <td data-adifName="OPERATOR" style="display:none;">VE3ABC</td>
+                            <td data-adifName="QSLSDATE" style="display:none;"></td>
+                            <td data-adifName="QSLRDATE" style="display:none;"></td>
+                            <td data-adifName="QSLS" style="display:none;"></td>
+                            <td data-adifName="QSLR" style="display:none;"></td>
+                            <td data-adifName="QSL_VIA" style="display:none;"></td>
+                            <td data-adifName="NOTES" style="display:none;"></td>
+                            <td data-adifName="CONTACT_DXCC" style="display:none;">Canada</td>
+                            <td data-adifName="CONTACT_CQ_ZONE" style="display:none;">2</td>
+                            <td data-adifName="CONTACT_ITU_ZONE" style="display:none;">12</td>
+                        </tr>
+                    </tbody>
+                </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOOKUP SOURCE MODAL -->
+    <div id="lookup-modal" class="modal">
+        <div class="modal-content" style="max-width: 850px;">
+            <div class="modal-title">🔍 Lookup Sources</div>
+
+            <div class="lookup-modal-layout">
+                <!-- LEFT COLUMN -->
+                <div>
+                    <div class="lookup-section">
+                        <div class="lookup-section-title">Callsign Lookup</div>
+                        <div class="lookup-description">Checked in order: QRZ.com, QRZCQ.com, then Callook.info — each is skipped if not configured.</div>
+                    </div>
+
+                    <div class="lookup-section">
+                        <div class="lookup-section-title">QRZ.com XML Data API</div>
+                        <div class="lookup-description">Requires a paid QRZ XML Data subscription. Credentials stored encrypted on this machine only.</div>
+
+                        <div class="form-field">
+                            <label>Username</label>
+                            <input type="text" placeholder="Your QRZ username">
+                        </div>
+
+                        <div class="form-field">
+                            <label>Password</label>
+                            <input type="password" placeholder="Your QRZ password">
+                        </div>
+
+                        <div class="form-field checkbox-field">
+                            <input type="checkbox" id="qrzShowPass">
+                            <label for="qrzShowPass" style="text-transform: none; margin: 0;">Show password</label>
+                        </div>
+
+                        <div class="lookup-status">Status: Not configured</div>
+
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn btn-primary" style="flex: 1; padding: 8px; font-size: 12px;">💾 Save</button>
+                            <button class="btn btn-secondary" style="flex: 1; padding: 8px; font-size: 12px;">🧪 Test</button>
+                            <button class="btn btn-secondary" style="flex: 1; padding: 8px; font-size: 12px;">Clear</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT COLUMN -->
+                <div>
+                    <div class="lookup-section">
+                        <div class="lookup-section-title">QRZCQ.com XML API</div>
+                        <div class="lookup-description">Requires a Premium QRZCQ account. Credentials stored encrypted on this machine only.</div>
+
+                        <div class="form-field">
+                            <label>Username</label>
+                            <input type="text" placeholder="Your QRZCQ username">
+                        </div>
+
+                        <div class="form-field">
+                            <label>Password</label>
+                            <input type="password" placeholder="Your QRZCQ password">
+                        </div>
+
+                        <div class="form-field checkbox-field">
+                            <input type="checkbox" id="qrzCqShowPass">
+                            <label for="qrzCqShowPass" style="text-transform: none; margin: 0;">Show password</label>
+                        </div>
+
+                        <div class="lookup-status">Status: Not configured</div>
+
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn btn-primary" style="flex: 1; padding: 8px; font-size: 12px;">💾 Save</button>
+                            <button class="btn btn-secondary" style="flex: 1; padding: 8px; font-size: 12px;">🧪 Test</button>
+                            <button class="btn btn-secondary" style="flex: 1; padding: 8px; font-size: 12px;">Clear</button>
+                        </div>
+                    </div>
+
+                    <div class="lookup-section">
+                        <div class="lookup-section-title">GridTracker2</div>
+                        <div class="lookup-description">Broadcasts logged QSOs over UDP so GridTracker2 can plot them in real time.</div>
+
+                        <div class="form-field checkbox-field">
+                            <input type="checkbox" id="gridTrackerEnabled">
+                            <label for="gridTrackerEnabled" style="text-transform: none; margin: 0;">Enable GridTracker2 broadcast</label>
+                        </div>
+
+                        <div class="form-field">
+                            <label>Host</label>
+                            <input type="text" placeholder="127.0.0.1">
+                        </div>
+
+                        <div class="form-field">
+                            <label>Port</label>
+                            <input type="text" placeholder="2240">
+                        </div>
+
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn btn-primary" style="flex: 1; padding: 8px; font-size: 12px;">💾 Save</button>
+                            <button class="btn btn-secondary" style="flex: 1; padding: 8px; font-size: 12px;">🧪 Test</button>
+                        </div>
+                    </div>
+
+                    <div class="lookup-section">
+                        <div class="lookup-section-title">WSJT-X</div>
+                        <div class="lookup-description">Receives WSJT-X QSO data via GridTracker2 on UDP port 2238 and adds to log automatically.</div>
+
+                        <div class="form-field checkbox-field">
+                            <input type="checkbox" id="wsjtxEnabled">
+                            <label for="wsjtxEnabled" style="text-transform: none; margin: 0;">Enable WSJT-X log receiving (UDP 2238)</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-buttons">
+                <button class="btn btn-primary" id="close-lookup-modal-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CAT CONTROL MODAL -->
+    <div id="cat-modal" class="modal">
+        <div class="modal-content" style="max-width: 850px;">
+            <div class="modal-title">📡 CAT Control</div>
+
+            <div class="cat-modal-layout">
+                <!-- LEFT COLUMN -->
+                <div>
+                    <!-- CAT Source Selection -->
+                    <div class="cat-section">
+                        <div class="cat-section-title">CAT Source</div>
+                        <div class="cat-description">Choose how to read the radio. Only one source is active at a time.</div>
+                        <div class="radio-options">
+                            <div class="radio-option">
+                                <input type="radio" id="catOff" name="catSource" checked>
+                                <label for="catOff">Off</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="catUsb" name="catSource">
+                                <label for="catUsb">USB (Hamlib)</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="catInternet" name="catSource">
+                                <label for="catInternet">Internet</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- USB/Serial (Hamlib) -->
+                    <div class="cat-section">
+                        <div class="cat-section-title">USB / Serial (Hamlib)</div>
+                        <div class="cat-description">Uses Hamlib's rigctld as a TCP backend for USB radio control.</div>
+
+                        <div class="form-field">
+                            <label>Active Radio</label>
+                            <select style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 3px;">
+                                <option>Elecraft K4</option>
+                                <option>Yaesu FT-991A</option>
+                                <option>Icom IC-7300</option>
+                            </select>
+                        </div>
+
+                        <button class="btn btn-secondary" style="width: 100%; margin-bottom: 12px;">🔄 Refresh Ports</button>
+
+                        <div class="form-field">
+                            <label>rigctld Path</label>
+                            <input type="text" placeholder="rigctld.exe (or full path)">
+                        </div>
+
+                        <div class="form-field">
+                            <label>rigctld TCP Port</label>
+                            <input type="text" placeholder="4532" style="width: 100px;">
+                        </div>
+
+                        <div class="form-field checkbox-field">
+                            <input type="checkbox" id="launchRigctld">
+                            <label for="launchRigctld" style="text-transform: none; margin: 0;">Launch rigctld automatically</label>
+                        </div>
+                    </div>
+
+                    <!-- Internet Control -->
+                    <div class="cat-section">
+                        <div class="cat-section-title">Internet Control (CAT)</div>
+                        <div class="cat-description">Reads from Elecraft K4 over network using native TCP protocol.</div>
+
+                        <div class="form-field">
+                            <label>Host / IP Address</label>
+                            <input type="text" placeholder="192.168.1.100 or hostname">
+                        </div>
+
+                        <div class="form-field">
+                            <label>Port</label>
+                            <input type="text" placeholder="9200" style="width: 100px;">
+                        </div>
+
+                        <div class="form-field">
+                            <label>Password (optional)</label>
+                            <input type="password" placeholder="Leave blank if not needed">
+                        </div>
+
+                        <div class="cat-status">Status: Not connected</div>
+                    </div>
+
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-primary" style="flex: 1;">💾 Save Settings</button>
+                        <button class="btn btn-secondary" style="flex: 1;">🧪 Test Connection</button>
+                    </div>
+                </div>
+
+                <!-- RIGHT COLUMN -->
+                <div>
+                    <div class="cat-section">
+                        <div class="cat-section-title">Radio Profile - Slot 1</div>
+
+                        <div class="form-field">
+                            <label>Radio (Hamlib)</label>
+                            <select style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 3px;">
+                                <option>Elecraft K4</option>
+                                <option>Yaesu FT-991A</option>
+                                <option>Icom IC-7300</option>
+                            </select>
+                        </div>
+
+                        <div class="form-field">
+                            <label>Hamlib Model ID</label>
+                            <input type="text" placeholder="Model ID">
+                        </div>
+
+                        <div class="form-field">
+                            <label>COM Port</label>
+                            <select style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 3px;">
+                                <option>COM3</option>
+                                <option>COM4</option>
+                                <option>COM5</option>
+                            </select>
+                        </div>
+
+                        <div class="form-field">
+                            <label>Baud Rate</label>
+                            <select style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 3px;">
+                                <option>9600</option>
+                                <option>19200</option>
+                                <option>38400</option>
+                            </select>
+                        </div>
+
+                        <div class="form-field">
+                            <label>Max Power (W)</label>
+                            <input type="text" placeholder="100">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-buttons">
+                <button class="btn btn-primary" id="close-cat-modal-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- STATION CONFIGURATION MODAL -->
+    <div id="station-modal" class="modal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-title">📍 Station Profiles</div>
+
+            <div class="station-modal-layout">
+                <!-- Profile List -->
+                <div class="station-list-panel">
+                    <div class="station-listbox" id="station-listbox">
+                        <div class="station-item selected">W5ABC</div>
+                        <div class="station-item">N0XYZ</div>
+                        <div class="station-item">K4DEF</div>
+                    </div>
+                    <button class="btn btn-secondary" style="width: 100%; padding: 8px;">+ New Profile</button>
+                </div>
+
+                <!-- Profile Edit Form -->
+                <div class="station-form">
+                    <div class="form-field">
+                        <label>Callsign *</label>
+                        <input type="text" placeholder="W5ABC" value="W5ABC" style="text-transform: uppercase;">
+                    </div>
+
+                    <div class="form-field">
+                        <label>Operator Callsign (if different)</label>
+                        <input type="text" placeholder="Optional">
+                    </div>
+
+                    <div class="form-field">
+                        <label>My Grid Square</label>
+                        <input type="text" placeholder="DN70">
+                    </div>
+
+                    <div class="form-field">
+                        <label>My State</label>
+                        <input type="text" placeholder="TX">
+                    </div>
+
+                    <div class="form-field">
+                        <label>My County</label>
+                        <input type="text" placeholder="Dallas">
+                    </div>
+
+                    <div class="form-field">
+                        <label>QTH</label>
+                        <input type="text" placeholder="Home">
+                    </div>
+
+                    <div class="form-field">
+                        <label>OP (Operator Name)</label>
+                        <input type="text" placeholder="John">
+                    </div>
+
+                    <div class="form-field">
+                        <label>SKCC #</label>
+                        <input type="text" placeholder="Optional">
+                    </div>
+
+                    <div class="form-field">
+                        <label>UTC Offset (hours, e.g. -5 or +5.5) *</label>
+                        <input type="text" placeholder="-5">
+                    </div>
+
+                    <div class="form-field checkbox-field">
+                        <input type="checkbox" id="daylightSaving" checked>
+                        <label for="daylightSaving" style="text-transform: none; margin: 0;">Observes Daylight Saving Time</label>
+                    </div>
+
+                    <div class="form-field checkbox-field">
+                        <input type="checkbox" id="defaultProfile">
+                        <label for="defaultProfile" style="text-transform: none; margin: 0;">Default station profile</label>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; margin-top: 15px;">
+                        <button class="btn btn-primary">💾 Save</button>
+                        <button class="btn btn-secondary">🗑️ Delete</button>
+                    </div>
+
+                    <div class="required-note">* Required fields</div>
+                </div>
+            </div>
+
+            <div class="modal-buttons">
+                <button class="btn btn-primary" id="close-station-modal-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FILE OPERATIONS MODAL -->
+    <div id="file-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-title">File Operations</div>
+
+            <div class="file-section">
+                <div class="file-section-title">📁 Log Files</div>
+                <button class="file-button">📄 New Log...</button>
+                <button class="file-button">🗂️ Open Log...</button>
+                <button class="file-button">💾 Save Log...</button>
+            </div>
+
+            <div class="file-section">
+                <div class="file-section-title">📨 Import/Export</div>
+                <button class="file-button">📥 Import ADIF...</button>
+                <button class="file-button">📤 Export ADIF...</button>
+            </div>
+
+
+            <div class="modal-buttons">
+                <button class="btn btn-primary" id="close-file-modal-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- COLUMN VISIBILITY MODAL -->
+    <div id="column-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-title">Column Visibility</div>
+            <div class="modal-button-row">
+                <button class="btn btn-secondary" id="all-columns-btn">All</button>
+                <button class="btn btn-secondary" id="none-columns-btn">None</button>
+            </div>
+            <div class="column-list" id="column-list">
+                <!-- Checkboxes will be populated by JavaScript -->
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-primary" id="close-modal-btn">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ADIF 3.14 Standard fields with display names
+        // Format: { adifName: 'ADIF_FIELD_NAME', displayName: 'Display Name' }
+        const adifFields = [
+            { adifName: 'CALL', displayName: 'Callsign' },
+            { adifName: 'QSO_DATE', displayName: 'Date' },
+            { adifName: 'TIME_ON', displayName: 'Time On' },
+            { adifName: 'TIME_OFF', displayName: 'Time Off' },
+            { adifName: 'FREQ', displayName: 'Frequency' },
+            { adifName: 'BAND', displayName: 'Band' },
+            { adifName: 'MODE', displayName: 'Mode' },
+            { adifName: 'SUBMODE', displayName: 'Sub-Mode' },
+            { adifName: 'RST_SENT', displayName: 'RST Sent' },
+            { adifName: 'RST_RCVD', displayName: 'RST Rcvd' },
+            { adifName: 'TX_PWR', displayName: 'TX Power' },
+            { adifName: 'RX_FREQ', displayName: 'RX Freq' },
+            { adifName: 'NAME', displayName: 'Name' },
+            { adifName: 'GRIDSQUARE', displayName: 'Grid' },
+            { adifName: 'COUNTRY', displayName: 'Country' },
+            { adifName: 'STATE', displayName: 'State' },
+            { adifName: 'CNTY', displayName: 'County' },
+            { adifName: 'CITY', displayName: 'City' },
+            { adifName: 'ARRL_SECT', displayName: 'ARRL Section' },
+            { adifName: 'DXCC', displayName: 'DXCC' },
+            { adifName: 'CQZ', displayName: 'CQ Zone' },
+            { adifName: 'ITUZ', displayName: 'ITU Zone' },
+            { adifName: 'IOTA', displayName: 'IOTA' },
+            { adifName: 'IOTA_ISLAND_ID', displayName: 'IOTA Island ID' },
+            { adifName: 'SOTA_REF', displayName: 'SOTA Ref' },
+            { adifName: 'POTA_REF', displayName: 'POTA Ref' },
+            { adifName: 'CONTEST_ID', displayName: 'Contest ID' },
+            { adifName: 'STX', displayName: 'STX' },
+            { adifName: 'SRX', displayName: 'SRX' },
+            { adifName: 'CHECK', displayName: 'Check' },
+            { adifName: 'CLASS', displayName: 'Class' },
+            { adifName: 'PRECEDENCE', displayName: 'Precedence' },
+            { adifName: 'OPERATOR', displayName: 'Operator' },
+            { adifName: 'COMMENT', displayName: 'Comment' },
+            { adifName: 'QSLSDATE', displayName: 'QSL Sent Date' },
+            { adifName: 'QSLRDATE', displayName: 'QSL Rcvd Date' },
+            { adifName: 'QSLS', displayName: 'QSL Sent' },
+            { adifName: 'QSLR', displayName: 'QSL Rcvd' },
+            { adifName: 'QSL_VIA', displayName: 'QSL Via' },
+            { adifName: 'NOTES', displayName: 'Notes' },
+            { adifName: 'CONTACT_DXCC', displayName: 'Contact DXCC' },
+            { adifName: 'CONTACT_CQ_ZONE', displayName: 'Contact CQ Zone' },
+            { adifName: 'CONTACT_ITU_ZONE', displayName: 'Contact ITU Zone' }
+        ];
+
+        // Fields to always exclude from column selection (my station info)
+        const excludedAdifFields = new Set([
+            'STATION_CALLSIGN',
+            'MY_CALLSIGN',
+            'MY_GRIDSQUARE',
+            'MY_STATE',
+            'MY_COUNTRY',
+            'MY_CNTY'
+        ]);
+
+        // Track column visibility state by ADIF field name (default visibility for initial 10 columns)
+        const columnVisibility = {
+            'CALL': true,
+            'QSO_DATE': true,
+            'TIME_ON': true,
+            'FREQ': true,
+            'BAND': true,
+            'MODE': true,
+            'RST_SENT': true,
+            'NAME': true,
+            'GRIDSQUARE': true,
+            'COMMENT': true,
+            // Additional fields (default hidden)
+            'TIME_OFF': false,
+            'SUBMODE': false,
+            'RST_RCVD': false,
+            'TX_PWR': false,
+            'RX_FREQ': false,
+            'COUNTRY': false,
+            'STATE': false,
+            'CNTY': false,
+            'CITY': false,
+            'ARRL_SECT': false,
+            'DXCC': false,
+            'CQZ': false,
+            'ITUZ': false,
+            'IOTA': false,
+            'IOTA_ISLAND_ID': false,
+            'SOTA_REF': false,
+            'POTA_REF': false,
+            'CONTEST_ID': false,
+            'STX': false,
+            'SRX': false,
+            'CHECK': false,
+            'CLASS': false,
+            'PRECEDENCE': false,
+            'OPERATOR': false,
+            'QSLSDATE': false,
+            'QSLRDATE': false,
+            'QSLS': false,
+            'QSLR': false,
+            'QSL_VIA': false,
+            'NOTES': false,
+            'CONTACT_DXCC': false,
+            'CONTACT_CQ_ZONE': false,
+            'CONTACT_ITU_ZONE': false
+        };
+
+        // Initialize column visibility modal with saved configuration
+        function initColumnModal() {
+            const columnList = document.getElementById('column-list');
+
+            columnList.innerHTML = '';
+            adifFields.forEach((field, idx) => {
+                if (excludedAdifFields.has(field.adifName)) {
+                    return;
+                }
+
+                const item = document.createElement('div');
+                item.className = 'column-item';
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = `col-${field.adifName}`;
+                checkbox.checked = columnVisibility[field.adifName] !== false;
+                checkbox.dataset.adifName = field.adifName;
+
+                const label = document.createElement('label');
+                label.htmlFor = `col-${field.adifName}`;
+                label.textContent = field.displayName;
+
+                checkbox.addEventListener('change', (e) => {
+                    toggleAdifColumnVisibility(field.adifName, e.target.checked);
+                });
+
+                item.appendChild(checkbox);
+                item.appendChild(label);
+                columnList.appendChild(item);
+            });
+        }
+
+        // Save column visibility to localStorage
+        function saveColumnVisibility() {
+            localStorage.setItem('cvarcLoggerColumnVisibility', JSON.stringify(columnVisibility));
+        }
+
+        // Load column visibility from localStorage
+        function loadColumnVisibility() {
+            const saved = localStorage.getItem('cvarcLoggerColumnVisibility');
+            if (saved) {
+                const savedState = JSON.parse(saved);
+                Object.assign(columnVisibility, savedState);
+            }
+        }
+
+        // Toggle column visibility by ADIF field name (applies to UI only, not saved yet)
+        function toggleAdifColumnVisibility(adifName, visible) {
+            columnVisibility[adifName] = visible;
+            applyColumnVisibility();
+        }
+
+        // Apply visibility state to all columns in the table
+        function applyColumnVisibility() {
+            const headers = document.querySelectorAll('.log-table th');
+            const rows = document.querySelectorAll('.log-table tbody tr');
+
+            // For each header, check if it should be visible
+            headers.forEach((header, colIdx) => {
+                const adifName = header.getAttribute('data-adifName');
+                const isVisible = columnVisibility[adifName] !== false;
+                const displayStyle = isVisible ? 'table-cell' : 'none';
+
+                header.style.display = displayStyle;
+
+                // Hide/show all cells in this column
+                rows.forEach(row => {
+                    const cells = row.querySelectorAll('td');
+                    if (cells[colIdx]) {
+                        cells[colIdx].style.display = displayStyle;
+                    }
+                });
+            });
+        }
+
+        // Reset all columns to visible
+        function resetColumns() {
+            Object.keys(columnVisibility).forEach(key => {
+                columnVisibility[key] = true;
+            });
+
+            const checkboxes = document.querySelectorAll('#column-list input[type="checkbox"]');
+            checkboxes.forEach((checkbox) => {
+                checkbox.checked = true;
+            });
+
+            applyColumnVisibility();
+        }
+
+        // Select all columns (doesn't save, just for UI preview)
+        function selectAllColumns() {
+            const checkboxes = document.querySelectorAll('#column-list input[type="checkbox"]');
+            checkboxes.forEach((checkbox) => {
+                checkbox.checked = true;
+                const adifName = checkbox.dataset.adifName;
+                if (adifName) {
+                    columnVisibility[adifName] = true;
+                }
+            });
+            applyColumnVisibility();
+        }
+
+        // Select no columns (doesn't save, just for UI preview)
+        function selectNoColumns() {
+            const checkboxes = document.querySelectorAll('#column-list input[type="checkbox"]');
+            checkboxes.forEach((checkbox) => {
+                checkbox.checked = false;
+                const adifName = checkbox.dataset.adifName;
+                if (adifName) {
+                    columnVisibility[adifName] = false;
+                }
+            });
+            applyColumnVisibility();
+        }
+
+        // Modal controls
+        const modal = document.getElementById('column-modal');
+        const columnsBtn = document.getElementById('columns-btn');
+        const gridColumnsBtn = document.getElementById('grid-columns-btn');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const allColumnsBtn = document.getElementById('all-columns-btn');
+        const noneColumnsBtn = document.getElementById('none-columns-btn');
+
+        function openColumnModal() {
+            modal.classList.add('active');
+            initColumnModal();
+        }
+
+        columnsBtn.addEventListener('click', openColumnModal);
+        gridColumnsBtn.addEventListener('click', openColumnModal);
+
+        closeModalBtn.addEventListener('click', () => {
+            saveColumnVisibility();
+            modal.classList.remove('active');
+        });
+
+        allColumnsBtn.addEventListener('click', selectAllColumns);
+        noneColumnsBtn.addEventListener('click', selectNoColumns);
+
+        // Close modal when clicking outside
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('active');
+            }
+        });
+
+        // Tab switching logic
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const formTabs = {
+            'normal': 'normal-form',
+            'contest': 'contest-form',
+            'sota': 'sota-form',
+            'pota': 'pota-form',
+            'all': 'all-form'
+        };
+
+        const modeNames = {
+            'normal': 'Normal',
+            'contest': 'Contest',
+            'sota': 'SOTA',
+            'pota': 'POTA',
+            'all': 'All'
+        };
+
+        let lastFormTab = 'normal';
+
+        // File modal controls
+        const fileModal = document.getElementById('file-modal');
+        const fileBtn = document.querySelector('[data-tab="file"]');
+        const closeFileModalBtn = document.getElementById('close-file-modal-btn');
+
+        fileBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            fileModal.classList.add('active');
+        });
+
+        closeFileModalBtn.addEventListener('click', () => {
+            fileModal.classList.remove('active');
+        });
+
+        fileModal.addEventListener('click', (e) => {
+            if (e.target === fileModal) {
+                fileModal.classList.remove('active');
+            }
+        });
+
+        // Station modal controls
+        const stationModal = document.getElementById('station-modal');
+        const stationBtn = document.querySelector('[data-tab="station"]');
+        const closeStationModalBtn = document.getElementById('close-station-modal-btn');
+
+        stationBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            stationModal.classList.add('active');
+        });
+
+        closeStationModalBtn.addEventListener('click', () => {
+            stationModal.classList.remove('active');
+        });
+
+        stationModal.addEventListener('click', (e) => {
+            if (e.target === stationModal) {
+                stationModal.classList.remove('active');
+            }
+        });
+
+        // CAT modal controls
+        const catModal = document.getElementById('cat-modal');
+        const catBtn = document.querySelector('[data-tab="cat"]');
+        const closeCatModalBtn = document.getElementById('close-cat-modal-btn');
+
+        catBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            catModal.classList.add('active');
+        });
+
+        closeCatModalBtn.addEventListener('click', () => {
+            catModal.classList.remove('active');
+        });
+
+        catModal.addEventListener('click', (e) => {
+            if (e.target === catModal) {
+                catModal.classList.remove('active');
+            }
+        });
+
+        // Lookup modal controls
+        const lookupModal = document.getElementById('lookup-modal');
+        const lookupBtn = document.querySelector('[data-tab="lookup"]');
+        const closeLookupModalBtn = document.getElementById('close-lookup-modal-btn');
+
+        lookupBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            lookupModal.classList.add('active');
+        });
+
+        closeLookupModalBtn.addEventListener('click', () => {
+            lookupModal.classList.remove('active');
+        });
+
+        lookupModal.addEventListener('click', (e) => {
+            if (e.target === lookupModal) {
+                lookupModal.classList.remove('active');
+            }
+        });
+
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const tab = button.getAttribute('data-tab');
+
+                // Skip columns button from form tab handling
+                if (tab === 'columns' || tab === 'file') return;
+
+                // Remove active class from all buttons
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+
+                // Add active class to clicked button
+                button.classList.add('active');
+
+                // Handle form tabs (Normal, Contest, SOTA, POTA, All)
+                if (formTabs[tab]) {
+                    lastFormTab = tab;
+
+                    // Hide all form tabs
+                    Object.values(formTabs).forEach(formId => {
+                        const form = document.getElementById(formId);
+                        if (form) form.classList.remove('active');
+                    });
+
+                    // Show selected form tab
+                    const selectedForm = document.getElementById(formTabs[tab]);
+                    if (selectedForm) {
+                        selectedForm.classList.add('active');
+                        document.getElementById('current-mode').textContent = modeNames[tab];
+                    }
+                }
+            });
+        });
+
+        // Initialize Normal tab as active
+        document.getElementById('normal-form').classList.add('active');
+
+        // Load saved column visibility and apply to grid on page load
+        loadColumnVisibility();
+        applyColumnVisibility();
+
+        // ===== API INTEGRATION =====
+        const API_BASE = 'http://localhost:5000/api';
+
+        // Load QSOs from API and populate table
+        async function loadQsosFromApi() {
+            try {
+                const response = await fetch(`${API_BASE}/qso`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const qsos = await response.json();
+                const tbody = document.querySelector('#contact-log tbody');
+
+                if (!qsos || qsos.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="12" style="text-align:center; padding:20px; color:#999;">No QSOs logged yet</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = qsos.map(qso => `
+                    <tr>
+                        <td>${formatDate(qso.qsoDateTimeOnUtc)}</td>
+                        <td><strong>${qso.callsign}</strong></td>
+                        <td>${qso.band || '-'}</td>
+                        <td>${qso.mode || '-'}</td>
+                        <td>${qso.frequency ? parseFloat(qso.frequency).toFixed(3) : '-'}</td>
+                        <td>${qso.rstSent || '-'}</td>
+                        <td>${qso.rstRcvd || '-'}</td>
+                        <td>${qso.name || '-'}</td>
+                        <td>${qso.gridSquare || '-'}</td>
+                        <td>${qso.comment || '-'}</td>
+                        <td><button onclick="deleteQsoFromApi(${qso.id})" style="padding:4px 8px; font-size:11px; background:#e74c3c; color:white; border:none; cursor:pointer; border-radius:2px;">Delete</button></td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading QSOs:', error);
+            }
+        }
+
+        // Save QSO to API
+        async function saveQsoToApi(formData) {
+            try {
+                const response = await fetch(`${API_BASE}/qso`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                alert('✓ QSO saved!');
+                loadQsosFromApi();
+            } catch (error) {
+                alert(`Error saving QSO: ${error.message}`);
+                console.error('Error:', error);
+            }
+        }
+
+        // Delete QSO from API
+        async function deleteQsoFromApi(id) {
+            if (!confirm('Delete this QSO?')) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/qso/${id}`, { method: 'DELETE' });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                loadQsosFromApi();
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            }
+        }
+
+        // Format date for display
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleString('en-US', {
+                year: 'numeric', month: '2-digit', day: '2-digit',
+                hour: '2-digit', minute: '2-digit'
+            });
+        }
+
+        // Hook up Log QSO button to save to API
+        const originalLogButton = document.querySelector('button[onclick*="logQso"]');
+        if (originalLogButton) {
+            originalLogButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                const form = document.getElementById('normal-form');
+                if (!form) return;
+
+                const qsoData = {
+                    callsign: form.querySelector('[name="callsign"]')?.value || '',
+                    qsoDateTimeOnUtc: new Date(form.querySelector('[name="date"]')?.value || Date.now()).toISOString(),
+                    band: form.querySelector('[name="band"]')?.value || '',
+                    mode: form.querySelector('[name="mode"]')?.value || '',
+                    frequency: parseFloat(form.querySelector('[name="frequency"]')?.value) || null,
+                    rstSent: form.querySelector('[name="rstSent"]')?.value || null,
+                    rstRcvd: form.querySelector('[name="rstRcvd"]')?.value || null,
+                    name: form.querySelector('[name="name"]')?.value || null,
+                    gridSquare: form.querySelector('[name="gridSquare"]')?.value || null,
+                    comment: form.querySelector('[name="comment"]')?.value || null
+                };
+
+                saveQsoToApi(qsoData);
+            });
+        }
+
+        // Load QSOs on page load
+        window.addEventListener('load', loadQsosFromApi);
+    </script>
+</body>
+</html>

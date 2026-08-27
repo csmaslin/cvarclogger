@@ -1,0 +1,638 @@
+<Window x:Class="CvarcLogger.App.Views.AwardsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:conv="clr-namespace:CvarcLogger.App.Converters"
+        xmlns:emoji="clr-namespace:Emoji.Wpf;assembly=Emoji.Wpf"
+        mc:Ignorable="d"
+        Title="Awards Progress" Icon="/Assets/AppIcon.ico" Height="820" Width="1250" MinHeight="600" MinWidth="1000"
+        Background="#f5f5f5" ResizeMode="CanResize" WindowStyle="SingleBorderWindow" Loaded="Window_Loaded">
+    <Window.Resources>
+        <conv:PointsDisplayConverter x:Key="PointsDisplayConverter"/>
+        <conv:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+
+        <!-- Left-side tab styled as a sidebar button. Applied to individual TabItems so we don't have to
+             override the whole TabControl template (which was clipping the tab content in earlier
+             attempts). The default TabControl template handles the content area; we just restyle the
+             tab headers to look like dark sidebar buttons with a blue accent when selected. -->
+        <Style x:Key="AwardsTabControl" TargetType="TabControl">
+            <Setter Property="ItemsPanel">
+                <Setter.Value>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Vertical" IsItemsHost="True"/>
+                    </ItemsPanelTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabControl">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="180"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="0" Background="#404040">
+                                <DockPanel>
+                                    <StackPanel DockPanel.Dock="Top" Margin="16,20,16,20">
+                                        <emoji:TextBlock Text="🏅" FontSize="42" HorizontalAlignment="Center" Foreground="White" Margin="0,10,0,6"/>
+                                        <TextBlock Text="Awards" FontSize="18" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="Progress tracker" FontSize="11" Foreground="#bdc3c7" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                                    </StackPanel>
+                                    <ItemsPresenter/>
+                                </DockPanel>
+                            </Border>
+                            <Border Grid.Column="1" Background="White">
+                                <ContentPresenter x:Name="PART_SelectedContentHost" ContentSource="SelectedContent" Margin="24"/>
+                            </Border>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SidebarTabItem" TargetType="TabItem">
+            <Setter Property="Background" Value="#404040"/>
+            <Setter Property="Foreground" Value="#ecf0f1"/>
+            <Setter Property="Padding" Value="16,14"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontFamily" Value="Segoe UI, Roboto, sans-serif"/>
+            <Setter Property="FontWeight" Value="Normal"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="MinWidth" Value="180"/>
+            <Setter Property="Height" Value="Auto"/>
+            <Setter Property="MinHeight" Value="50"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabItem">
+                        <Border x:Name="TabBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="#404040" BorderThickness="4,0,0,0"
+                                Padding="{TemplateBinding Padding}" Margin="0,0,0,2">
+                            <ContentPresenter ContentSource="Header"
+                                              HorizontalAlignment="Left" VerticalAlignment="Center"
+                                              RecognizesAccessKey="True"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="TabBorder" Property="Background" Value="#4a4a4a"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="TabBorder" Property="Background" Value="#34495e"/>
+                                <Setter TargetName="TabBorder" Property="BorderBrush" Value="#3498db"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <TabControl Style="{StaticResource AwardsTabControl}" ItemContainerStyle="{StaticResource SidebarTabItem}">
+            <TabItem>
+                <TabItem.Header>
+                    <emoji:TextBlock Text="🌐  DXCC" FontSize="14"/>
+                </TabItem.Header>
+                <DockPanel Margin="6" LastChildFill="True">
+                    <!-- Title bar section - centered DXCC title -->
+                    <Border DockPanel.Dock="Top" BorderThickness="0,0,0,2" BorderBrush="#e0e0e0" Padding="0,0,0,12" Margin="0,0,0,15">
+                        <TextBlock Text="DXCC" FontSize="20" FontWeight="Bold" Foreground="#000000" HorizontalAlignment="Center"/>
+                    </Border>
+
+                    <!-- Filter dropdown below title -->
+                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,15" HorizontalAlignment="Center">
+                        <TextBlock Text="Band:" VerticalAlignment="Center" Margin="0,0,6,0" FontSize="13"/>
+                        <ComboBox Width="140" ItemsSource="{Binding Dxcc.Bands}" SelectedItem="{Binding Dxcc.SelectedBand}"/>
+                    </StackPanel>
+
+                    <TextBlock DockPanel.Dock="Top" Margin="0,0,0,4" Foreground="#C0392B"
+                               Text="{Binding Dxcc.ErrorMessage}"
+                               Visibility="{Binding Dxcc.HasErrorMessage, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                    <!-- Totals section -->
+                    <Border DockPanel.Dock="Top" BorderThickness="0,1,0,1" BorderBrush="#e0e0e0" Padding="0,12,0,12" Margin="0,0,0,20">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <StackPanel Margin="0,0,100,0" HorizontalAlignment="Center">
+                                <TextBlock Text="Total Worked" FontSize="13" Foreground="#666666" HorizontalAlignment="Center" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding Dxcc.Progress.WorkedCount, Mode=OneWay}" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#000000" Margin="0,4,0,0"/>
+                            </StackPanel>
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="Total Confirmed" FontSize="13" Foreground="#666666" HorizontalAlignment="Center" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding Dxcc.Progress.ConfirmedCount, Mode=OneWay}" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#000000" Margin="0,4,0,0"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                    <!-- Band columns section header -->
+                    <TextBlock DockPanel.Dock="Top" Margin="0,0,0,10" FontSize="13" FontWeight="Bold" Foreground="#333333">
+                        <Run Text="QSOs Per Band:"/>
+                    </TextBlock>
+
+                    <!-- Band columns - 14 bands -->
+                    <Border DockPanel.Dock="Top" BorderThickness="0,1,0,1" BorderBrush="#e0e0e0" Padding="0,12,0,12" Margin="0,0,0,15">
+                        <ItemsControl Height="Auto" ItemsSource="{Binding Dxcc.BandCounts}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Vertical" Margin="0,0,20,0" HorizontalAlignment="Center">
+                                        <TextBlock Text="{Binding Band}" FontWeight="Bold" FontSize="12" HorizontalAlignment="Center" Foreground="#000000"/>
+                                        <TextBlock Text="{Binding QsoCount}" FontSize="14" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#333333" Margin="0,4,0,0"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Border>
+
+                    <TextBlock DockPanel.Dock="Top" Margin="0,0,0,10" FontSize="13" FontWeight="Bold" Foreground="#333333">
+                        <Run Text="5-Band DXCC (100+ confirmed entities on each band):"/>
+                    </TextBlock>
+
+                    <!-- 5-Band DXCC section - 5 band columns -->
+                    <Border DockPanel.Dock="Top" BorderThickness="0,1,0,1" BorderBrush="#e0e0e0" Padding="0,12,0,12" Margin="0,0,0,15">
+                        <ItemsControl Height="Auto" ItemsSource="{Binding Dxcc.FiveBandProgress}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Vertical" Margin="0,0,40,0" HorizontalAlignment="Center">
+                                        <TextBlock Text="{Binding Band}" FontWeight="Bold" FontSize="12" HorizontalAlignment="Center" Foreground="#000000"/>
+                                        <TextBlock Text="{Binding ConfirmedCount}" FontSize="14" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,4,0,0">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Foreground" Value="#333333"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Qualifies}" Value="True">
+                                                            <Setter Property="Foreground" Value="#27AE60"/>
+                                                            <Setter Property="FontWeight" Value="Bold"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Border>
+
+                    <DataGrid ItemsSource="{Binding Dxcc.EntityRows}" AutoGenerateColumns="False" IsReadOnly="True"
+                              AlternationCount="2" AlternatingRowBackground="WhiteSmoke">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Entity" Binding="{Binding EntityName}" Width="*"/>
+                            <DataGridCheckBoxColumn Header="Worked" Binding="{Binding Worked}" Width="Auto"/>
+                            <DataGridCheckBoxColumn Header="Confirmed" Binding="{Binding Confirmed}" Width="Auto"/>
+                            <DataGridCheckBoxColumn Header="Phone" Binding="{Binding Phone}" Width="Auto"/>
+                            <DataGridCheckBoxColumn Header="CW" Binding="{Binding Cw}" Width="Auto"/>
+                            <DataGridCheckBoxColumn Header="Digital" Binding="{Binding Digital}" Width="Auto"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </TabItem>
+            <TabItem>
+                <TabItem.Header>
+                    <emoji:TextBlock Text="🇺🇸  WAS" FontSize="14"/>
+                </TabItem.Header>
+                <DockPanel Margin="6" LastChildFill="True">
+                    <!-- Title bar section - centered WAS title -->
+                    <Border DockPanel.Dock="Top" BorderThickness="0,0,0,2" BorderBrush="#e0e0e0" Padding="0,0,0,12" Margin="0,0,0,15">
+                        <TextBlock Text="WAS (Worked All States)" FontSize="20" FontWeight="Bold" Foreground="#000000" HorizontalAlignment="Center"/>
+                    </Border>
+
+                    <!-- Totals section -->
+                    <Border DockPanel.Dock="Top" BorderThickness="0,1,0,1" BorderBrush="#e0e0e0" Padding="0,12,0,12" Margin="0,0,0,20">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <StackPanel Margin="0,0,100,0" HorizontalAlignment="Center">
+                                <TextBlock Text="Total Worked" FontSize="13" Foreground="#666666" HorizontalAlignment="Center" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding WasProgress.WorkedCount, Mode=OneWay}" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#000000" Margin="0,4,0,0"/>
+                                <TextBlock Text="/ 50" FontSize="11" Foreground="#999999" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                            </StackPanel>
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="Total Confirmed" FontSize="13" Foreground="#666666" HorizontalAlignment="Center" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding WasProgress.ConfirmedCount, Mode=OneWay}" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#000000" Margin="0,4,0,0"/>
+                                <TextBlock Text="/ 50" FontSize="11" Foreground="#999999" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Same all-QSO per-band totals as the DXCC tab's strip; reuses Dxcc.BandCounts
+                         directly (already loaded by AwardsViewModel.LoadAsync) rather than fetching it a
+                         second time, since it isn't filtered to WAS-eligible QSOs and so is identical
+                         data regardless of which tab shows it. -->
+                    <TextBlock DockPanel.Dock="Top" Margin="0,0,0,10" FontSize="13" FontWeight="Bold" Foreground="#333333">
+                        <Run Text="QSOs Per Band:"/>
+                    </TextBlock>
+
+                    <!-- Band columns - 14 bands -->
+                    <Border DockPanel.Dock="Top" BorderThickness="0,1,0,1" BorderBrush="#e0e0e0" Padding="0,12,0,12" Margin="0,0,0,15">
+                        <ItemsControl Height="Auto" ItemsSource="{Binding Dxcc.BandCounts}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Vertical" Margin="0,0,20,0" HorizontalAlignment="Center">
+                                        <TextBlock Text="{Binding Band}" FontWeight="Bold" FontSize="12" HorizontalAlignment="Center" Foreground="#000000"/>
+                                        <TextBlock Text="{Binding QsoCount}" FontSize="14" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#333333" Margin="0,4,0,0"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Border>
+
+                    <DataGrid ItemsSource="{Binding WasProgress.States}" AutoGenerateColumns="False" IsReadOnly="True"
+                              AlternationCount="2" AlternatingRowBackground="WhiteSmoke">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="State" Binding="{Binding State}" Width="*"/>
+                            <DataGridCheckBoxColumn Header="Worked" Binding="{Binding Worked}" Width="Auto"/>
+                            <DataGridCheckBoxColumn Header="Confirmed" Binding="{Binding Confirmed}" Width="Auto"/>
+                            <DataGridCheckBoxColumn Header="Phone" Binding="{Binding Phone}" Width="Auto"/>
+                            <DataGridCheckBoxColumn Header="CW" Binding="{Binding Cw}" Width="Auto"/>
+                            <DataGridCheckBoxColumn Header="Digital" Binding="{Binding Digital}" Width="Auto"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </TabItem>
+            <TabItem>
+                <TabItem.Header>
+                    <emoji:TextBlock Text="⛰️  SOTA" FontSize="14"/>
+                </TabItem.Header>
+                <DockPanel Margin="6" LastChildFill="True">
+                    <!-- Title bar section - centered SOTA title -->
+                    <Border DockPanel.Dock="Top" BorderThickness="0,0,0,2" BorderBrush="#e0e0e0" Padding="0,0,0,12" Margin="0,0,0,15">
+                        <TextBlock Text="SOTA (Summits on the Air)" FontSize="20" FontWeight="Bold" Foreground="#000000" HorizontalAlignment="Center"/>
+                    </Border>
+
+                    <!-- Database info section -->
+                    <Border DockPanel.Dock="Top" BorderThickness="0,1,0,1" BorderBrush="#e0e0e0" Padding="0,12,0,12" Margin="0,0,0,20">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="SOTA Database Summits" FontSize="13" Foreground="#666666" HorizontalAlignment="Center" FontWeight="SemiBold"/>
+                            <TextBlock Text="{Binding MountainGoat.DatabaseSummitCount, Mode=OneWay}" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#000000" Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Progress info section -->
+                    <Border DockPanel.Dock="Top" BorderThickness="0,1,0,1" BorderBrush="#e0e0e0" Padding="0,12,0,12" Margin="0,0,0,20">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <StackPanel Margin="0,0,100,0" HorizontalAlignment="Center">
+                                <TextBlock Text="Activator Points" FontSize="13" Foreground="#666666" HorizontalAlignment="Center" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding MountainGoat.TotalPoints, Mode=OneWay}" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#000000" Margin="0,4,0,0"/>
+                                <TextBlock Text="/ 1000 points for Mt. Goat" FontSize="11" Foreground="#999999" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                            </StackPanel>
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="S2S Points" FontSize="13" Foreground="#666666" HorizontalAlignment="Center" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding MountainGoat.TotalS2SPoints, Mode=OneWay}" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#000000" Margin="0,4,0,0"/>
+                                <TextBlock Text="Total Earned" FontSize="11" Foreground="#999999" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <StackPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                        <TextBlock Text="Summit Code" FontSize="12" FontWeight="SemiBold" Foreground="#333333" Margin="0,0,0,4"/>
+                        <DockPanel>
+                            <Button DockPanel.Dock="Right" Content="Refresh Summit List" Padding="12,4" Margin="6,0,0,0"
+                                    Command="{Binding MountainGoat.RefreshListCommand}"
+                                    ToolTip="Force-downloads the official SOTA summit list now, instead of waiting for its normal 30-day refresh."/>
+                            <Button DockPanel.Dock="Right" Content="Add" Padding="12,4" Margin="6,0,0,0"
+                                    Command="{Binding MountainGoat.AddSummitCommand}" ToolTip="Add this summit to your activation list"/>
+                            <TextBox Width="160" HorizontalAlignment="Left" CharacterCasing="Upper"
+                                     Text="{Binding MountainGoat.NewSummitCode, UpdateSourceTrigger=PropertyChanged}"/>
+                        </DockPanel>
+                    </StackPanel>
+
+                    <Button DockPanel.Dock="Bottom" Content="Delete Selected" Padding="10,2" Margin="0,8,0,0"
+                            HorizontalAlignment="Left" ToolTip="Remove the selected summit from this list"
+                            Command="{Binding MountainGoat.DeleteCommand}"
+                            CommandParameter="{Binding ElementName=MountainGoatGrid, Path=SelectedItem}"/>
+
+                    <!-- Grid and detail panel side-by-side -->
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="320"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- DataGrid on the left -->
+                        <DataGrid x:Name="MountainGoatGrid" Grid.Column="0" ItemsSource="{Binding MountainGoat.Activations}"
+                                  SelectedItem="{Binding MountainGoat.SelectedActivation}"
+                                  AutoGenerateColumns="False" CanUserAddRows="False"
+                                  AlternationCount="2" AlternatingRowBackground="WhiteSmoke"
+                                  CellEditEnding="MountainGoatGrid_CellEditEnding">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Summit Code" Binding="{Binding SummitCode}" Width="Auto" IsReadOnly="True"/>
+                                <DataGridTextColumn Header="Points" Width="Auto" IsReadOnly="True">
+                                    <DataGridTextColumn.Binding>
+                                        <!-- Shows the point value in parentheses, e.g. "(4)", until Activated is
+                                             checked, so an in-progress summit shows what it would be worth once the
+                                             4-contact activation rule is actually met. -->
+                                        <MultiBinding Converter="{StaticResource PointsDisplayConverter}">
+                                            <Binding Path="Points"/>
+                                            <Binding Path="Activated"/>
+                                        </MultiBinding>
+                                    </DataGridTextColumn.Binding>
+                                </DataGridTextColumn>
+                                <DataGridCheckBoxColumn Header="Activated" Binding="{Binding Activated}" Width="Auto"/>
+                                <DataGridTextColumn Header="Contacts" Binding="{Binding ContactCount}" Width="Auto" IsReadOnly="True"/>
+                                <DataGridTextColumn Header="Activation Date/Time" Binding="{Binding ActivationDateUtc, StringFormat='yyyy-MM-dd HH:mm'}" Width="Auto"/>
+                                <DataGridTextColumn Header="Summit Name" Binding="{Binding SummitName}" Width="Auto" IsReadOnly="True"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+
+                        <!-- Detail panel on the right -->
+                        <Border Grid.Column="1" Background="#f9f9f9" BorderThickness="1,0,0,0" BorderBrush="#e0e0e0" Padding="12">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <StackPanel>
+                                    <TextBlock Text="Summit Details" FontSize="14" FontWeight="Bold" Foreground="#333333" Margin="0,0,0,12"/>
+
+                                    <TextBlock Text="{Binding MountainGoat.SelectedActivation, StringFormat='Code: {0.SummitCode}'}" FontSize="11" Foreground="#333333" Margin="0,0,0,6" TextWrapping="Wrap"/>
+
+                                    <TextBlock Text="{Binding MountainGoat.SelectedSummitDetails.SummitName, StringFormat='Name: {0}'}" FontSize="11" Foreground="#333333" Margin="0,0,0,6" TextWrapping="Wrap"/>
+
+                                    <TextBlock Text="{Binding MountainGoat.SelectedSummitDetails.Region, StringFormat='Region: {0}'}" FontSize="11" Foreground="#333333" Margin="0,0,0,6" TextWrapping="Wrap"/>
+
+                                    <TextBlock Text="{Binding MountainGoat.SelectedSummitDetails.Elevation, StringFormat='Elevation: {0} m'}" FontSize="11" Foreground="#333333" Margin="0,0,0,6"/>
+
+                                    <TextBlock Text="{Binding MountainGoat.SelectedSummitDetails.Latitude, StringFormat='Latitude: {0}'}" FontSize="11" Foreground="#333333" Margin="0,0,0,6"/>
+
+                                    <TextBlock Text="{Binding MountainGoat.SelectedSummitDetails.Longitude, StringFormat='Longitude: {0}'}" FontSize="11" Foreground="#333333" Margin="0,0,0,6"/>
+
+                                    <TextBlock Text="{Binding MountainGoat.SelectedSummitDetails.Points, StringFormat='Activator Points: {0}'}" FontSize="11" Foreground="#333333" Margin="0,0,0,4"/>
+
+                                    <TextBlock Text="{Binding MountainGoat.SelectedSummitS2SPoints, StringFormat='S2S Points: {0}'}" FontSize="11" Foreground="#333333" Margin="0,0,0,6"/>
+
+                                    <TextBlock Text="{Binding MountainGoat.SelectedActivation.ContactCount, StringFormat='Contacts: {0}'}" FontSize="11" Foreground="#333333" Margin="0,0,0,6"/>
+
+                                    <TextBlock FontSize="11" Margin="0,0,0,12">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Text" Value="Status: Not Activated"/>
+                                                <Setter Property="Foreground" Value="#333333"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding MountainGoat.SelectedActivation.Activated}" Value="True">
+                                                        <Setter Property="Text" Value="Status: Activated"/>
+                                                        <Setter Property="Foreground" Value="Green"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+
+                                    <TextBlock Text="{Binding MountainGoat.SelectedSummitDetails.SeasonalBonus, StringFormat='Seasonal Bonus: {0}'}" FontSize="11" Foreground="#333333" Margin="0,0,0,12" TextWrapping="Wrap"/>
+
+                                    <TextBlock Text="Activation History" FontSize="12" FontWeight="Bold" Foreground="#333333" Margin="0,0,0,6"/>
+
+                                    <ItemsControl ItemsSource="{Binding MountainGoat.ActivationHistory}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Margin="0,0,0,4">
+                                                    <TextBlock Text="{Binding Callsign, StringFormat='Call: {0}'}" FontSize="10" FontWeight="SemiBold" Foreground="#333333"/>
+                                                    <TextBlock Text="{Binding QsoDateTimeOnUtc, StringFormat='d MMM yyyy HH:mm'}" FontSize="9" Foreground="#666666"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <TextBlock Text="{Binding MountainGoat.ActivationHistory.Count, StringFormat='Total: {0} QSOs'}" FontSize="10" Foreground="#999999" Margin="0,8,0,0"/>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Border>
+                    </Grid>
+                </DockPanel>
+            </TabItem>
+            <TabItem>
+                <TabItem.Header>
+                    <emoji:TextBlock Text="🌳  POTA" FontSize="14"/>
+                </TabItem.Header>
+                <DockPanel Margin="6" LastChildFill="True">
+                    <!-- Title bar section - centered POTA title -->
+                    <Border DockPanel.Dock="Top" BorderThickness="0,0,0,2" BorderBrush="#e0e0e0" Padding="0,0,0,12" Margin="0,0,0,15">
+                        <TextBlock Text="POTA (Parks on the Air)" FontSize="20" FontWeight="Bold" Foreground="#000000" HorizontalAlignment="Center"/>
+                    </Border>
+
+                    <!-- Progress info section -->
+                    <Border DockPanel.Dock="Top" BorderThickness="0,1,0,1" BorderBrush="#e0e0e0" Padding="0,12,0,12" Margin="0,0,0,20">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <StackPanel Margin="0,0,80,0" HorizontalAlignment="Center">
+                                <TextBlock Text="Parks Activated" FontSize="13" Foreground="#666666" HorizontalAlignment="Center" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding ParksOnTheAir.TotalParksActivated, Mode=OneWay}" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#000000" Margin="0,4,0,0"/>
+                            </StackPanel>
+                            <StackPanel Margin="0,0,80,0" HorizontalAlignment="Center">
+                                <TextBlock Text="Current Award" FontSize="13" Foreground="#666666" HorizontalAlignment="Center" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding ParksOnTheAir.CurrentAwardTier, Mode=OneWay}" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#000000" Margin="0,4,0,0"/>
+                            </StackPanel>
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="Kilo Parks" FontSize="13" Foreground="#666666" HorizontalAlignment="Center" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding ParksOnTheAir.KiloParkCount, Mode=OneWay}" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#000000" Margin="0,4,0,0"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <StackPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                        <TextBlock Text="Park Reference" FontSize="12" FontWeight="SemiBold" Foreground="#333333" Margin="0,0,0,4"/>
+                        <DockPanel>
+                            <Button DockPanel.Dock="Right" Content="Refresh Park Info" Padding="12,4" Margin="6,0,0,0"
+                                    Command="{Binding ParksOnTheAir.RefreshCommand}"
+                                    ToolTip="Re-checks live park names for everything in this list from POTA's API."/>
+                            <Button DockPanel.Dock="Right" Content="Add" Padding="12,4" Margin="6,0,0,0"
+                                    Command="{Binding ParksOnTheAir.AddParkCommand}" ToolTip="Add this park to your activation list"/>
+                            <TextBox Width="160" HorizontalAlignment="Left" CharacterCasing="Upper"
+                                     Text="{Binding ParksOnTheAir.NewParkReference, UpdateSourceTrigger=PropertyChanged}"/>
+                        </DockPanel>
+                    </StackPanel>
+
+                    <Button DockPanel.Dock="Bottom" Content="Delete Selected" Padding="10,2" Margin="0,8,0,0"
+                            HorizontalAlignment="Left" ToolTip="Remove the selected park from this list"
+                            Command="{Binding ParksOnTheAir.DeleteCommand}"
+                            CommandParameter="{Binding ElementName=PotaGrid, Path=SelectedItem}"/>
+
+                    <!-- Grid and detail panel side-by-side -->
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="320"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- DataGrid on the left -->
+                        <DataGrid x:Name="PotaGrid" Grid.Column="0" ItemsSource="{Binding ParksOnTheAir.Activations}"
+                                  SelectedItem="{Binding ParksOnTheAir.SelectedActivation}"
+                                  AutoGenerateColumns="False" CanUserAddRows="False"
+                                  AlternationCount="2" AlternatingRowBackground="WhiteSmoke"
+                                  CellEditEnding="PotaGrid_CellEditEnding">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Park Reference" Binding="{Binding ParkReference}" Width="Auto" IsReadOnly="True"/>
+                                <DataGridTextColumn Header="Park Name" Binding="{Binding ParkName}" Width="Auto" IsReadOnly="True"/>
+                                <DataGridCheckBoxColumn Header="Activated" Binding="{Binding Activated}" Width="Auto"/>
+                                <DataGridTextColumn Header="Activation Date/Time" Binding="{Binding ActivationDateUtc, StringFormat='yyyy-MM-dd HH:mm'}" Width="Auto"/>
+                                <DataGridTextColumn Header="Total QSOs" Binding="{Binding TotalQsoCount}" Width="Auto" IsReadOnly="True"/>
+                                <DataGridCheckBoxColumn Header="Kilo" Binding="{Binding IsKiloEligible, Mode=OneWay}" Width="Auto" IsReadOnly="True"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+
+                        <!-- Detail panel on the right -->
+                        <Border Grid.Column="1" Background="#f9f9f9" BorderThickness="1,0,0,0" BorderBrush="#e0e0e0" Padding="12">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <StackPanel>
+                                    <TextBlock Text="Park Details" FontSize="14" FontWeight="Bold" Foreground="#333333" Margin="0,0,0,12"/>
+
+                                    <TextBlock Text="{Binding ParksOnTheAir.SelectedActivation, StringFormat='Reference: {0.ParkReference}'}" FontSize="11" Foreground="#333333" Margin="0,0,0,6" TextWrapping="Wrap"/>
+
+                                    <TextBlock Text="{Binding ParksOnTheAir.SelectedActivation.ParkName, StringFormat='Name: {0}'}" FontSize="11" Foreground="#333333" Margin="0,0,0,6" TextWrapping="Wrap"/>
+
+                                    <TextBlock Text="{Binding ParksOnTheAir.SelectedParkDetails.LocationDesc, StringFormat='Location: {0}'}" FontSize="11" Foreground="#333333" Margin="0,0,0,6" TextWrapping="Wrap"/>
+
+                                    <TextBlock Text="{Binding ParksOnTheAir.SelectedParkDetails.ParkTypeDesc, StringFormat='Park Type: {0}'}" FontSize="11" Foreground="#333333" Margin="0,0,0,4" TextWrapping="Wrap"
+                                               Visibility="{Binding ParksOnTheAir.SelectedParkDetails.ParkTypeDesc, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                                    <TextBlock FontSize="11" Margin="0,0,0,6">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Text" Value="{Binding ParksOnTheAir.SelectedParkDetails.Grid, StringFormat='Grid: {0}'}"/>
+                                                <Setter Property="Foreground" Value="#333333"/>
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ParksOnTheAir.SelectedParkDetails.Grid}" Value="{x:Null}">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+
+                                    <TextBlock Text="{Binding ParksOnTheAir.SelectedActivation.TotalQsoCount, StringFormat='Total QSOs: {0}'}" FontSize="11" Foreground="#333333" Margin="0,0,0,6"/>
+
+                                    <TextBlock FontSize="11" Margin="0,0,0,6">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Text" Value="{Binding ParksOnTheAir.SelectedActivation.TotalQsoCount, StringFormat='QSOs toward activation: {0} / 10'}"/>
+                                                <Setter Property="Foreground" Value="#333333"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ParksOnTheAir.SelectedActivation.Activated}" Value="True">
+                                                        <Setter Property="Text" Value="QSOs toward activation: 10+ (Activated)"/>
+                                                        <Setter Property="Foreground" Value="Green"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+
+                                    <TextBlock Text="(All 10 must be on same UTC date)" FontSize="9" Foreground="#999999" Margin="0,0,0,12" FontStyle="Italic"/>
+
+                                    <TextBlock FontSize="11" Margin="0,0,0,12">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Text" Value="Status: Not Activated"/>
+                                                <Setter Property="Foreground" Value="#333333"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ParksOnTheAir.SelectedActivation.Activated}" Value="True">
+                                                        <Setter Property="Text" Value="Status: Activated"/>
+                                                        <Setter Property="Foreground" Value="Green"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+
+                                    <TextBlock FontSize="11" Margin="0,0,0,12">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Text" Value="Kilo Eligible: No"/>
+                                                <Setter Property="Foreground" Value="#999999"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ParksOnTheAir.SelectedActivation.IsKiloEligible}" Value="True">
+                                                        <Setter Property="Text" Value="Kilo Eligible: Yes (1000+ QSOs)"/>
+                                                        <Setter Property="Foreground" Value="Green"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+
+                                    <TextBlock Text="Activation History" FontSize="12" FontWeight="Bold" Foreground="#333333" Margin="0,0,0,6"/>
+
+                                    <ItemsControl ItemsSource="{Binding ParksOnTheAir.ActivationHistory}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Margin="0,0,0,4">
+                                                    <TextBlock Text="{Binding Callsign, StringFormat='Call: {0}'}" FontSize="10" FontWeight="SemiBold" Foreground="#333333"/>
+                                                    <TextBlock Text="{Binding QsoDateTimeOnUtc, StringFormat='d MMM yyyy HH:mm'}" FontSize="9" Foreground="#666666"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <TextBlock Text="{Binding ParksOnTheAir.ActivationHistory.Count, StringFormat='Total: {0} QSOs'}" FontSize="10" Foreground="#999999" Margin="0,8,0,0"/>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Border>
+                    </Grid>
+                </DockPanel>
+            </TabItem>
+            <TabItem>
+                <TabItem.Header>
+                    <emoji:TextBlock Text="🔑  SKCC" FontSize="14"/>
+                </TabItem.Header>
+                <DockPanel Margin="6" LastChildFill="True">
+                    <TextBlock DockPanel.Dock="Top" Margin="0,0,0,4" FontSize="11" Foreground="Gray" TextWrapping="Wrap"
+                               Text="Best-effort estimate, not the official submission tool: counts any CW QSO with an SKCC # logged, trusting it was made with a manual key (straight key/bug/cootie) as SKCC requires -- CvarcLogger has no field to verify that."/>
+
+                    <TextBlock DockPanel.Dock="Top" Margin="0,0,0,4" Foreground="#C0392B"
+                               Text="{Binding Skcc.ErrorMessage}"
+                               Visibility="{Binding Skcc.HasErrorMessage, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                    <Button DockPanel.Dock="Top" Content="Update SKCC Award Lists" Padding="12,4" Margin="0,0,0,10"
+                            HorizontalAlignment="Left" Command="{Binding Skcc.UpdateAwardListsCommand}"
+                            ToolTip="Downloads the official Centurion/Tribune/Senator award lists so Tribune/Senator eligibility can be checked offline"/>
+
+                    <ItemsControl DockPanel.Dock="Top" Margin="0,0,0,10" ItemsSource="{Binding Skcc.Tiers}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Vertical" Margin="0,0,28,0">
+                                    <TextBlock Text="{Binding TierName}" FontWeight="Bold" FontSize="13"/>
+                                    <TextBlock Text="{Binding Display}" FontSize="12">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Achieved}" Value="True">
+                                                        <Setter Property="Foreground" Value="Green"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                    <TextBlock Text="{Binding Note}" FontSize="10" Foreground="Gray" FontStyle="Italic"
+                                               Visibility="{Binding HasNote, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <DataGrid ItemsSource="{Binding Skcc.Members}" AutoGenerateColumns="False" IsReadOnly="True"
+                              AlternationCount="2" AlternatingRowBackground="WhiteSmoke">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="SKCC #" Binding="{Binding SkccNr}" Width="Auto"/>
+                            <DataGridTextColumn Header="Callsign" Binding="{Binding Callsign}" Width="Auto"/>
+                            <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="Auto"/>
+                            <DataGridTextColumn Header="QSO Date (UTC)" Binding="{Binding QsoDateUtc, StringFormat='yyyy-MM-dd'}" Width="Auto"/>
+                            <DataGridCheckBoxColumn Header="Centurion" Binding="{Binding CountsForCenturion}" Width="Auto"/>
+                            <DataGridCheckBoxColumn Header="Tribune" Binding="{Binding CountsForTribune}" Width="Auto"/>
+                            <DataGridCheckBoxColumn Header="Senator" Binding="{Binding CountsForSenator}" Width="Auto"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </TabItem>
+            </TabControl>
+</Window>

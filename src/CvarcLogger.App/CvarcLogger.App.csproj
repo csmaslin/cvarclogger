@@ -1,0 +1,91 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\CvarcLogger.Core\CvarcLogger.Core.csproj" />
+    <ProjectReference Include="..\CvarcLogger.Data\CvarcLogger.Data.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="Emoji.Wpf" Version="0.3.4" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.18" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.18" />
+    <PackageReference Include="Serilog" Version="4.4.0" />
+    <PackageReference Include="Serilog.Extensions.Hosting" Version="9.0.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+    <PackageReference Include="System.IO.Ports" Version="9.0.18" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="9.0.18" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <AssemblyName>CvarcLogger</AssemblyName>
+    <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
+    <!-- InvariantGlobalization was tried here to shrink the self-contained publish, but WPF's binding
+         engine hard-requires non-invariant culture data (XmlLanguage.GetSpecificCulture throws
+         "Cannot find non-neutral culture related to 'en-us'" on startup). Do not re-enable it. -->
+    <!-- Drops non-English localized resource DLLs pulled in by EF Core/Extensions.* dependencies; the
+         app has no localization of its own. -->
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\AppIcon.ico" />
+    <Resource Include="Assets\BannerLogo.png" />
+    <Resource Include="Assets\CatIcon.png" />
+    <Resource Include="Assets\CatIconConnected.png" />
+    <Resource Include="Assets\218-2180558_arrl-logo-hd-png-download.png" />
+  </ItemGroup>
+
+  <!-- Bundled POTA park reference/name list (~93,500 parks worldwide), too large to embed as a compiled
+       resource like the DXCC seed data, so copied alongside the exe and read directly from disk instead,
+       same rationale as the SOTA summit list's disk cache but sourced as a one-time local snapshot rather
+       than a live download, since there's no single stable public URL for it wired up here. -->
+  <ItemGroup>
+    <Content Include="Assets\PotaParks.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
+  <!-- User manual for the integrated Help window: structured JSON (chapters + text/table blocks) is the
+       primary source the Help window parses; the PDF (exported by publish.ps1 from the .docx) is kept as
+       a fallback if the JSON is ever missing. Regenerated from the .docx on every build (see
+       RegenerateManualJson target below) so the Help window can never go stale relative to the manual. -->
+  <ItemGroup>
+    <Content Include="..\..\docs\CvarcLogger User Manual.json">
+      <Link>CvarcLogger User Manual.json</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
+  <!-- Regenerates "docs\CvarcLogger User Manual.json" from "docs\CvarcLogger User Manual.docx" before
+       every build, via extract-manual-json.py at the repo root, keeping the in-app Help window's manual
+       in sync with whatever the user last hand-edited in the .docx, with no separate manual step.
+       ContinueOnError so a machine without Python on PATH still gets a normal build (using whatever
+       manual JSON is already on disk) instead of a hard failure. -->
+  <Target Name="RegenerateManualJson" BeforeTargets="BeforeBuild">
+    <Exec Command="python &quot;$(MSBuildProjectDirectory)\..\..\extract-manual-json.py&quot;"
+          ContinueOnError="WarnAndContinue" />
+  </Target>
+
+  <!-- Bundled rigctld.exe (Hamlib) so CAT control works out of the box on a copied install,
+       without requiring a separate Hamlib install. See vendor/hamlib/README-CVARCLOGGER-BUNDLE.txt. -->
+  <ItemGroup>
+    <Content Include="vendor\hamlib\**\*">
+      <Link>hamlib\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <!-- Without this, single-file publish silently drops .dll/.exe Content items instead of
+           copying them as loose files. These must stay on disk since rigctld.exe is launched
+           as a separate OS process, not loaded into our process. -->
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+    </Content>
+  </ItemGroup>
+
+</Project>

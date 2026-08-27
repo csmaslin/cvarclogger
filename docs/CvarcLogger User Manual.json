@@ -1,0 +1,496 @@
+{
+  "chapters": [
+    {
+      "title": "1. Introduction",
+      "blocks": [
+        {
+          "type": "text",
+          "text": "CVARC Logger is a Windows desktop application for logging amateur radio contacts (QSOs), built by the Conejo Valley Amateur Radio Club (W6CSM). It is designed for fast, live, in-the-chair logging: whether you're hunting DX, running a high-speed contest, activating a summit or park, or working a club net, the program reshapes itself around how you operate rather than the other way around.\nVersion 2.x reworked the QSO Entry form and the sidebar around one idea: you should be able to shape the program around how you actually operate, not the other way around. Every field's position and visibility can be customized per Log Mode, sticky (\u201cstatic\u201d) behavior is your choice field by field, SOTA/POTA lookups now happen locally and instantly, and the sidebar's mode buttons now pack two related modes into one button you click twice. See Section 1.1 for the full list of what's new in this release.\nHere's a closer look at what CVARC Logger offers:\n- Adaptive Logging Modes. Normal, Contest, SOTA, POTA, and four blank Custom tabs each reshape the entry form to show only the fields that activity needs. Contest mode adds a running Sequence number that auto-increments with each save, along with ARRL Sweepstakes/Field Day fields (Precedence, Check, Class) and SKCC member numbers. The Custom tabs start out blank so you can build and rename your own activity-specific layout -- see Section 4.2.\n- A Fully Customizable, Drag-and-Drop Layout. Click and drag any field to a new spot on the entry form -- drop it on top of another field and that field is bumped aside rather than overwritten. Tab always moves through fields in the order they actually appear on screen, so a custom layout never breaks keyboard navigation -- see Section 4.3.\n- \u201cSticky\u201d Fields. Twelve core fields (Band, Frequency, Mode, Sub-Mode, RST Sent/Rcvd, Operator, TX Power, My Grid, My State, My SOTA, and My POTA) can each be marked static to hold their value across every saved contact, or left unchecked so they clear themselves automatically after each log -- see Section 4.3.\n- Automatic Callsign Lookup. Type a callsign and CVARC Logger queries Callook.info (always available) and, if configured, QRZ.com or QRZCQ.com to fill in the operator's name, grid square, and location -- see Section 4.4.\n- Local SOTA and POTA Databases. Download the official summit and park reference rosters once with the refresh button, then typing a reference number shows its name instantly, even with no internet connection in the field -- see Section 4.5.\n- Live Radio Control (CAT). Connect over USB via Hamlib's rigctld, or over the network to an internet TCP/IP capable radio, and CVARC Logger auto-fills Frequency, Band, Mode, and TX Power as you tune -- see Section 4.8.\n- Digital Mode Automation. Contacts logged in WSJT-X are relayed through GridTracker2 over UDP and captured automatically, with QSOs also broadcast back out to GridTracker2 for live mapping -- see Section 10.4.\n- Net Roll-Call Markers. A checkbox on every log row lets a net controller track who's already been called on for their statement, so an interruption never loses their place -- see Section 5.7.\n- A Powerful Log Grid. Search, sort, and reorder columns; multi-select rows for bulk delete; and copy/paste directly to and from a spreadsheet -- see Section 5.\n- Multiple Station Profiles and Log Files. Keep separate callsigns, grid squares, or operating locations each with their own settings, and maintain entirely separate log files for different callsigns, contests, or locations -- see Sections 3 and 9.\n- ADIF Import/Export and Award Tracking. Import and export logs compatible with QRZ Logbook, LoTW, and virtually every other logging program, with automatic progress tracking for DXCC, Worked All States (WAS), Mountain Goat (SOTA), and Parks on the Air (POTA) -- see Sections 7 and 8.\n\n1.1 WHAT'S NEW IN VERSION 2.X\n- Sidebar redesigned around toggle tabs: instead of one button per mode, related modes now share a button you click twice to flip between (Normal/Contest, SOTA/POTA), plus two fully customizable spare tabs (\u201cUndef-1/Undef-2\u201d and \u201cUndef-3/Undef-4\u201d) you can rename and configure for whatever your club needs. See Section 4.2.\n- Net roll-call markers: a checkbox at the left of every log row, next to its number, lets a net controller mark each station as already called on. A Clear Net Markers button resets everything for the next net. See Section 5.7.\n- The Delete button (removes selected rows from the log grid) is back on the action ribbon.\n- Customizable entry form layout: click and drag any field on the QSO Entry form to a different position, from anywhere on the field (not just its label) -- the layout is remembered independently for each Log Mode, and the form now fits 6 fields per row instead of 5.\n- Per-mode field visibility with renameable tabs: the Columns/Tabs window (previously called \u201cColumn Visibility\u201d) has one tab per Log Mode, each with its own set of shown/hidden fields, and each tab's name can be renamed (e.g. rename \u201cContest\u201d to \u201cField Day\u201d) -- the new name shows up on the sidebar button too.\n- Per-field \u201cstatic\u201d toggle: a checkbox next to Band, Freq, Mode, Sub-Mode, RST Sent, RST Rcvd, Op, TX(W), My Grid, My State, My SOTA, and My POTA lets you choose whether that field keeps its value across QSOs or clears after each one.\n- SOTA/POTA reference lookups: download a local copy of the official SOTA summit list and POTA park list, then typing a reference number shows its name right on the entry form -- no per-contact internet lookup needed.\n- QSO log grid search box: filter the log live by callsign, name, grid square, or city, with a Clear button to return to the full list. The grid also got a \u201cStation Log\u201d title and column headers now match the entry form's pale blue.\n- Tooltips on every button throughout the program.\n- Entry form fixes: Tab now moves between fields in the order they actually appear on screen (previously it could jump around after a field was dragged); Enter now logs the QSO from anywhere on the form using whatever's currently typed, not just from the Callsign field.\n- Edit QSO window restyled to match the rest of the program, with larger text, a clearer focus highlight showing which field the cursor is in, and a Callsign field that no longer forces capital letters while you type (it still saves in capitals).\n- Start/End/Lookup ribbon buttons relabeled Start Clock/End Clock/Call Lookup for clarity.\n- Awards window: all four award grids now alternate row shading, matching the log grid.\n- Startup check for Hamlib with an on-demand installation link if it isn't found."
+        }
+      ]
+    },
+    {
+      "title": "2. Getting Started",
+      "blocks": [
+        {
+          "type": "text",
+          "text": "2.1 LAUNCHING CVARC LOGGER\nCVARC Logger is a self-contained Windows application -- no installation of the .NET runtime is required. Run CvarcLogger.exe directly (portable copy) or use the Windows Setup installer, which adds an Apps & Features entry and Start Menu shortcut and installs to C:\\CvarcLogger by default.\nOn first launch (or any time the active log has no station profile yet), the Station Profiles window opens automatically before the main window appears. A callsign and a valid UTC offset are required before it can be closed -- the program cannot be used for logging without at least one station profile on record. The first profile you save is automatically marked as the default.\nIf Hamlib (rigctld, used for CAT radio control) is not found on the machine, CVARC Logger offers to open the Hamlib download page so you can install it. This is optional -- the program logs QSOs normally without it; only radio control (auto-filling Frequency/Band/Mode from the rig) needs it.\n\n2.2 THE MAIN WINDOW\nThe main window is organized into five areas:\n- Banner (top) -- the club logo, program title, and club name.\n- Sidebar (left) -- File, Station, CAT, Lookup, and Columns/Tabs buttons; four Log Mode toggle tabs (Section 4.2); and Award progress.\n- QSO Entry form (upper right) -- where you type in the details of the contact you're logging. See Section 4.\n- Action ribbon (middle) -- CAT connection status, Start Clock/End Clock, Call Lookup, Log QSO, Columns/Tabs, and Delete.\n- QSO Log Grid (lower right) -- every contact logged so far, searchable and sortable, with a net roll-call marker on each row. See Section 5.\nA status bar at the bottom of the window shows the total QSO count, the active log's file name, and a program credit. Hovering over any button anywhere in the program shows a short tooltip describing what it does.\n\n2.3 QUICK START\n1. Set up your identity: open Station Profiles (sidebar) and confirm your callsign, grid square, and UTC offset are set.\n2. Type the callsign: click into the Callsign field on the entry form and type the station you're contacting.\n3. Trigger the lookup: click Call Lookup, or just keep typing -- Log QSO runs a lookup automatically if you haven't clicked Lookup yet -- to pull in the operator's name, grid, and location.\n4. Log the exchange: confirm the frequency/band and fill in the signal report (RST Sent/Received) and any other fields you want for this QSO.\n5. Save the QSO: press Enter while still in the Callsign field, or click Log QSO. The contact appears immediately at the top of the QSO Log Grid."
+        }
+      ]
+    },
+    {
+      "title": "3. Station Profiles",
+      "blocks": [
+        {
+          "type": "text",
+          "text": "A station profile holds the identity CVARC Logger uses when logging: your callsign, grid square, location, and time zone offset. Multiple profiles let you switch quickly between, for example, your home station and a portable/POTA setup with a different callsign or grid.\n\n3.1 PROFILE FIELDS"
+        },
+        {
+          "type": "table",
+          "rows": [
+            [
+              "Field",
+              "Notes"
+            ],
+            [
+              "Callsign *",
+              "Required. The callsign QSOs are logged under (STATION_CALLSIGN)."
+            ],
+            [
+              "Operator Callsign",
+              "Only needed if the operator differs from the station callsign (e.g. a guest operator); logged as OPERATOR."
+            ],
+            [
+              "My Grid Square",
+              "Seeds the entry form's My Grid field."
+            ],
+            [
+              "My State / My County",
+              "Seeds the entry form's My State / My County fields."
+            ],
+            [
+              "QTH",
+              "Free-text location description; seeds the entry form's QTH field."
+            ],
+            [
+              "Op (Operator Name)",
+              "Seeds the entry form's Op field."
+            ],
+            [
+              "SKCC #",
+              "Your own SKCC member number, shown automatically on SKCC-logged QSOs."
+            ],
+            [
+              "UTC Offset (hours) *",
+              "Required. Used to compute Local Time from UTC (e.g. -8 or +5.5)."
+            ],
+            [
+              "Observes Daylight Saving Time",
+              "When checked, the UTC offset shifts automatically during DST."
+            ],
+            [
+              "Default station profile",
+              "The profile selected automatically when the program starts."
+            ]
+          ]
+        },
+        {
+          "type": "text",
+          "text": "3.2 MANAGING PROFILES\nOpen Station Profiles from the sidebar or the Station menu. The profile list is on the left (the default profile shown in bold); its details are on the right. Click + New Profile to start one, Save to keep changes, Delete to remove the selected profile, or Close to exit. Selecting a different profile on the entry form re-seeds Op/QTH/My Grid/My State/My County/My SKCC # from that profile -- any of those you've since customized as \u201cnot static\u201d (Section 4.1) will still clear normally on the next QSO regardless of which profile is active."
+        }
+      ]
+    },
+    {
+      "title": "4. Logging a QSO",
+      "blocks": [
+        {
+          "type": "text",
+          "text": "4.1 THE QSO ENTRY FORM\nThe entry form holds every field a QSO can carry, laid out 6 fields to a row. Which fields are visible, and where they sit on the form, both depend on the current Log Mode (Section 4.2) and can be further customized (Section 4.3). A handful of fields are always shown regardless of mode: Station, Callsign, Date/Time (UTC), Local Time, Band, Freq (MHz), and Mode.\nSeveral fields carry their value over from one QSO to the next instead of clearing, since they typically don't change contact to contact during one operating session -- Band, Freq, Mode, Sub-Mode, RST Sent, RST Rcvd, Op, TX(W), QTH, My Grid, My State, My County, My SKCC #, My SOTA, and My POTA. Twelve of these show a \u201cstatic\u201d checkbox right next to the field's label (Band, Freq, Mode, Sub-Mode, RST Sent, RST Rcvd, Op, TX(W), My Grid, My State, My SOTA, My POTA) -- uncheck it if you'd rather that one field clear after every QSO like Name or Grid Square does. Station, QTH, My County, and My SKCC # are always sticky and don't show a checkbox.\nThe field the text cursor is currently in shows a thicker, blue-highlighted border, so it's always clear where you're typing. Pressing Tab moves between fields in the order they actually appear on the form -- if you've dragged a field to a new spot (Section 4.3), Tab order follows the new layout.\nDate/Time (UTC) and Local Time tick forward live, once per second, while the form is idle. Typing a manual or backdated time stops the live tick for that entry; seconds are optional when typing by hand. The Start Clock button freezes Date/Time (UTC) at the current instant; End Clock stamps the current instant into Time Off (UTC).\n\n4.2 LOG MODES\nA Log Mode decides which fields show up on the entry form and in the log grid -- Contest mode, for example, adds Precedence/Check/Class and hides fields a contest exchange never uses. Switching modes doesn't lose anything: your log keeps every QSO from every mode together in one place, and each mode remembers its own field layout (Section 4.3) independently.\nThe sidebar has 5 buttons for this, but they cover 9 modes total, because 4 of the buttons are toggle tabs: each one is shared by two modes, and you click it once to switch to that tab, then click it again to flip between its two modes. Here's exactly how that works:\n1. Click a toggle tab that isn't currently active (its button isn't highlighted blue): the program switches to whichever of its two modes you were on last time you used that tab (the first time ever, that's simply its first mode).\n2. Click the same toggle tab again, now that it's already active (its button is highlighted blue): the program flips over to the tab's other mode.\n3. Click a different tab, then come back later: the tab you left remembers exactly which of its two modes it was showing, so you pick up right where you left off."
+        },
+        {
+          "type": "table",
+          "rows": [
+            [
+              "Sidebar Button",
+              "Its two modes",
+              "Typical use"
+            ],
+            [
+              "Normal / Contest",
+              "Normal, Contest",
+              "Normal: everyday logging, every optional field available. Contest: adds Sequence #, Precedence, Check, and Class."
+            ],
+            [
+              "SOTA / POTA",
+              "SOTA, POTA",
+              "SOTA moves My SOTA/SOTA fields to the top; POTA does the same for My POTA/POTA. Both hide fields a summit/park activation doesn't need."
+            ],
+            [
+              "Undef-1 / Undef-2",
+              "(unassigned)",
+              "Two blank-slate modes for whatever your club wants -- rename them and choose their fields in the Columns/Tabs window (Section 4.3)."
+            ],
+            [
+              "Undef-3 / Undef-4",
+              "(unassigned)",
+              "Same idea as Undef-1/Undef-2 -- two more free tabs."
+            ],
+            [
+              "All",
+              "All",
+              "Not a toggle -- shows every field CVARC Logger supports at once, across every mode, and every QSO regardless of which mode logged it."
+            ]
+          ]
+        },
+        {
+          "type": "text",
+          "text": "The Undef tabs start out genuinely blank: nothing is renamed and no fields are specially chosen for them yet, so until you configure them they'll show whatever generic field layout every brand-new mode starts with. Open the Columns/Tabs window (Section 4.3) to give them a real name and pick their fields -- for example, you could turn Undef-1 into \u201cField Day\u201d or \u201cPOTA Rover\u201d for a second, differently-configured POTA-style layout.\nHowever you switch modes -- a toggle tab, All, or a tab inside the Columns/Tabs window -- the sidebar's highlighted button always follows along, so you can tell at a glance which mode is live.\n\n4.3 CUSTOMIZING THE ENTRY FORM\nTwo independent customizations are available, both saved per Log Mode so switching modes always shows that mode's own layout:\nDrag-and-drop positioning: click and drag any field to a different spot on the form -- you can grab it anywhere on the field, including its input box, not just its label. A plain click still works normally (it puts the text cursor there, or opens a dropdown); only an actual drag repositions the field. If you drop it on a spot another field already occupies, that field is bumped to the next open spot in reading order (left to right, top to bottom) rather than being overwritten. Positions are saved automatically and restored the next time that Log Mode is active.\nColumns/Tabs window: click Columns/Tabs (sidebar or ribbon) to open it. It has one tab per Log Mode (Normal, Contest, SOTA, POTA, Undef-1 through Undef-4) plus an All tab; select a tab to choose which fields are shown for that mode specifically. All and None buttons show or hide everything on the current tab at once. Rename Tab lets you relabel a mode -- for example, renaming \u201cContest\u201d to \u201cField Day\u201d, or giving one of the Undef tabs a real name once you've decided what to use it for -- and the new name shows up on the sidebar's toggle button too. Selecting a different tab in this window switches the program's live mode to match, and switching modes any other way (the sidebar's toggle tabs) moves this window's selected tab the same way if it's already open -- the two stay in sync in both directions.\n\n4.4 CALLSIGN LOOKUP\nClick Call Lookup, or just leave the Callsign field and let Log QSO trigger it automatically if you haven't looked it up yet, to query Callook.info (always available) and, if configured, QRZ.com or QRZCQ.com (Section 10.1) for the station's name, grid square, and location. Fields already filled in by hand are never overwritten by a lookup.\n\n4.5 SOTA/POTA REFERENCE LOOKUPS\nTyping a SOTA summit code into the SOTA or My SOTA field, or a POTA park reference into the POTA or My POTA field, looks it up against a local reference database and shows the summit or park name right below the field. Entries are automatically forced to uppercase as you type, and the lookup runs live -- no need to click elsewhere first.\nThe local database has to be downloaded before lookups will find anything. Click the small \u21bb button next to the SOTA or POTA field to download (or refresh) that database -- this pulls the current official list directly from SOTA and POTA and stores it locally, so day-to-day lookups don't need an internet connection once it's downloaded. Refreshing periodically keeps it current as new summits and parks are added.\n\n4.6 LOGGING THE QSO\nClick Log QSO, or press Enter anywhere on the entry form, to save the contact -- Enter always uses whatever you've just typed, even if you haven't clicked out of that field yet. If the online lookup hasn't run yet for the current callsign, Log QSO runs it automatically first. After logging, the fields that aren't marked static (Section 4.1) clear for the next contact, the Date/Time (UTC) field jumps to the current time, and the new QSO appears at the top of the QSO Log Grid.\nOne exception: if you're in an editable dropdown (Band, Mode, Sub-Mode) with its list open, the first Enter just closes that dropdown, matching normal Windows behavior -- a second Enter then logs the QSO. This only comes up in those three dropdown fields.\n\n4.7 CONTEST AND SKCC LOGGING\nSwitch to Contest mode (Section 4.2) to log ARRL Sweepstakes or Field Day exchanges: Precedence (a dropdown showing the full ARRL definition for each category), Check, and Class. The Sequence # field tracks a running exchange serial -- Start begins counting at 1 and auto-increments after every logged QSO; Reset zeroes it and stops the count until Start is pressed again.\nSKCC (Straight Key Century Club) numbers: your own is set once in Station Profiles and shown automatically as My SKCC #; the contacted station's SKCC number is entered per QSO in the SKCC # field.\n\n4.8 RADIO CONTROL (CAT)\nConnect the CAT button (action ribbon) connects or disconnects live radio control, which auto-fills Frequency, Band, Mode, Sub-Mode, and TX Power as you tune. A status indicator next to the button shows whether CAT is currently connected. Configure which radio and connection method to use under CAT (sidebar) -- see Section 10.2 for the two available sources, USB (Hamlib) and Internet (TCP/IP capable radios).\n\n4.9 CLEARING THE LOG\nClear Database (File Operations, or directly on the entry form depending on your layout) permanently deletes every QSO from the currently active log. It asks a Yes/No confirmation first, so it can't be triggered by a single accidental click. This cannot be undone -- back up first if there's any doubt."
+        }
+      ]
+    },
+    {
+      "title": "5. The QSO Log Grid",
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Every logged QSO appears as a row in the grid, newest at the top by default. Row numbers on the left count chronologically (the oldest QSO is always 1) regardless of how the grid is currently sorted or filtered. Click any column header to sort by that column.\n\n5.1 SEARCHING\nA search bar sits directly above the grid. Typing filters the visible rows live, matching against Callsign, Name, Grid Square, or City. Click Clear (or clear the search box) to return to showing every QSO.\n\n5.2 CHOOSING AND REORDERING COLUMNS\nClick Columns/Tabs to choose which fields appear as grid columns, independently per Log Mode (Section 4.3) -- Callsign and Station Callsign are always shown and can't be hidden. Drag a column header left or right to reorder it; drag its edge to resize it. Both column order and width are remembered across restarts.\n\n5.3 EDITING A QSO\nDouble-click any row, or select it and click Edit, to open the Edit QSO window -- see Section 6.\n\n5.4 SELECTING MULTIPLE QSOS\nCtrl+right-click a row to toggle it into or out of a multi-selection; Shift+right-click selects a range. A regular click still selects just one row.\n\n5.5 DELETING QSOS\nSelect one or more rows (Section 5.4) and click Delete on the action ribbon to remove them from the log. A confirmation prompt shows how many QSOs are about to be deleted before anything happens. This cannot be undone.\n\n5.6 COPY AND PASTE\nWith the grid focused, Ctrl+C copies the selected rows as tab-separated text, suitable for pasting straight into a spreadsheet. Ctrl+V reads tab-separated rows back from the clipboard and logs each one as a new QSO.\n\n5.7 NET ROLL-CALL MARKERS\nWhen you're running a net, you often log check-ins as they come in, then during a lull go back down the list and call on each member in turn for their statement. If something interrupts you partway through, it's easy to lose track of exactly who you'd already called on. The net marker checkbox solves that.\nEvery row in the log grid has a small checkbox to the left of its row number. Click it once you've called on that station and they've given their statement; it stays checked even if you scroll away, switch windows, or the program sits idle for a while. Working down the list, the checked rows show you exactly how far you've gotten -- pick up again at the first unchecked row after any interruption.\nThese checkmarks are separate from your QSO records: they're not saved to the log file, don't export with ADIF, and don't affect anything else in the program. When the net ends, click Clear Net Markers (top-right of the search bar, above the grid) to uncheck every row at once, ready for the next net. Because the markers aren't saved, restarting CVARC Logger also clears them -- so there's no need to remember to clear them if you're closing the program between nets anyway."
+        }
+      ]
+    },
+    {
+      "title": "6. Editing a QSO",
+      "blocks": [
+        {
+          "type": "text",
+          "text": "The Edit QSO window shows every field a QSO can carry, laid out in wrapping rows, and lets you change any of them after the fact. Lookup re-runs the online callsign lookup for the callsign currently in the window; Save writes your changes back to the log; Cancel discards them. Pressing Enter anywhere in the window also saves, same as clicking Save. The field with the text cursor shows the same thicker blue focus border as the main entry form.\n\n6.1 CONTACT DETAILS\nEvery field from the main entry form is editable here, plus several that don't normally appear on the entry form itself: Freq Rx (MHz) for split operation, Continent, Station Callsign, Operator, My Grid/State/County, and the station's own UTC Offset/DST setting at the time of the QSO. The Callsign field accepts lowercase while you type it -- it's automatically capitalized when you save, so you don't have to hold Shift or worry about Caps Lock.\n\n6.2 QSL STATUS\nA separate section tracks paper/electronic QSL confirmation: QSL Sent/Received (with dates) and LoTW Sent/Received (with dates), plus QSL Via for a QSL manager's callsign."
+        }
+      ]
+    },
+    {
+      "title": "7. Awards Progress",
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Open Awards from the sidebar to see progress toward four awards, computed automatically from your log -- nothing needs to be entered manually beyond logging QSOs normally (and, for SOTA/POTA, the summit/park reference fields).\n\n7.1 DXCC\nShows Worked and Confirmed counts, a per-band QSO count strip, 5-Band DXCC progress (100+ confirmed entities on each of five bands), and a full entity grid with Worked/Confirmed/Phone/CW/Digital columns. Filter the entity grid to a single band with the Band dropdown.\n\n7.2 WAS (WORKED ALL STATES)\nShows Worked and Confirmed counts out of 50, the same per-band QSO strip as the DXCC tab, and a 50-state grid with Worked/Confirmed/Phone/CW/Digital columns.\n\n7.3 MOUNTAIN GOAT (SOTA)\nTracks progress toward SOTA's 1000-point Mountain Goat activator award. Type a summit code and click Add to track it -- its point value is looked up automatically from the SOTA summit list. Any summit logged via the entry form's My SOTA field is picked up automatically too. Per SOTA's own rules, a summit only counts as activated (its points included in the running total) once at least 4 contacts have been logged from it on the same UTC date; until then its points show in parentheses to indicate what it would be worth. Refresh Summit List force-downloads the current official list instead of waiting for its normal 30-day refresh. Select a row and click Delete Selected to remove it.\n\n7.4 PARKS ON THE AIR (POTA)\nTracks progress toward POTA's activator award tiers (Bronze 10, Silver 20, Gold 30, Platinum 40, Diamond 50, Ruby 100, Emerald 125 unique parks activated) and the separate Kilo award (1,000 cumulative QSOs at one park). A park counts as activated once 10 different callsigns are logged from it (via the entry form's My POTA field) on the same UTC date -- repeat contacts with the same station don't count toward the 10. Refresh Park Info re-checks live park names for parks already being tracked (POTA has no single bulk export, so this can't refresh the entire worldwide list at once).\n\n7.5 ABOUT DXCC ACCURACY\nDXCC entity resolution uses a bundled, community-assembled approximation of the ARRL DXCC prefix list, not the official ARRL data. If a contact shows the wrong entity or country, correct it directly on that QSO in the log grid (Section 6) -- award totals update automatically."
+        }
+      ]
+    },
+    {
+      "title": "8. Importing and Exporting Logs (ADIF)",
+      "blocks": [
+        {
+          "type": "text",
+          "text": "ADIF (Amateur Data Interchange Format) is the standard file format most logging programs, QRZ Logbook, and LoTW use to exchange QSO data. Import and Export are both available from File Operations (sidebar).\n\n8.1 IMPORTING\nImport ADIF reads an .adi/.adif file and adds its QSOs to the currently active log. QRZ Logbook exports are recognized specifically, including their confirmation-status fields. DXCC entities are re-resolved from each callsign on import rather than trusting the source file's own number, so an import isn't blocked by a DXCC code the source program used that CVARC Logger's table doesn't recognize.\n\n8.2 EXPORTING\nExport ADIF writes the currently active log out to an .adi file. The suggested filename defaults to the log's database name plus a date/time stamp, so exports from different logs (or repeated exports of the same log) never overwrite each other by accident.\n\n8.3 THE COMMENT FIELD\nCVARC Logger has one free-text field, Comment, mapped to ADIF's COMMENT tag on both import and export -- matching QRZ and most other logging programs, which also use COMMENT rather than NOTES for this."
+        }
+      ]
+    },
+    {
+      "title": "9. Managing Multiple Logs",
+      "blocks": [
+        {
+          "type": "text",
+          "text": "CVARC Logger can work with more than one log database -- useful for keeping a contest log separate from your everyday log, for example. All log-file actions are under File Operations (sidebar).\n\n9.1 CREATING A NEW LOG\nNew Log... creates a new, empty log database file and switches to it immediately.\n\n9.2 OPENING AN EXISTING LOG\nOpen Log... switches to a different existing log database file. The currently active log's file name is always shown in the status bar at the bottom of the main window.\n\n9.3 WHERE LOGS ARE STORED\nA new, portable install keeps its database next to CvarcLogger.exe, so copying the whole install folder carries its data with it. If the active log's saved location is ever missing (for example, an old version's folder that was cleaned up during an upgrade, or removable media that's no longer attached), CVARC Logger falls back to the default log location automatically rather than failing to start."
+        }
+      ]
+    },
+    {
+      "title": "10. Settings",
+      "blocks": [
+        {
+          "type": "text",
+          "text": "10.1 CALLSIGN LOOKUP (TOOLS > LOOKUP)\nCallook.info is used automatically and needs no configuration. Two additional sources can be configured with your own account credentials, stored encrypted on this machine only:\nQRZ.com XML Data API\nRequires a QRZ.com XML subscription. Enter your QRZ.com username and password, click Save, then Test to confirm the connection works. Clear removes the saved credentials.\nQRZCQ.com XML API\nRequires a Premium QRZCQ account. Configured the same way as QRZ.com above, in its own section.\n\n10.2 RADIO CONTROL (TOOLS > CAT CONTROL)\nChoose a CAT Source: Off, USB (Hamlib), or Internet -- only one is active at a time.\nUSB / Serial (Hamlib)\nUses Hamlib's rigctld as a TCP backend for USB-connected radios. Select your radio from the Radio (Hamlib) dropdown, which lists every model Hamlib supports; Refresh Ports re-scans available COM ports (they're also re-scanned automatically every time this window opens). Each radio slot has its own Hamlib Model ID, COM Port, Baud Rate, and Max Power (W). Max Power (W) is never auto-filled -- CAT reports power as a 0.0-1.0 fraction of a radio's own maximum capability, not real watts, so this field is what turns that fraction into an estimated wattage; adjust it if the entry form's TX Power doesn't match your radio's own power meter reading. rigctld.exe does not need to be run manually; it launches automatically when Launch rigctld automatically is checked (the default)."
+        },
+        {
+          "type": "table",
+          "rows": [
+            [
+              "Radio",
+              "Hamlib Model ID",
+              "Default COM Port",
+              "Default Baud Rate"
+            ],
+            [
+              "Elecraft K4D",
+              "2047",
+              "COM3",
+              "38400"
+            ],
+            [
+              "Yaesu FT-991A",
+              "1035",
+              "COM4",
+              "38400"
+            ],
+            [
+              "Kenwood TS-890",
+              "2041",
+              "COM5",
+              "115200"
+            ],
+            [
+              "Yaesu FT-920",
+              "1014",
+              "COM7",
+              "4800"
+            ]
+          ]
+        },
+        {
+          "type": "text",
+          "text": "Internet Control (TCP/IP Capable Radios)\nReads frequency, band, mode, sub-mode, and TX power from an internet TCP/IP capable radio over the network, using its native TCP command protocol (default port 9200). Enter the radio's host/IP, port, and an optional (encrypted) password.\nSave Settings saves both the USB and Internet settings at once; Test Connection tests whichever source is currently selected.\n\n10.3 GRIDTRACKER2\nEnable GridTracker2 broadcast sends every logged or edited QSO out over UDP so GridTracker2 can plot it in real time. Configure the Host and Port (default port 2240, matching GridTracker2's \u201cReceive ADIF UDP (Broadcasts for Logging)\u201d setting), then Save and, optionally, Test to send a sample packet.\n\n10.4 WSJT-X\nEnable WSJT-X log receiving (UDP 2238) automatically adds QSOs logged in WSJT-X to CVARC Logger's log. WSJT-X should broadcast to GridTracker2 as usual (WSJT-X's own default port, 2237); GridTracker2's own \u201cForward UDP messages\u201d setting then relays that same message on to CVARC Logger on port 2238. This two-hop path avoids a real conflict: GridTracker2 commonly already occupies WSJT-X's broadcast port directly, and Windows delivers a shared UDP port's traffic to only one bound listener -- so CVARC Logger listening on WSJT-X's port directly would silently receive nothing whenever GridTracker2 is also running. WSJT-X-relayed QSOs get the same automatic online callsign lookup as manually-entered ones, filling in any fields WSJT-X itself left blank."
+        }
+      ]
+    },
+    {
+      "title": "11. Keyboard Shortcuts & Quick Reference",
+      "blocks": [
+        {
+          "type": "table",
+          "rows": [
+            [
+              "Action",
+              "Shortcut / Control"
+            ],
+            [
+              "Log the current QSO",
+              "Enter, anywhere on the entry form"
+            ],
+            [
+              "Look up the current callsign",
+              "Click Call Lookup"
+            ],
+            [
+              "Switch to a toggle tab / flip between its two modes",
+              "Click a sidebar toggle tab; click it again while active to flip"
+            ],
+            [
+              "Toggle a row into/out of multi-selection",
+              "Ctrl + Right-click a row in the log grid"
+            ],
+            [
+              "Select a range of rows",
+              "Shift + Right-click a row in the log grid"
+            ],
+            [
+              "Copy selected rows",
+              "Ctrl + C, with focus in the log grid"
+            ],
+            [
+              "Paste rows as new QSOs",
+              "Ctrl + V, with focus in the log grid"
+            ],
+            [
+              "Open the Edit QSO window",
+              "Double-click a row, or select it and click Edit"
+            ],
+            [
+              "Save changes in Edit QSO",
+              "Enter, anywhere in the Edit QSO window, or click Save"
+            ],
+            [
+              "Delete selected QSOs",
+              "Select rows, then click Delete on the action ribbon"
+            ],
+            [
+              "Mark/unmark a station as called on (net roll call)",
+              "Click the checkbox at the left of its row, before the row number"
+            ],
+            [
+              "Clear all net roll-call markers",
+              "Click Clear Net Markers, above the log grid"
+            ],
+            [
+              "Reposition an entry form field",
+              "Click and drag anywhere on the field to a new spot"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "title": "12. Tips & Troubleshooting",
+      "blocks": [
+        {
+          "type": "text",
+          "text": "ENTER DOESN'T LOG THE QSO\nEnter logs the QSO from anywhere on the entry form, with one exception: in an editable dropdown (Band, Mode, Sub-Mode) with its list open, the first Enter just closes that dropdown, matching normal Windows behavior -- press Enter a second time, or click Log QSO instead.\n\nCAT STOPPED UPDATING\nConfirm the CAT status indicator on the action ribbon shows connected. If it dropped, click Connect the CAT again. For USB radios, confirm the correct COM port is still selected in CAT Control (Section 10.2) -- a radio reconnected to a different USB port can get a new COM port number from Windows.\n\nA CONTACT SHOWS THE WRONG DXCC ENTITY OR COUNTRY\nDXCC resolution uses a bundled prefix list, not official ARRL data (Section 7.5). Correct the entity directly on that QSO in the log grid; award totals update automatically.\n\nNEW LOG / OPEN LOG DOESN'T SEEM TO DO ANYTHING IMMEDIATELY\nCheck the status bar at the bottom of the main window -- it always shows the currently active log's file name, confirming the switch took effect even though the log grid's contents are what visibly change.\n\nCOUNTY ISN'T FILLED IN AFTER LOOKUP\nNot every lookup source returns a county for every location. Enter it manually if needed -- it won't be overwritten by a later lookup once it's set.\n\nTX POWER (W) DOESN'T MATCH THE RADIO'S OWN METER\nAdjust the Max Power (W) setting for that radio in CAT Control (Section 10.2) -- CAT reports power as a fraction of that value, not an absolute wattage, so this is what calibrates the displayed TX Power against your radio's actual reading.\n\nA FIELD I WANT ISN'T ON THE ENTRY FORM\nOpen Columns/Tabs (sidebar or ribbon) and check it on for the current Log Mode (Section 4.3) -- fields are shown/hidden independently per mode."
+        }
+      ]
+    },
+    {
+      "title": "Appendix A: Version History",
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Versions before 1.17 predate CVARC Logger's changelog and are not documented here."
+        },
+        {
+          "type": "table",
+          "rows": [
+            [
+              "Version",
+              "Highlights"
+            ],
+            [
+              "2.08 (Beta)",
+              "SKCC (Straight Key Century Club) support: automatic and manual SKCC # lookup from the local member roster in the QSO edit window, Bulk Edit (\u201cLookup SKCC # for Selected\u201d), and automatically when logging a QSO. Entry form gained a member tier badge (gold/silver/bronze for Senator/Tribune/Centurion) and a live exchange-preview line next to the SKCC # field. New SKCC scorer under Contests: Weekday Sprint, Weekend Sprintathon, Europe Sprint, Asia Sprint, and QSO Party, scored against SKCC's own published rules. See Appendix C for a full walkthrough."
+            ],
+            [
+              "2.07a (Beta)",
+              "Bug-fix release: resolved a crash opening the Field Day scorer; corrected the Field Day Emergency Power bonus to award points per transmitter (not a flat amount) and added the missing GOTA Bonus and GOTA Coach bonuses; fixed invisible typed text in the Field Day bonus count boxes; fixed the Contests menu's Field Day tab not responding the first time the window opened; expanded the DXCC entity list from 338 to 402 entities with CQ/ITU zone data."
+            ],
+            [
+              "2.07 (Beta)",
+              "New Contests menu with per-contest scoring tools (Field Day, ARRL Sweepstakes, CQ WW, Sprints, NAQP - all labeled Beta). Cabrillo import now saves the full contest header; export dialog auto-fills from the last submission. New in-app Help window with the full manual (including real tables) and find/next search, kept in sync with this document automatically on every build. ARRL Sweepstakes fixes: USB/LSB now count as Phone-event modes, and a Fill in Missing Sections tool backfills ARRL Section from State/County for older QSOs."
+            ],
+            [
+              "2.06",
+              "WSJT-X multicast reception as an alternative to GridTracker2 relay. Cabrillo import/export for contest logs. CAT Control: baud rate dropdown, Internet Control radio-type dropdown (K4/FlexRadio/CI-V/Kenwood), USB test now actually polls the radio, rigctld auto-launch on by default. Custom install directory; uninstall prompts to keep or remove the database. Tab key in Callsign now triggers lookup."
+            ],
+            [
+              "2.05",
+              "Entry form and log grid can now be resized against each other via a drag handle (remembers your split). Fixed: Edit QSO's Lookup button now works; added a Clear & Lookup button that empties and refetches looked-up fields without touching anything typed by hand."
+            ],
+            [
+              "2.04",
+              "Internal cleanup and performance work on the SKCC awards feature -- faster SKCC tab load, no user-visible behavior change besides tier labels now showing contacts remaining."
+            ],
+            [
+              "2.03",
+              "SKCC # live roster lookup + new SKCC Awards tab (Centurion/Tribune/Senator tracking); sortable log-number column; RST/QSL/LoTW column sorting fixed; select-all/clear toggle on the log grid corner; Dupe Check and Lock Fields entry-form options."
+            ],
+            [
+              "2.02",
+              "Net roll-call markers: a checkbox on every log row lets a net controller track who's already been called on, with a Clear Net Markers button to reset for the next net. Sidebar rebuilt around toggle tabs -- Normal/Contest and SOTA/POTA now share one button each (click again to flip between the two), plus two new fully customizable Undef-1..4 tabs, renameable and configurable in the Columns/Tabs window like every other mode. \u201cColumns\u201d renamed to \u201cColumns/Tabs\u201d throughout. Rename Tab dialog now sizes itself to its content so its Save/Cancel buttons can't get clipped. Sidebar toggle tab labels now update live when renamed."
+            ],
+            [
+              "2.01",
+              "Entry form widened from 5 to 6 fields per row. The Delete button (bulk-delete from the log grid) restored to the action ribbon after being lost in an earlier redesign. Tab order fixed a second time (the field's actual on-screen position is now guaranteed to drive Tab order). Enter now logs the QSO from anywhere on the form, not just the Callsign field. Field drag-and-drop can start from anywhere on a field, including its input box, not just the label. Edit QSO's Callsign field no longer forces capital letters while typing. Comment field explicitly left-aligned. Log grid gained a \u201cStation Log\u201d title and pale-blue column headers. Awards window grids gained alternating row shading. Banner gained a club-name subtitle."
+            ],
+            [
+              "2.0",
+              "Customizable entry form: fields can be dragged to any position and shown/hidden independently per Log Mode, with renameable mode tabs in the Column Visibility picker. Per-field \u201cstatic\u201d checkboxes replace the old fixed sticky-field list. Local SOTA/POTA reference databases show summit/park names right on the entry form. QSO log grid gained a live search box. Tooltips added throughout. Fixed Tab order to follow a field's actual on-screen position, and Enter-to-log to always use the just-typed callsign. Edit QSO window restyled to match the rest of the program, with a clearer focus highlight. Locked-in UI sizing rules for Rows 1-3 of the entry form. Startup check for Hamlib with an on-demand install link."
+            ],
+            [
+              "1.48",
+              "Startup check for Hamlib (rigctld): if not found, offers to open the Hamlib download page so it can be installed on demand. CAT control requires Hamlib; manual logging works without it either way."
+            ],
+            [
+              "1.47",
+              "QSO Entry form: isolated the operator/sticky fields (Op, QTH, My SKCC #, My SOTA, My POTA, TX Power) into their own row between CAT controls and the action buttons."
+            ],
+            [
+              "1.46",
+              "Fixed a crash seeding the DXCC entity table on a brand-new database."
+            ],
+            [
+              "1.45",
+              "DXCC seed expanded from 72 hand-curated entities to the complete 520-entity official ADIF list, fixing ADIF import failures on DXCC codes outside the old seed."
+            ],
+            [
+              "1.44",
+              "Added a Log Mode preset picker (Normal/Contest/SOTA/POTA) to the QSO Entry form, and a Contest-mode Sequence # field with Start/Reset controls."
+            ],
+            [
+              "1.43",
+              "Added ARRL Sweepstakes/Field Day contest logging (Precedence, Check, Class) and SKCC number support, with a Precedence dropdown showing the full ARRL definition for each category."
+            ],
+            [
+              "1.42",
+              "Fixed a bug where editing a QSO could change its recorded date/time. Log grid Name and Comment columns are now left-aligned. Enter now saves in the Edit QSO window too."
+            ],
+            [
+              "1.41",
+              "Frequency carries over between QSOs; added a Clear Database button; clearer cursor/selection highlighting; ADIF exports named after the log plus a date/time stamp."
+            ],
+            [
+              "1.40",
+              "Internet Control (CAT) for a networked internet TCP/IP capable radio. One CAT Source selector (Off/USB/Internet) with a single Save and Test button. Fixed-row entry form layout. Installer offers Update vs. Fresh install."
+            ],
+            [
+              "1.39",
+              "Settings split into separate Lookup and CAT Control windows. Enlarged, fixed-row entry form with a tinted background."
+            ],
+            [
+              "1.38",
+              "Log grid: manual column resize, centered headers/data with divider lines and narrower columns. Added Time Off (UTC) field, centered field captions."
+            ],
+            [
+              "1.37",
+              "Clarified the Max Power (W)/rigctld manual wording; Station Profile required-field markers; Settings credential status text and Show Password checkboxes."
+            ],
+            [
+              "1.36",
+              "Documented the Max Power (W) calibration field; removed hard page breaks that left large blank gaps between sections."
+            ],
+            [
+              "1.35",
+              "WSJT-X-logged QSOs now get an automatic callsign lookup; log grid row numbers count chronologically (oldest = 1); CAT now auto-fills TX Power (W) too."
+            ],
+            [
+              "1.34",
+              "WSJT-X log receiving now works via GridTracker2's UDP relay (port 2238) instead of competing with GridTracker2 for WSJT-X's own broadcast port."
+            ],
+            [
+              "1.33",
+              "Mountain Goat (SOTA) points shown as (#) until activated, plus a Summit Name column. New Parks on the Air (POTA) award tab added."
+            ],
+            [
+              "1.32",
+              "Requires a station profile on first launch. Mountain Goat (SOTA) award tracking tab with the 4-contact activation rule. WSJT-X direct-UDP QSO receiving added."
+            ],
+            [
+              "1.31",
+              "QSO entry form's Date/Time (UTC) and Local Time fields tick live once per second while idle; seconds are optional when typing a time by hand."
+            ],
+            [
+              "1.30",
+              "Restored the Comment field to the QSO Entry form; default station profile shown in bold; fixed a startup crash from a missing saved log location."
+            ],
+            [
+              "1.29",
+              "Entry form, Edit QSO, Settings, and Station Profiles windows now scale with window size; Settings redesigned into two columns."
+            ],
+            [
+              "1.28",
+              "QSO Entry/Edit forms: manual UTC/Local Date-Time entry with sync, SOTA/POTA fields added throughout, reordered/larger entry form. ADIF import/export overhauled for real 3.1.4 compliance."
+            ],
+            [
+              "1.27",
+              "Version bump for a fully automated, unattended publish.ps1 run (no app behavior changes)."
+            ],
+            [
+              "1.26",
+              "Main window banner now reads \u201cConejo Valley Amateur Radio Club Logger\u201d instead of \u201cCVARC LOGGER\u201d. publish.ps1 now exports the manual to PDF automatically."
+            ],
+            [
+              "1.25",
+              "Multi-select QSOs in the log grid (Ctrl/Shift-right-click) with bulk delete; copy/paste QSO rows via Ctrl+C / Ctrl+V."
+            ],
+            [
+              "1.24",
+              "ADIF import reads QRZ Logbook's own confirmation fields; larger banner/title; \u201cProgram by W6CSM\u201d credit added to the status bar."
+            ],
+            [
+              "1.23",
+              "Fixed a Station Profile double-save crash; ADIF import no longer aborts on unrecognized DXCC codes; merged the duplicate Comment/Notes field pair into one Comment field."
+            ],
+            [
+              "1.20",
+              "Row numbers added to the log grid; Enter key now logs a QSO; column order is now draggable and remembered."
+            ],
+            [
+              "1.19",
+              "App icon and banner logo added."
+            ],
+            [
+              "1.18",
+              "OP field now prefers the station profile's Operator Callsign over its free-text OP name."
+            ],
+            [
+              "1.17",
+              "Added 1.2M band; SSB Sub-Mode with CAT auto-fill; ARRL Section auto-derived from State/County; Station Profile UTC Offset/DST fields."
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Appendix B: Credits",
+      "blocks": [
+        {
+          "type": "text",
+          "text": "CVARC Logger is developed for the Conejo Valley Amateur Radio Club.\nProgram by W6CSM.\n\nBETA TESTERS\nThank you to the CVARC members who tested early builds and reported issues throughout development."
+        }
+      ]
+    },
+    {
+      "title": "Appendix C: Contest Scoring, Step by Step",
+      "blocks": [
+        {
+          "type": "text",
+          "text": "This appendix walks through every contest scoring tool in CVARC Logger, one step at a time, written for anyone new to contest scoring \u2014 not just experienced contesters. If you just want to log QSOs during a contest, see Section 4.7 first; this appendix covers turning a finished log into a score.\n\nC.1 OPENING THE CONTESTS MENU\n1. On the sidebar, find the Awards/Contests button.\n2. Click it once to open Awards Progress (Section 7).\n3. Click it a second time (or click it again from the Awards window) to open the Contests menu instead.\n4. The Contests menu has a list of contests down the left side \u2014 Field Day, ARRL Sweepstakes, CQ WW, Sprints, NAQP, and SKCC. Click any one of them to see a short description and an \u201cOpen Scorer\u201d button.\n5. Click \u201cOpen Scorer\u201d to open that contest's own scoring window. Each one works a little differently, covered below.\n\nA general note before you start: every scoring tool reads your log and calculates a score from it \u2014 it does not change or add anything to your log itself. You can recalculate as many times as you like with different settings; nothing is saved until you're ready.\n\nC.2 FIELD DAY\n1. Open the Field Day scorer (see C.1).\n2. In the Year box, type the year of the Field Day event you're scoring, e.g. 2026.\n3. Choose your Power Class from the dropdown: QRP Battery if you ran 5 watts or less on battery/solar power, Low Power for 150 watts or less, or High Power for anything above that.\n4. If you'd like to double-check which of your logged QSOs actually count for Field Day, click the \u201cVerify Entries\u201d tab at the top \u2014 it lists every QSO with a green check or a red note explaining why it doesn't qualify (wrong weekend, missing information, etc.). Go back to the \u201cScore\u201d tab when you're done looking.\n5. On the right side of the Score tab, tick the checkbox next to every bonus you actually earned (Emergency Power, Media Publicity, Safety Officer, and so on). A couple of these \u2014 Emergency Power and the GOTA Bonus \u2014 also ask how many transmitters or contacts to count; type that number in the small box next to the checkbox.\n6. Click Recalculate. Your full score breakdown appears on the left: QSO points by mode, your power multiplier, bonus points, and the final score.\n7. Click Close when you're done, or change any setting and click Recalculate again.\n\nC.3 ARRL SWEEPSTAKES\n1. Open the Sweepstakes scorer (see C.1).\n2. Sweepstakes has two separate events \u2014 a CW weekend and a Phone (voice) weekend \u2014 and the scorer handles both automatically from your log's dates, so there's nothing to select.\n3. If some of your QSOs are missing their ARRL Section (a two- or three-letter code for where the other station is located), click \u201cFill in Missing Sections\u201d first \u2014 it fills them in automatically from the State/County you already logged, wherever it can.\n4. Click Recalculate (or it may calculate automatically when the window opens).\n5. You'll see your CW score and Phone score shown separately, plus a combined total.\n\nC.4 CQ WW DX CONTEST\n1. Open the CQ WW scorer (see C.1).\n2. Like Sweepstakes, CQ WW has an SSB (voice) weekend and a CW weekend, and the scorer sorts your QSOs into the right one automatically based on when they happened.\n3. Click Recalculate.\n4. The results show your QSO points (which depend on whether the other station was in your own country, your own continent, a different continent, or elsewhere in North America), your zone and country multipliers, and the final score for each event.\n\nC.5 SPRINTS\n1. Open the Sprints scorer (see C.1).\n2. Choose which Sprint you're scoring from the dropdown: CW, SSB, or RTTY Sprint, or the ARRL VHF Contest.\n3. Unlike the other contests, Sprint dates move around and aren't a fixed weekend every time \u2014 so type the exact start and end date/time (in UTC) of the specific Sprint you took part in.\n4. Click Recalculate to see your QSO points, multipliers, and final score.\n\nC.6 NAQP (NORTH AMERICAN QSO PARTY)\n1. Open the NAQP scorer (see C.1).\n2. Choose CW, SSB, or RTTY from the dropdown, and type the year in the Year box.\n3. NAQP runs twice a year on fixed weekends; the scorer works out both weekends' dates for you from the year alone, so there's no need to look them up.\n4. Click Recalculate to see your total QSOs, multipliers, and score.\n\nC.7 SKCC (STRAIGHT KEY CENTURY CLUB)\nSKCC support has two parts: looking up other members' SKCC numbers while you log (covered here first), and scoring an SKCC event afterward (covered below).\n\nLooking up an SKCC number\n1. Before your first SKCC session, download the member list: open the SKCC tab under Awards Progress and use its refresh/update option, or click the small refresh button next to the SKCC # field on the entry form. This only needs to be done occasionally \u2014 the list updates itself automatically once a week after that.\n2. While logging live, if you don't already know the other station's SKCC number, just leave the SKCC # field blank and log the QSO as usual \u2014 CVARC Logger checks the member list for you automatically and fills it in if they're a member.\n3. To look up a number for a contact you've already logged, open that QSO for editing (Section 6) and click the Lookup button next to the SKCC # field.\n4. To look up several QSOs at once, select them all in the Log Grid (Section 5.4), open Bulk Edit, and click \u201cLookup SKCC # for Selected.\u201d Each QSO's own contact is looked up individually, so a mix of members and non-members in your selection is handled correctly.\n5. As you log a QSO with an SKCC member, a small colored circle appears next to the SKCC # field showing their award level \u2014 gold for Senator, silver for Tribune, bronze for Centurion \u2014 and a line underneath shows a quick readback of the callsign, signal report, state, name, and SKCC number you've copied, so you can double-check it before logging.\n\nScoring an SKCC event\n1. Open the SKCC scorer (see C.1).\n2. Choose which event you're scoring from the Event dropdown: Weekday Sprint, Weekend Sprintathon, Europe Sprint, Asia Sprint, or QSO Party.\n3. Type the event's start and end date/time (in UTC) so only QSOs from that specific event are counted. You can leave these blank to include every QSO in your log instead.\n4. A couple of bonus points can't be worked out automatically and need to be entered by hand: for the Weekday Sprint, if that sprint named a special \u201cbonus station\u201d to contact, type its callsign in the box provided; for the QSO Party, tick the box if you're submitting a photo or soapbox comment with your entry.\n5. Click Recalculate.\n6. Your score appears on the Score tab: QSO points, multipliers (unique states/provinces/countries worked), bonus points, and the final score. Click the \u201cMultiplier & Bonus Details\u201d tab to see exactly which states/countries and which members counted toward your bonus.\n\nNote: South America Sprint and Slow Speed Saunter aren't available in the scorer yet. SKCC doesn't appear to publish separate official scoring rules for these, so rather than guess at a formula, CVARC Logger simply doesn't offer them as an option.\n\nC.8 READING YOUR RESULTS\nEvery scorer shows the same general shape of result: how many QSOs counted, how those QSOs turned into points, any multiplier applied, bonus points added on top, and a final score at the bottom. None of these tools submit anything on your behalf \u2014 they're for checking your own score before you submit it yourself through each contest's official log-submission website.\nField Day, ARRL Sweepstakes, CQ WW, Sprints, and NAQP are all labeled \u201cBeta\u201d in the app. That means the scoring logic has been built carefully from the official rules, but hasn't yet been checked against a large number of real, live contest logs \u2014 so treat the score as a strong estimate, and always compare against the contest's own submission site before relying on it for an important entry."
+        }
+      ]
+    }
+  ]
+}

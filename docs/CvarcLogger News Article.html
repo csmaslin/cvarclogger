@@ -1,0 +1,426 @@
+<title>A Compliance Screener for Winlink Wednesdays: How It Scores, and Why It Never Transmits</title>
+
+<style>
+  :root {
+    --panel: #ede9e0;
+    --panel-raised: #f5f2ea;
+    --ink: #22262a;
+    --ink-soft: #565b56;
+    --amber: #b8701f;
+    --amber-strong: #96591a;
+    --signal: #3f7a5c;
+    --line: rgba(34, 38, 42, 0.14);
+    --line-strong: rgba(34, 38, 42, 0.28);
+
+    --font-serif: Georgia, 'Iowan Old Style', 'Palatino Linotype', 'Times New Roman', serif;
+    --font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', 'Consolas', 'Liberation Mono', monospace;
+  }
+
+  :root[data-theme="dark"] {
+    --panel: #1a2023;
+    --panel-raised: #20272a;
+    --ink: #e8e5dd;
+    --ink-soft: #a9ada5;
+    --amber: #e0a24f;
+    --amber-strong: #eeb668;
+    --signal: #6fbb95;
+    --line: rgba(232, 229, 221, 0.16);
+    --line-strong: rgba(232, 229, 221, 0.3);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --panel: #1a2023;
+      --panel-raised: #20272a;
+      --ink: #e8e5dd;
+      --ink-soft: #a9ada5;
+      --amber: #e0a24f;
+      --amber-strong: #eeb668;
+      --signal: #6fbb95;
+      --line: rgba(232, 229, 221, 0.16);
+      --line-strong: rgba(232, 229, 221, 0.3);
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--panel);
+    color: var(--ink);
+    font-family: var(--font-serif);
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 56px 24px 80px;
+  }
+
+  /* ---------- Masthead ---------- */
+
+  .eyebrow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--amber-strong);
+    border-top: 2px solid var(--ink);
+    border-bottom: 1px solid var(--line-strong);
+    padding: 8px 0;
+    margin-bottom: 28px;
+  }
+
+  .eyebrow span:last-child { color: var(--ink-soft); letter-spacing: 0.08em; }
+
+  h1.headline {
+    font-size: clamp(30px, 4.6vw, 44px);
+    line-height: 1.1;
+    font-weight: 700;
+    margin: 0 0 14px;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+
+  .dek {
+    font-size: 19px;
+    line-height: 1.45;
+    color: var(--ink-soft);
+    margin: 0 0 20px;
+    text-wrap: balance;
+    max-width: 62ch;
+  }
+
+  .byline-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 18px;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 18px;
+    margin-bottom: 32px;
+  }
+
+  .byline-row strong { color: var(--ink); font-weight: 600; }
+
+  /* ---------- Article body ---------- */
+
+  article {
+    font-size: 17.5px;
+    line-height: 1.65;
+    max-width: 65ch;
+  }
+
+  .lede {
+    font-size: 20px;
+    line-height: 1.55;
+    margin: 0 0 26px;
+  }
+
+  .lede::first-letter {
+    font-size: 3.4em;
+    line-height: 0.85;
+    float: left;
+    padding: 4px 8px 0 0;
+    font-weight: 700;
+    color: var(--amber);
+  }
+
+  article p { margin: 0 0 20px; }
+
+  article h2 {
+    font-size: 24px;
+    margin: 40px 0 14px;
+    letter-spacing: -0.005em;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 8px;
+  }
+
+  article strong { font-weight: 700; }
+
+  .callout {
+    margin: 28px 0;
+    padding: 18px 22px;
+    background: var(--panel-raised);
+    border-left: 3px solid var(--amber);
+    font-size: 16.5px;
+    line-height: 1.6;
+    color: var(--ink);
+  }
+
+  .callout.signal-border { border-left-color: var(--signal); }
+
+  .callout .tag {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--signal);
+    margin-bottom: 8px;
+  }
+
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.88em;
+    background: var(--panel-raised);
+    padding: 0.1em 0.4em;
+    border-radius: 2px;
+  }
+
+  /* ---------- Spec plate sidebar ---------- */
+
+  .plate {
+    float: right;
+    width: 240px;
+    margin: 6px 0 24px 28px;
+    border: 1px solid var(--line-strong);
+    background: var(--panel-raised);
+  }
+
+  .plate-header {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--panel);
+    background: var(--ink);
+    padding: 7px 12px;
+  }
+
+  .plate dl {
+    margin: 0;
+    padding: 12px 14px 14px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 9px 10px;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+  }
+
+  .plate dt { color: var(--ink-soft); white-space: nowrap; }
+  .plate dd {
+    margin: 0;
+    text-align: right;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .plate dd.hi { color: var(--signal); font-weight: 600; }
+
+  @media (max-width: 560px) {
+    .plate { float: none; width: 100%; margin: 0 0 24px; }
+  }
+
+  /* ---------- Stat strip ---------- */
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--line-strong);
+    border: 1px solid var(--line-strong);
+    margin: 28px 0;
+  }
+
+  .stats div {
+    background: var(--panel-raised);
+    padding: 14px 10px;
+    text-align: center;
+  }
+
+  .stats .num {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--signal);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stats .lbl {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-top: 4px;
+  }
+
+  /* ---------- Feature list ---------- */
+
+  .features {
+    list-style: none;
+    margin: 0 0 20px;
+    padding: 0;
+    display: grid;
+    gap: 14px;
+  }
+
+  .features li {
+    display: grid;
+    grid-template-columns: 92px 1fr;
+    gap: 14px;
+    align-items: baseline;
+  }
+
+  .features .k {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--signal);
+  }
+
+  .features .v { font-size: 16.5px; line-height: 1.5; }
+
+  /* ---------- SME roster ---------- */
+
+  .roster {
+    list-style: none;
+    margin: 16px 0 0;
+    padding: 0;
+    display: grid;
+    gap: 8px;
+  }
+
+  .roster li {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    border-bottom: 1px dotted var(--line-strong);
+    padding-bottom: 6px;
+  }
+
+  .roster .call { color: var(--signal); font-weight: 600; }
+
+  /* ---------- Footer / colophon ---------- */
+
+  .signal-wave {
+    display: block;
+    width: 100%;
+    height: 28px;
+    margin: 52px 0 18px;
+    opacity: 0.55;
+  }
+  .signal-wave path { fill: none; stroke: var(--ink-soft); stroke-width: 1.4; }
+
+  footer {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    letter-spacing: 0.03em;
+    line-height: 1.7;
+    border-top: 1px solid var(--line);
+    padding-top: 16px;
+  }
+
+  footer .grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 8px;
+  }
+</style>
+
+<div class="page">
+
+  <div class="eyebrow">
+    <span>CVARC Club Bulletin</span>
+    <span>ACS/ARES &amp; Winlink Notes</span>
+  </div>
+
+  <h1 class="headline">A Compliance Screener for Winlink Wednesdays: How It Scores, and Why It Never Transmits</h1>
+  <p class="dek">All ten ACS Area-2 exercises now have a defined rule set, and the pilot run has already drafted more than a dozen result letters — every one staged for human review, none of them sent.</p>
+
+  <div class="byline-row">
+    <span>By the CVARC Technical Desk</span>
+    <span>Conejo Valley, CA</span>
+    <span>24 July 2026</span>
+  </div>
+
+  <article>
+    <div class="plate">
+      <div class="plate-header">Winlink Screener</div>
+      <dl>
+        <dt>Status</dt><dd class="hi">Piloting</dd>
+        <dt>Scope</dt><dd>ACS Area-2</dd>
+        <dt>Exercise Rules</dt><dd>10 of 10</dd>
+        <dt>Transmits</dt><dd>Never</dd>
+        <dt>Reads</dt><dd>Winlink Express</dd>
+        <dt>Author</dt><dd>W6CSM</dd>
+        <dt>Goal</dt><dd>County &rarr; Section &rarr; National</dd>
+      </dl>
+    </div>
+
+    <p class="lede">Grading Winlink Wednesdays submissions by hand — checking each station's forms against the exercise requirements, confirming the right addresses were used, noting who was late — is exactly the kind of work that eats an exercise controller's whole evening. W6CSM, serving as exercise control for the ACS Area-2 series, has spent the past several sessions building an automated screener that does that first pass instead: it reads the message store, checks each submission against the published rules, and drafts a result letter. It does not decide what happens next. That's still a person's call, every time.</p>
+
+    <h2>What the Screener Actually Checks</h2>
+    <p>The rule set is deliberately literal rather than lenient-by-default. The deadline is 23:59 Tuesday Pacific time with no grace period — a submission one minute late is late, full stop. But lateness is only ever <em>noted</em>, never a downgrade on its own; an otherwise-complete submission that arrives late is still deemed complete. A partial submission is accepted with the missing pieces itemized in the letter, not rejected outright. Duplicate submissions are all logged, with the best of them (fewest defects) scored and lateness judged on the earliest attempt, so correcting a mistake with a resend can't retroactively make a station look late.</p>
+
+    <p>One rule has no exceptions: reaching both required addresses — the exercise's main list and the required copy — is mandatory regardless of everything else being perfect, and missing either one is an automatic reject. Traffic that reaches neither required address is still scored as a rejection rather than waved off as unrelated noise, a distinction that came up and was settled during the pilot itself.</p>
+
+    <h2>Ten Exercises, Ten Rule Sets</h2>
+    <p>Every one of the series' ten exercises now has its own documented content check, not just a form-type match. A few examples: Exercise 1's capability report has to show at least one entry each for band, mode, station type, and power, checked across the whole form rather than row by row. Exercise 6 pairs a FEMA resource request with a USGS "Did You Feel It" report — and includes a negative check, since the DYFI form auto-fills a USGS reply address that participants are supposed to delete before sending; leaving it in is treated as a real compliance miss, not a technicality. Exercise 10 requires a separate completion notice, sent to a specific Winlink address, on top of its communications log.</p>
+
+    <ul class="features">
+      <li><span class="k">Deadline</span><span class="v">23:59 Tuesday Pacific, no grace period — resolved to UTC per run to account for PDT/PST.</span></li>
+      <li><span class="k">Partial</span><span class="v">Accepted with a plain-language list of what's missing, not an automatic rejection.</span></li>
+      <li><span class="k">Duplicates</span><span class="v">All logged; the best attempt is scored, lateness judged on the first try.</span></li>
+      <li><span class="k">Unknowns</span><span class="v">Anything unparseable or off a form the screener doesn't recognize goes to a human hold — never auto-rejected.</span></li>
+    </ul>
+
+    <h2>Four Possible Verdicts, Never Sent Automatically</h2>
+    <p>Every submission lands in one of four buckets: Accept, Accept with a noted gap, Reject, or Hold for a human to look at directly. A rejection letter always states the field, the value that was received, and what was expected — never a bare "non-compliant." Creativity and content quality are explicitly out of scope for the automated pass; every letter notes that a human content review follows separately, and nothing about the screener's verdict speaks to it.</p>
+
+    <div class="callout signal-border">
+      <span class="tag">The boundary that matters</span>
+      The screener does not transmit. Every letter it drafts is staged in the Winlink Outbox, and a person reviews and releases each one individually before it reaches anyone. That's not a placeholder for a future automation step — it's the design. It's also what makes running this at all defensible beyond one exercise controller's own inbox.
+    </div>
+
+    <h2>Piloting County-Wide First</h2>
+    <p>The first real runs, against Exercise 2 and Exercise 3 submissions already sitting in the message store, produced results across both:</p>
+
+    <div class="stats">
+      <div><span class="num">22</span><span class="lbl">Submittals Screened</span></div>
+      <div><span class="num">14</span><span class="lbl">Letters Drafted</span></div>
+      <div><span class="num">0</span><span class="lbl">Sent Automatically</span></div>
+    </div>
+
+    <p>Across the two exercises, roughly a dozen participating stations were represented, with more submittals than stations owing to duplicates. Every single letter is still sitting in the Outbox awaiting review — the number sent by the screener itself is, and will stay, zero. The plan from here is explicitly incremental: prove it out across the county first, then extend to section-wide use, then national, if the pilot holds up under real exercise traffic. The distribution list for this pilot — the subject matter experts who see every compliance report alongside W6CSM as exercise control:</p>
+
+    <ul class="roster">
+      <li><span>Chuck (Exercise Control)</span><span class="call">W6CSM</span></li>
+      <li><span>Stu</span><span class="call">AG6AG</span></li>
+      <li><span>Garry</span><span class="call">K6GPS</span></li>
+      <li><span>Andy</span><span class="call">K6AGL</span></li>
+      <li><span>Keith</span><span class="call">W6KME</span></li>
+      <li><span>Jeff</span><span class="call">W6KCX</span></li>
+      <li><span>Doc</span><span class="call">NF6D</span></li>
+    </ul>
+
+    <h2>What's Still Ahead</h2>
+    <p>A handful of the content-field checks described above — the band/mode/power detail on the capability report, the quantity/description check on the resource request, the weather-advisory reference on the severe weather report — are documented but not yet wired into the screener itself; the rule set is ahead of the implementation in a few spots. Letter templates for each of the four verdicts are still being refined based on pilot feedback. And there's deliberately no roster of who's expected to submit yet, so for now the screener only ever reports on stations that actually sent something — a station that submits nothing simply isn't mentioned, rather than being flagged as missing.</p>
+  </article>
+
+  <svg class="signal-wave" viewBox="0 0 700 28" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0,14 L60,14 L72,4 L84,24 L96,14 L160,14 L172,8 L184,20 L196,14 L260,14 L272,2 L284,26 L296,14 L360,14 L372,6 L384,22 L396,14 L460,14 L472,4 L484,24 L496,14 L560,14 L572,8 L584,20 L596,14 L700,14" />
+  </svg>
+
+  <footer>
+    <div class="grid">
+      <span>Winlink Exercise Screener &middot; Pilot &middot; ACS Area-2, Conejo Valley</span>
+      <span>Built by Charles S. Maslin, W6CSM &mdash; CVARC Technical Director / Exercise Control</span>
+    </div>
+  </footer>
+
+</div>
