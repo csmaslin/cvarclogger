@@ -15,111 +15,39 @@ namespace CvarcLogger.App.Views;
 
 public partial class QsoEntryView : UserControl
 {
-    // Fallback row/position (1-based) for any field the operator hasn't dragged yet -- matches the
-    // hand-tuned layout the GUI redesign settled on (6 fields max per row, widened from 5 to make room
-    // for another field per row -- see FieldsGrid.ColumnDefinitions in the XAML). The persisted-override
-    // side is SettingsService.GetEntryFormFieldPositions / EntryFormFieldPosition.
-    private static readonly Dictionary<string, (int Row, int Position)> DefaultPositions = new()
+    // No alphabetical sorting: a field with no saved position simply takes the first genuinely free
+    // cell (see FindNextFreeCell), scanning row 1 position 1, then 2..6, then row 2 position 1, and so
+    // on. Whichever order fields happen to be checked on in the Columns/Tabs picker is the order they
+    // fill in -- the first 6 checked land across row 1, the 7th starts row 2, etc. Once assigned, that
+    // position is immediately persisted (see ApplyFieldLayout), exactly as if it had been dragged there,
+    // so it never moves again just because some other field's visibility changed.
+
+    // "Station" and "Callsign" have no Visibility binding in their XAML at all (see StationField/
+    // CallsignField) -- they're unconditionally rendered regardless of what IsFieldVisible/
+    // GetHiddenColumns says. That matters because "Station" collides with the *log grid's* own
+    // "Station" column key (Station Callsign column, defaults to hidden) -- the two share a settings
+    // key by coincidence, not by design, so IsFieldVisible("Station") answers for the wrong control.
+    // Without this override, the entry form's always-visible Station field would be wrongly treated as
+    // hidden-and-unpositioned, crashing ApplyFieldLayout's later lookup with a KeyNotFoundException.
+    private static readonly HashSet<string> AlwaysVisibleFieldKeys = new(StringComparer.OrdinalIgnoreCase) { "Station", "Callsign" };
+
+    // RstSent/RstRcvd, QslSent/QslRcvd, and LotwQslSent/LotwQslRcvd are each two separate draggable
+    // fields sharing ONE visibility checkbox in the Columns/Tabs picker (see ShowRstField/ShowQslField/
+    // ShowLotwField in QsoEntryViewModel and the matching XAML comment on QslSentField) -- the checkbox's
+    // actual settings key is "Rst"/"Qsl"/"Lotw", not the individual field's own position key. Checking
+    // IsFieldVisible("RstSent") directly (its position key) always answers "visible", regardless of the
+    // checkbox, since "RstSent" itself is never in any hidden set -- only "Rst" is. This maps each such
+    // field's position key to the key that actually governs its visibility.
+    private static readonly Dictionary<string, string> VisibilityCheckKeyOverrides = new(StringComparer.OrdinalIgnoreCase)
     {
-        ["Station"] = (1, 1), ["Callsign"] = (1, 2), ["UtcTime"] = (1, 3), ["Band"] = (1, 4), ["Freq"] = (1, 5),
-        ["Mode"] = (2, 1), ["SubMode"] = (2, 2), ["LocalTime"] = (2, 3),
-        ["TimeOff"] = (3, 1), ["RstSent"] = (3, 2), ["RstRcvd"] = (3, 3), ["Name"] = (3, 4), ["Grid"] = (3, 5),
-        ["City"] = (4, 1), ["State"] = (4, 2), ["County"] = (4, 3), ["Country"] = (4, 4), ["ArrlSection"] = (4, 5),
-        ["CqZone"] = (5, 1), ["ItuZone"] = (5, 2), ["Comment"] = (5, 3), ["Op"] = (5, 4), ["TxPower"] = (5, 5),
-
-        // Stage 5: fields with a ShowXxxField ViewModel property but no entry-form control until now
-        // (see the drag-drop feature's memory notes). Placed on their own rows below the pre-existing
-        // ones so they don't disturb the already-tuned Normal-mode layout; visible by default only for
-        // "Qsl" (matches QsoLogViewModel's existing column default), hidden for the rest.
-        ["Qth"] = (6, 1), ["FreqRx"] = (6, 2), ["Continent"] = (6, 3), ["MyGrid"] = (6, 4), ["MyState"] = (6, 5),
-        ["MyCounty"] = (7, 1), ["QslSent"] = (7, 2), ["QslRcvd"] = (7, 3), ["LotwQslSent"] = (7, 4), ["LotwQslRcvd"] = (7, 5),
-
-        // Second gap-audit round: same rationale as the row-6/7 block above, just a larger batch of
-        // fields found the second time (SOTA/POTA/contest-exchange/SKCC/sequence/QSL-via). All 11 of
-        // these default hidden, matching the grid's own column defaults.
-        ["Skcc"] = (8, 1), ["MySkcc"] = (8, 2), ["Precedence"] = (8, 3), ["Check"] = (8, 4), ["Class"] = (8, 5),
-        ["MySota"] = (9, 1), ["Sota"] = (9, 2), ["MyPota"] = (9, 3), ["Pota"] = (9, 4), ["Sequence"] = (9, 5),
-        ["QslVia"] = (10, 1),
+        ["RstSent"] = "Rst", ["RstRcvd"] = "Rst",
+        ["QslSent"] = "Qsl", ["QslRcvd"] = "Qsl",
+        ["LotwQslSent"] = "Lotw", ["LotwQslRcvd"] = "Lotw",
     };
 
-    // Per-mode default layout, baked in from the developer's own live drag-arranged positions (extracted
-    // from settings.json's EntryFormFieldPositionsByMode) so new users/fresh installs start from a
-    // refined arrangement instead of the generic grid-order defaults above -- confirmed with the operator
-    // before shipping as-is despite looking scattered (heavy drag-testing during development, not a
-    // deliberately "tidy" layout, but the one they wanted). Only covers fields actually repositioned in
-    // that mode; anything a mode doesn't list here falls through to DefaultPositions above. Net had
-    // nothing to extract (never dragged), so it reuses Normal's arrangement instead of a distinct one.
-    private static readonly Dictionary<string, Dictionary<string, (int Row, int Position)>> ModeDefaultPositions = new(StringComparer.OrdinalIgnoreCase)
-    {
-        ["Normal"] = new()
-        {
-            ["Band"] = (2, 1), ["Name"] = (1, 3), ["SubMode"] = (4, 1), ["Mode"] = (2, 2), ["RstSent"] = (2, 4),
-            ["LotwQslSent"] = (5, 5), ["LotwQslRcvd"] = (6, 3), ["County"] = (3, 6), ["ArrlSection"] = (4, 3),
-            ["FreqRx"] = (5, 1), ["City"] = (3, 2), ["Grid"] = (3, 1), ["TxPower"] = (2, 5), ["MyPota"] = (7, 4),
-            ["MySota"] = (7, 3), ["Precedence"] = (6, 6), ["Check"] = (7, 1), ["Class"] = (7, 2), ["Comment"] = (1, 4),
-            ["LocalTime"] = (2, 6), ["Callsign"] = (1, 2), ["TimeOff"] = (4, 6), ["UtcTime"] = (1, 6), ["Freq"] = (1, 5),
-            ["MyGrid"] = (5, 4), ["Op"] = (5, 6), ["MySkcc"] = (4, 5), ["ItuZone"] = (9, 1), ["MyState"] = (3, 3),
-            ["State"] = (6, 5), ["RstRcvd"] = (2, 3), ["CqZone"] = (4, 2), ["MyCounty"] = (3, 4), ["Country"] = (3, 5),
-            ["Qth"] = (4, 4), ["Continent"] = (5, 2), ["Skcc"] = (6, 1), ["QslSent"] = (6, 2), ["QslRcvd"] = (6, 4),
-            ["QslVia"] = (7, 5), ["Sota"] = (7, 6), ["Pota"] = (5, 3), ["Sequence"] = (9, 2),
-        },
-        // Net has never been dragged (0 saved positions in settings.json -- nothing to extract), so it
-        // starts from the same complete, collision-free arrangement as Normal rather than the sparser
-        // generic DefaultPositions fallback. Independent copy, not a shared reference, so the two can
-        // diverge later without surprise.
-        ["Net"] = new()
-        {
-            ["Band"] = (2, 1), ["Name"] = (1, 3), ["SubMode"] = (4, 1), ["Mode"] = (2, 2), ["RstSent"] = (2, 4),
-            ["LotwQslSent"] = (5, 5), ["LotwQslRcvd"] = (6, 3), ["County"] = (3, 6), ["ArrlSection"] = (4, 3),
-            ["FreqRx"] = (5, 1), ["City"] = (3, 2), ["Grid"] = (3, 1), ["TxPower"] = (2, 5), ["MyPota"] = (7, 4),
-            ["MySota"] = (7, 3), ["Precedence"] = (6, 6), ["Check"] = (7, 1), ["Class"] = (7, 2), ["Comment"] = (1, 4),
-            ["LocalTime"] = (2, 6), ["Callsign"] = (1, 2), ["TimeOff"] = (4, 6), ["UtcTime"] = (1, 6), ["Freq"] = (1, 5),
-            ["MyGrid"] = (5, 4), ["Op"] = (5, 6), ["MySkcc"] = (4, 5), ["ItuZone"] = (9, 1), ["MyState"] = (3, 3),
-            ["State"] = (6, 5), ["RstRcvd"] = (2, 3), ["CqZone"] = (4, 2), ["MyCounty"] = (3, 4), ["Country"] = (3, 5),
-            ["Qth"] = (4, 4), ["Continent"] = (5, 2), ["Skcc"] = (6, 1), ["QslSent"] = (6, 2), ["QslRcvd"] = (6, 4),
-            ["QslVia"] = (7, 5), ["Sota"] = (7, 6), ["Pota"] = (5, 3), ["Sequence"] = (9, 2),
-        },
-        ["Contest"] = new()
-        {
-            ["Continent"] = (3, 2), ["UtcTime"] = (6, 3), ["Comment"] = (2, 2), ["TxPower"] = (1, 6),
-            ["TimeOff"] = (5, 5), ["Skcc"] = (2, 1), ["RstSent"] = (8, 1), ["Grid"] = (1, 5), ["Band"] = (4, 5),
-            ["Sequence"] = (2, 6), ["ArrlSection"] = (2, 5), ["SubMode"] = (3, 1), ["Mode"] = (1, 4),
-            ["Precedence"] = (2, 4), ["Class"] = (2, 3), ["LocalTime"] = (8, 5), ["Freq"] = (1, 3),
-        },
-        ["Sota"] = new()
-        {
-            ["RstSent"] = (4, 1), ["RstRcvd"] = (4, 2), ["Continent"] = (7, 5), ["County"] = (5, 5), ["Check"] = (5, 4),
-            ["Op"] = (3, 5), ["Class"] = (9, 1), ["TxPower"] = (4, 3), ["State"] = (7, 3), ["FreqRx"] = (8, 1),
-            ["ItuZone"] = (3, 1), ["LotwQslSent"] = (9, 4), ["Band"] = (9, 2), ["LotwQslRcvd"] = (2, 4),
-            ["ArrlSection"] = (8, 5), ["CqZone"] = (9, 3), ["TimeOff"] = (5, 1), ["Comment"] = (2, 5), ["Name"] = (2, 2),
-            ["City"] = (8, 3), ["LocalTime"] = (1, 4), ["SubMode"] = (2, 3), ["MyCounty"] = (3, 2), ["MyGrid"] = (3, 3),
-            ["Grid"] = (10, 1), ["MyPota"] = (3, 4), ["MySkcc"] = (8, 4), ["MySota"] = (4, 5), ["Freq"] = (2, 1),
-            ["MyState"] = (5, 3), ["UtcTime"] = (1, 5), ["Pota"] = (6, 1), ["Qth"] = (7, 1), ["Precedence"] = (6, 2),
-            ["QslRcvd"] = (6, 3), ["QslSent"] = (6, 4), ["QslVia"] = (6, 5), ["Sequence"] = (5, 2), ["Skcc"] = (7, 2),
-            ["Sota"] = (1, 3), ["Mode"] = (7, 4),
-        },
-        ["Pota"] = new()
-        {
-            ["Band"] = (2, 4), ["Name"] = (9, 3), ["Freq"] = (1, 3), ["LocalTime"] = (2, 6), ["Mode"] = (1, 4),
-            ["SubMode"] = (9, 4), ["RstSent"] = (3, 2), ["RstRcvd"] = (6, 3), ["Comment"] = (1, 5), ["UtcTime"] = (1, 6),
-            ["Continent"] = (2, 1), ["Pota"] = (2, 3), ["MySota"] = (5, 5), ["TxPower"] = (2, 2), ["MyPota"] = (2, 5),
-        },
-        ["All"] = new()
-        {
-            ["Name"] = (2, 4), ["Grid"] = (2, 5), ["Country"] = (3, 4), ["ArrlSection"] = (3, 5), ["Op"] = (4, 4),
-            ["TxPower"] = (4, 5), ["MyGrid"] = (5, 4), ["MyState"] = (5, 5), ["MyCounty"] = (6, 4),
-            ["LotwQslRcvd"] = (7, 1), ["LotwQslSent"] = (6, 5), ["Check"] = (8, 4), ["QslVia"] = (7, 4),
-            ["Pota"] = (6, 6), ["MyPota"] = (5, 6), ["Sota"] = (4, 6), ["MySota"] = (3, 6), ["Class"] = (7, 5),
-            ["Sequence"] = (8, 5),
-        },
-    };
-
-    // Resolution order for a field with no explicit saved position in the current mode: this mode's own
-    // baked-in default (ModeDefaultPositions) first, then the generic cross-mode fallback (DefaultPositions).
-    private static (int Row, int Position) GetDefaultPosition(string mode, string key) =>
-        ModeDefaultPositions.TryGetValue(mode, out var modeDefaults) && modeDefaults.TryGetValue(key, out var cell)
-            ? cell
-            : DefaultPositions[key];
+    private bool IsFieldActuallyVisible(string positionKey) =>
+        AlwaysVisibleFieldKeys.Contains(positionKey) ||
+        _subscribedViewModel!.IsFieldVisible(VisibilityCheckKeyOverrides.TryGetValue(positionKey, out var visKey) ? visKey : positionKey);
 
     // Custom drag data format, distinct from the default string format -- a plain string format would
     // collide with WPF's own built-in "drag selected text out of a TextBox" gesture, which also carries a
@@ -160,11 +88,23 @@ public partial class QsoEntryView : UserControl
         foreach (var mode in AllModeNames)
         {
             var positions = settings.GetEntryFormFieldPositions(mode);
+            var hidden = settings.GetHiddenColumns(mode);
+
+            bool IsVisibleInMode(string key) =>
+                AlwaysVisibleFieldKeys.Contains(key) ||
+                !hidden.Contains(VisibilityCheckKeyOverrides.TryGetValue(key, out var visKey) ? visKey : key);
+
+            // Only checking for collisions among fields that are BOTH visible in this mode AND already
+            // have a saved position -- an unsaved field doesn't need (or get) a default reserved here at
+            // all anymore; it's assigned lazily, the first genuinely free cell, whenever ApplyFieldLayout
+            // actually renders that mode (see there). Nothing to precompute across all modes up front.
             var occupied = new HashSet<(int Row, int Position)>();
 
             foreach (var key in orderedKeys)
             {
-                var cell = positions.TryGetValue(key, out var p) ? (p.Row, p.Position) : GetDefaultPosition(mode, key);
+                if (!IsVisibleInMode(key) || !positions.TryGetValue(key, out var p)) continue;
+
+                var cell = (p.Row, p.Position);
                 if (occupied.Add(cell)) continue;
 
                 var freeCell = FindNextFreeCell(occupied);
@@ -190,16 +130,30 @@ public partial class QsoEntryView : UserControl
     private void QsoEntryView_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
     {
         if (_subscribedViewModel is not null)
+        {
             _subscribedViewModel.PropertyChanged -= ViewModel_PropertyChanged;
+            _subscribedViewModel.FieldVisibilityChanged -= OnFieldVisibilityChanged;
+        }
 
         _subscribedViewModel = e.NewValue as QsoEntryViewModel;
 
         if (_subscribedViewModel is not null)
+        {
             _subscribedViewModel.PropertyChanged += ViewModel_PropertyChanged;
+            _subscribedViewModel.FieldVisibilityChanged += OnFieldVisibilityChanged;
+        }
 
         ApplyFieldLayout();
         FocusFirstField();
     }
+
+    // Checking a field on/off in the Columns/Tabs picker only flips its bound Visibility -- it never
+    // touched Grid.Row/Column before this, so a newly-shown field just revealed whatever stale cell it
+    // was already sitting on (assigned the last time ApplyFieldLayout ran, e.g. at startup), instead of
+    // taking its correct place in the now-changed set of visible fields. Re-running the full layout here
+    // is what makes the alphabetical fallback (and collision resolution generally) actually apply live
+    // as fields are toggled, not just at the next mode switch or app restart.
+    private void OnFieldVisibilityChanged(object? sender, EventArgs e) => ApplyFieldLayout();
 
     private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
@@ -266,64 +220,71 @@ public partial class QsoEntryView : UserControl
     }
 
     // Reads the current mode's saved field positions (SettingsService.GetEntryFormFieldPositions, via
-    // the ViewModel) and places each field in FieldsGrid accordingly. A field with no saved position
-    // (never dragged in this mode) uses its DefaultPositions fallback -- unless that cell is contested
-    // by some other field's *explicit* saved position (e.g. the operator dragged Op onto Qth's default
-    // slot, then later checked Qth on in the Columns picker for the first time), in which case it's
-    // reassigned to the nearest actually-free cell instead, computed fresh on every call rather than
-    // saved, so it stays "fluid" until the operator deliberately drags it.
+    // the ViewModel) and places each field in FieldsGrid accordingly. Two categories only:
+    //   - A field with a saved position (dragged, or previously auto-assigned -- see below) always
+    //     keeps that exact cell. Nothing ever moves it except a fresh drag.
+    //   - A visible field with NO saved position gets the first genuinely free cell, scanning row 1
+    //     position 1, then 2..6, then row 2 position 1, and so on (FindNextFreeCell) -- no alphabetical
+    //     sorting, no ranking among "what else needs a default": literally whichever cell is empty
+    //     first. That position is then immediately persisted, exactly as if it had been dragged there,
+    //     so a later, unrelated field being checked on can never reshuffle it again.
     //
-    // This has to be a two-pass resolution, not a single pass over FieldElements() in declaration order:
-    // a single pass would let an early-processed contested field claim whatever cell FindNextFreeCell
-    // finds first, including a cell that's only "free" because a later-processed field hasn't reserved
-    // its own (non-contested) default yet -- bumping that later field too, cascading further reshuffling
-    // than the one real conflict warranted. So every field's natural cell (explicit or default) is
-    // determined up front; only cells with more than one claimant go through FindNextFreeCell.
+    // A field currently hidden (Visibility=Collapsed) never occupies a cell at all here, regardless of
+    // whether it has a saved position -- its saved position (if any) is left untouched in settings for
+    // whenever it's shown again, but while hidden it can't block a visible field from using that cell.
+    private const int HiddenCellRow = 999;
+
     private void ApplyFieldLayout()
     {
         if (_subscribedViewModel is null) return;
         var saved = _subscribedViewModel.GetEntryFormFieldPositions();
-        var mode = _subscribedViewModel.SelectedEntryModeOption.Value.ToString();
+        var allKeys = FieldElements().Select(f => f.Key).ToList();
 
-        var natural = new Dictionary<string, (int Row, int Position)>();
-        foreach (var key in FieldElements().Select(f => f.Key))
-            natural[key] = saved.TryGetValue(key, out var p) ? (p.Row, p.Position) : GetDefaultPosition(mode, key);
-
-        var occupied = new HashSet<(int Row, int Position)>();
         var resolved = new Dictionary<string, (int Row, int Position)>();
-        var needsReassignment = new List<string>();
+        var hiddenUnset = new List<string>();
+        var occupied = new HashSet<(int Row, int Position)>();
+        var needsAssignment = new List<string>();
 
-        foreach (var group in natural.GroupBy(kv => kv.Value, kv => kv.Key))
+        // First pass: every visible field with an existing saved position claims it outright. Saved
+        // positions never collide with each other in practice (FieldsGrid_Drop's swap logic and the
+        // startup self-heal both prevent it), so there's no need for the old two-pass collision dance.
+        foreach (var key in allKeys)
         {
-            var claimants = group.ToList();
-            if (claimants.Count == 1)
+            if (!IsFieldActuallyVisible(key)) { hiddenUnset.Add(key); continue; }
+            if (saved.TryGetValue(key, out var p))
             {
-                resolved[claimants[0]] = group.Key;
-                occupied.Add(group.Key);
-                continue;
+                resolved[key] = (p.Row, p.Position);
+                occupied.Add((p.Row, p.Position));
             }
-
-            // A saved (explicit) position always wins a conflict over a field still sitting on its
-            // default; the drop handler and the startup self-heal both already prevent two explicit
-            // positions from ever colliding with each other, so at most one claimant here has one.
-            var winner = claimants.FirstOrDefault(k => saved.ContainsKey(k)) ?? claimants[0];
-            resolved[winner] = group.Key;
-            occupied.Add(group.Key);
-            needsReassignment.AddRange(claimants.Where(k => k != winner));
+            else
+            {
+                needsAssignment.Add(key);
+            }
         }
 
-        // Losers are reassigned in their own natural row/position order (not FieldElements() declaration
-        // order) so "the next available slot" reads the same way scanning the grid top-to-bottom,
-        // left-to-right would.
-        foreach (var key in needsReassignment.OrderBy(k => natural[k].Row).ThenBy(k => natural[k].Position))
+        // Second pass: any visible field with no saved position gets the next free cell, in
+        // FieldElements() declaration order. In practice only one field at a time transitions from
+        // hidden to visible (one checkbox click = one ApplyFieldLayout call), so this order rarely
+        // matters; it only affects the rare case of several fields becoming visible simultaneously
+        // (e.g. a mode's first-ever render), which just needs to be deterministic, not meaningful.
+        foreach (var key in needsAssignment)
         {
             var cell = FindNextFreeCell(occupied);
             occupied.Add(cell);
             resolved[key] = cell;
+            _subscribedViewModel.SetEntryFormFieldPosition(key, cell.Row, cell.Position);
         }
 
         foreach (var (key, element) in FieldElements())
         {
+            if (hiddenUnset.Contains(key))
+            {
+                // Collapsed, so never rendered -- exact cell doesn't matter, it just must never be
+                // mistaken for occupying a real, visible slot (see FieldsGrid_Drop's collision check).
+                Grid.SetRow(element, HiddenCellRow);
+                Grid.SetColumn(element, 0);
+                continue;
+            }
             var cell = resolved[key];
             Grid.SetRow(element, cell.Row - 1);
             Grid.SetColumn(element, cell.Position - 1);
@@ -336,12 +297,24 @@ public partial class QsoEntryView : UserControl
         // that did not actually change Tab order in testing, so it's been removed rather than left in
         // place alongside this. Moving each element to the end of Children, visited in ascending
         // (Row, Position) order, re-sorts the whole collection in one pass -- Tab then visits fields left
-        // to right, one row at a time, matching what's on screen.
-        foreach (var (_, element) in FieldElements().OrderBy(f => resolved[f.Key].Row).ThenBy(f => resolved[f.Key].Position))
+        // to right, one row at a time, matching what's on screen. Hidden-and-unset fields have no entry
+        // in `resolved` (see above) -- they're Collapsed, so WPF's Tab navigation already skips them
+        // regardless of where they land in Children, hence the arbitrary-but-safe HiddenCellRow fallback.
+        foreach (var (_, element) in FieldElements()
+                     .OrderBy(f => resolved.TryGetValue(f.Key, out var c) ? c.Row : HiddenCellRow)
+                     .ThenBy(f => resolved.TryGetValue(f.Key, out var c) ? c.Position : 0))
         {
             FieldsGrid.Children.Remove(element);
             FieldsGrid.Children.Add(element);
         }
+
+        // "Select columns/tabs needed" hint, shown only while this mode is a genuinely blank slate.
+        // Station/Callsign are always visible (AlwaysVisibleFieldKeys) and so are excluded from the
+        // count -- otherwise a fresh install would never be considered empty and the hint would never
+        // appear at all. Re-evaluated on every layout pass, which already covers startup, mode switch,
+        // and every visibility toggle.
+        bool anyOptionalFieldVisible = allKeys.Any(k => !AlwaysVisibleFieldKeys.Contains(k) && IsFieldActuallyVisible(k));
+        EmptyStateHint.Visibility = anyOptionalFieldVisible ? Visibility.Collapsed : Visibility.Visible;
     }
 
     private IEnumerable<(string Key, FrameworkElement Element)> FieldElements()

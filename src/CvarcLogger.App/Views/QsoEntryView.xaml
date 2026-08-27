@@ -7,11 +7,14 @@
              d:DesignHeight="300" d:DesignWidth="800"
              KeyDown="QsoEntryView_KeyDown">
     <UserControl.Resources>
-        <!-- Fixed width per field, shared by every row via this one style: a hidden field
-             (Visibility=Collapsed) takes zero space in a WrapPanel, so the remaining visible fields
-             naturally pack left/up to fill the gap instead of leaving a blank hole. -->
+        <!-- Fields stretch to fill their FieldsGrid column rather than carrying a fixed width. The old
+             fixed Width="215" was a leftover from when these lived in a WrapPanel; once they moved into
+             the 6-column Grid (every column Width="*"), any window narrow enough to make a column less
+             than 215px wide clipped each field's right edge. That was most visible on Callsign, whose
+             header carries the "Dupe Check" checkbox alongside the label. Stretching also keeps fields
+             sized consistently with each other as the window is resized. -->
         <Style x:Key="FieldBox" TargetType="StackPanel">
-            <Setter Property="Width" Value="215"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
             <Setter Property="Margin" Value="0,0,15,15"/>
         </Style>
     </UserControl.Resources>
@@ -42,7 +45,19 @@
              reaching the outer scrollbar required literally grabbing it with the mouse). Row 1 is Auto
              height, not *, so the Grid sizes to its natural content height and leaves the actual
              scrolling decision to the one outer ScrollViewer. -->
-        <StackPanel Grid.Row="1" Orientation="Vertical">
+        <Grid Grid.Row="1">
+            <!-- Empty-state hint, shown only while this mode has no fields checked on at all (see
+                 QsoEntryView.xaml.cs UpdateEmptyStateHint). Sits in the same cell as the fields grid
+                 below rather than in the StackPanel flow, so it overlays the empty grid instead of
+                 pushing it down; IsHitTestVisible=False keeps it from eating drag/drop or click input
+                 aimed at the grid underneath. -->
+            <TextBlock x:Name="EmptyStateHint" Text="Select columns/tabs needed"
+                       FontSize="20" Foreground="#A8BDD0" FontStyle="Italic"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Margin="0,40,0,40" IsHitTestVisible="False"
+                       Visibility="Collapsed"/>
+
+            <StackPanel Orientation="Vertical">
                 <!-- Field layout grid: each field's Grid.Row/Grid.Column is assigned in code-behind
                      (QsoEntryView.xaml.cs ApplyFieldLayout) from the saved per-mode row/position (see
                      SettingsService.GetEntryFormFieldPositions), falling back to DefaultPositions there
@@ -404,21 +419,29 @@
                     <StackPanel x:Name="SkccField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowSkccField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <TextBlock Text="SKCC #" FontSize="12" FontWeight="Bold" Foreground="#555555"
                                   Margin="0,0,0,5"/>
-                        <StackPanel Orientation="Horizontal">
-                            <TextBox Width="185" Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
+                        <!-- Grid, not a horizontal StackPanel: the text box takes whatever width is left
+                             after the fixed-size badge and refresh button, so the row fits its Grid
+                             column instead of overflowing it at narrower window widths. -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox Grid.Column="0" Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
                                     Text="{Binding SkccNr, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Tag="12345"/>
                             <!-- Member tier badge: C/T/S suffix on the SKCC # itself, i.e. Centurion,
                                  Tribune, or Senator (see QsoEntryViewModel.SkccTierBadgeText). -->
-                            <Border Width="26" Height="26" CornerRadius="13" Margin="6,0,0,0"
+                            <Border Grid.Column="1" Width="26" Height="26" CornerRadius="13" Margin="6,0,0,0"
                                    Background="{Binding SkccTierBadgeBrush}" Visibility="{Binding ShowSkccTierBadge}"
                                    ToolTip="SKCC member tier">
                                 <TextBlock Text="{Binding SkccTierBadgeText}" FontSize="13" FontWeight="Bold"
                                           Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
-                            <Button Content="⟳" Command="{Binding UpdateSkccDbCommand}" FontSize="16"
+                            <Button Grid.Column="2" Content="⟳" Command="{Binding UpdateSkccDbCommand}" FontSize="16"
                                    ToolTip="Update the local SKCC member database" Width="34" Padding="0"
                                    Background="#3498db" Foreground="White" BorderThickness="0" Margin="8,0,0,0" Cursor="Hand"/>
-                        </StackPanel>
+                        </Grid>
                         <!-- Resolved callsign/name/location from the local SKCC database (see
                              QsoEntryViewModel.ResolveSkccNrAsync). -->
                         <TextBlock Text="{Binding SkccLookupText}" FontSize="10" Foreground="#2980b9"
@@ -485,13 +508,18 @@
                     <StackPanel x:Name="SotaField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowSotaField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <TextBlock Text="SOTA" FontSize="12" FontWeight="Bold" Foreground="#555555"
                                   Margin="0,0,0,5"/>
-                        <StackPanel Orientation="Horizontal">
-                            <TextBox Width="185" Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
+                        <!-- Grid, not a horizontal StackPanel: see the SKCC field above for why. -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox Grid.Column="0" Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
                                     Text="{Binding SotaRef, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Tag="W6/CT-003"/>
-                            <Button Content="⟳" Command="{Binding UpdateSotaDbCommand}" FontSize="16"
+                            <Button Grid.Column="1" Content="⟳" Command="{Binding UpdateSotaDbCommand}" FontSize="16"
                                    ToolTip="Update the local SOTA reference database" Width="34" Padding="0"
                                    Background="#3498db" Foreground="White" BorderThickness="0" Margin="8,0,0,0" Cursor="Hand"/>
-                        </StackPanel>
+                        </Grid>
                         <TextBlock Text="Format looks off (expects e.g. W6/CT-003)" FontSize="10" Foreground="#e67e22"
                                   FontStyle="Italic" Margin="0,3,0,0" TextWrapping="Wrap" Visibility="{Binding ShowSotaRefWarning}"/>
                         <!-- Resolved summit name/detail from the local SOTA reference database (see
@@ -519,13 +547,18 @@
                     <StackPanel x:Name="PotaField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowPotaField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <TextBlock Text="POTA" FontSize="12" FontWeight="Bold" Foreground="#555555"
                                   Margin="0,0,0,5"/>
-                        <StackPanel Orientation="Horizontal">
-                            <TextBox Width="185" Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
+                        <!-- Grid, not a horizontal StackPanel: see the SKCC field above for why. -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox Grid.Column="0" Background="White" BorderBrush="#555555" BorderThickness="1" Padding="10" FontSize="14"
                                     Text="{Binding SigInfo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Tag="K-0001"/>
-                            <Button Content="⟳" Command="{Binding UpdatePotaDbCommand}" FontSize="16"
+                            <Button Grid.Column="1" Content="⟳" Command="{Binding UpdatePotaDbCommand}" FontSize="16"
                                    ToolTip="Update the local POTA reference database" Width="34" Padding="0"
                                    Background="#3498db" Foreground="White" BorderThickness="0" Margin="8,0,0,0" Cursor="Hand"/>
-                        </StackPanel>
+                        </Grid>
                         <TextBlock Text="Format looks off (expects e.g. K-0001)" FontSize="10" Foreground="#e67e22"
                                   FontStyle="Italic" Margin="0,3,0,0" TextWrapping="Wrap" Visibility="{Binding ShowSigInfoWarning}"/>
                         <!-- Resolved park name/detail from the local POTA reference database (see
@@ -541,17 +574,24 @@
                     <StackPanel x:Name="SequenceField" Style="{StaticResource FieldBox}" Visibility="{Binding ShowSequenceField, Converter={StaticResource BoolToVisibilityConverter}}">
                         <TextBlock Text="SEQ #" FontSize="12" FontWeight="Bold" Foreground="#555555"
                                   Margin="0,0,0,5"/>
-                        <StackPanel Orientation="Horizontal">
-                            <Border Background="#ecf0f1" BorderBrush="#555555" BorderThickness="1" Padding="10" MinWidth="50">
+                        <!-- Grid, not a horizontal StackPanel: see the SKCC field above for why. The
+                             counter takes the leftover width; both buttons stay their natural size. -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="0" Background="#ecf0f1" BorderBrush="#555555" BorderThickness="1" Padding="10" MinWidth="50">
                                 <TextBlock Text="{Binding SequenceNumberText}" FontSize="14" HorizontalAlignment="Center"/>
                             </Border>
-                            <Button Content="Start" Command="{Binding StartSequenceCommand}" ToolTip="Start the running QSO sequence number at 1"
+                            <Button Grid.Column="1" Content="Start" Command="{Binding StartSequenceCommand}" ToolTip="Start the running QSO sequence number at 1"
                                    Background="#2E7D32" Foreground="White"
                                    Padding="10,10" FontSize="12" Margin="8,0,0,0" BorderThickness="0" Cursor="Hand"/>
-                            <Button Content="Reset" Command="{Binding ResetSequenceCommand}" ToolTip="Stop and clear the sequence number"
+                            <Button Grid.Column="2" Content="Reset" Command="{Binding ResetSequenceCommand}" ToolTip="Stop and clear the sequence number"
                                    Background="#c0392b" Foreground="White"
                                    Padding="10,10" FontSize="12" Margin="8,0,0,0" BorderThickness="0" Cursor="Hand"/>
-                        </StackPanel>
+                        </Grid>
                     </StackPanel>
 
                     <!-- QSL Via -->
@@ -562,6 +602,7 @@
                                 Text="{Binding QslViaCallsign, Mode=TwoWay}" Tag="W1AW"/>
                     </StackPanel>
                 </Grid>
-        </StackPanel>
+            </StackPanel>
+        </Grid>
     </Grid>
 </UserControl>

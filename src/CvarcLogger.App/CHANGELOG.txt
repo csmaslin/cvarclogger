@@ -5,6 +5,16 @@ build meant to reach the user (see AppVersion.cs) -- before running publish.ps1.
 
 Versions before 1.17 predate this changelog and are not documented here.
 
+2.09 (Beta)
+-----------
+- Entry form: added "Select columns/tabs needed" placeholder text hint displayed on all tabs/modes when
+  no fields are checked on (fresh install default). Hint disappears as soon as the first field is
+  selected, providing guidance to new users on what to do next.
+- Entry form: fixed field clipping on narrow windows -- all entry form fields now stretch to fill their
+  Grid column instead of carrying a fixed 215px width (leftover from a WrapPanel era). SKCC #, SOTA,
+  POTA, and Seq # fields additionally redesigned from StackPanel+fixed-width TextBox to Grid layouts
+  so input boxes flex with available space and only fixed controls (buttons, badges) stay fixed size.
+
 2.08 (Beta)
 -----------
 - User manual updated: page numbers added to every page (none existed before), a new Appendix C walks
