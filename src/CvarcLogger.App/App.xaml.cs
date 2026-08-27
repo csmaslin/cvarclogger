@@ -47,34 +47,42 @@ public partial class App : Application
         return legacyHasData ? legacyDir : AppContext.BaseDirectory;
     }
 
+    /// <summary>Read the database path pointer from app-settings.json, with error logging.</summary>
+    private static string? TryReadDatabasePathFromAppSettings()
+    {
+        string appSettingsPath = Path.Combine(AppDirectory, "app-settings.json");
+        if (!File.Exists(appSettingsPath)) return null;
+
+        try
+        {
+            var json = JsonSerializer.Deserialize<JsonElement>(File.ReadAllText(appSettingsPath));
+            return json.TryGetProperty("CurrentDatabasePath", out var pathElem) ? pathElem.GetString() : null;
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Failed to read app-settings.json from {Path}", appSettingsPath);
+            return null;
+        }
+    }
+
     /// <summary>Initialize DatabaseDirectory from the active database path. Called early in OnStartup
     /// before any services are created.</summary>
     private static void ResolveDatabaseDirectory()
     {
-        string appSettingsPath = Path.Combine(AppDirectory, "app-settings.json");
-        string? databasePath = null;
+        string? databasePath = TryReadDatabasePathFromAppSettings();
 
-        // Try to read the database path from minimal app settings
-        if (File.Exists(appSettingsPath))
+        // Validate the stored path: only use it if the file actually exists
+        if (!string.IsNullOrWhiteSpace(databasePath) && File.Exists(databasePath))
         {
-            try
-            {
-                var json = JsonSerializer.Deserialize<JsonElement>(File.ReadAllText(appSettingsPath));
-                if (json.TryGetProperty("CurrentDatabasePath", out var pathElem) && pathElem.GetString() is string path)
-                {
-                    databasePath = path;
-                }
-            }
-            catch { /* Fall through to default */ }
+            DatabaseDirectory = Path.GetDirectoryName(databasePath) ?? AppDirectory;
         }
-
-        // Default to app directory if no path stored
-        if (string.IsNullOrWhiteSpace(databasePath) || !File.Exists(databasePath))
+        else
         {
+            // Fall back to default database in app folder
             databasePath = Path.Combine(AppDirectory, "cvarclogger.db");
+            DatabaseDirectory = AppDirectory;
         }
 
-        DatabaseDirectory = Path.GetDirectoryName(databasePath) ?? AppDirectory;
         Directory.CreateDirectory(DatabaseDirectory);
     }
 

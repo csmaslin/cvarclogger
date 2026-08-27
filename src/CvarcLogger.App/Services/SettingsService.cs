@@ -2,6 +2,7 @@ using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using CvarcLogger.Core.Rig;
+using Serilog;
 
 namespace CvarcLogger.App.Services;
 
@@ -43,12 +44,10 @@ public class SettingsService
         _filePath = Path.Combine(App.DatabaseDirectory, "settings.json");
         _data = Load();
         if (MigrateRadioProfiles(_data)) Save();
-        // After loading, update the minimal pointer in the app folder so next launch knows the db location.
-        SaveAppSettings();
     }
 
     /// <summary>Save minimal app settings (just CurrentDatabasePath) to app folder, so next launch
-    /// can find the database without needing to search.</summary>
+    /// can find the database without needing to search. Called only when CurrentDatabasePath is explicitly set.</summary>
     private void SaveAppSettings()
     {
         try
@@ -57,7 +56,10 @@ public class SettingsService
             var appData = new { CurrentDatabasePath = _data.CurrentDatabasePath };
             File.WriteAllText(appSettingsPath, JsonSerializer.Serialize(appData, new JsonSerializerOptions { WriteIndented = true }));
         }
-        catch { /* Best-effort; if this fails, next launch will just use the default. */ }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Failed to write app-settings.json to {Path}", Path.Combine(App.AppDirectory, "app-settings.json"));
+        }
     }
 
     public int? LastUsedStationProfileId
@@ -387,7 +389,8 @@ public class SettingsService
     }
 
     /// <summary>Resolves the effective database path without needing a full SettingsService instance.
-    /// Reads the pointer from app-settings.json in AppDirectory, falling back to the default.</summary>
+    /// Reads the pointer from app-settings.json in AppDirectory, validating the file exists before using it.
+    /// Falls back to the default database path on any error.</summary>
     public static string ResolveActiveDatabasePath()
     {
         string appSettingsPath = Path.Combine(App.AppDirectory, "app-settings.json");
@@ -397,12 +400,20 @@ public class SettingsService
             try
             {
                 var json = JsonSerializer.Deserialize<JsonElement>(File.ReadAllText(appSettingsPath));
-                if (json.TryGetProperty("CurrentDatabasePath", out var pathElem) && pathElem.GetString() is string path && File.Exists(path))
+                if (json.TryGetProperty("CurrentDatabasePath", out var pathElem) && pathElem.GetString() is string path)
                 {
-                    return path;
+                    // Only use the stored path if the database file actually exists
+                    if (File.Exists(path))
+                    {
+                        return path;
+                    }
+                    Log.Warning("Stored database path no longer exists: {Path}. Using default.", path);
                 }
             }
-            catch { /* Fall through to default */ }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "Failed to read app-settings.json from {Path}. Using default database path.", appSettingsPath);
+            }
         }
 
         return Path.Combine(App.AppDirectory, "cvarclogger.db");
