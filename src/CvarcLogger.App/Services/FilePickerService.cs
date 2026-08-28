@@ -80,4 +80,25 @@ public class FilePickerService
         };
         return dialog.ShowDialog() == true ? dialog.FileName : null;
     }
+
+    public string? PickCsvFileToOpen()
+    {
+        var dialog = new OpenFileDialog
+        {
+            Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*",
+            Title = "Import CSV Log"
+        };
+        return dialog.ShowDialog() == true ? dialog.FileName : null;
+    }
+
+    public string? PickCsvFileToSave(string suggestedFileName)
+    {
+        var dialog = new SaveFileDialog
+        {
+            Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*",
+            FileName = suggestedFileName,
+            Title = "Export CSV Log"
+        };
+        return dialog.ShowDialog() == true ? dialog.FileName : null;
+    }
 }

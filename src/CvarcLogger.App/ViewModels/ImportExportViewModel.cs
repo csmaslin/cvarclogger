@@ -6,6 +6,7 @@ using CvarcLogger.Core.Abstractions;
 using CvarcLogger.Core.Adif;
 using CvarcLogger.Core.Awards;
 using CvarcLogger.Core.Cabrillo;
+using CvarcLogger.Core.Csv;
 using CvarcLogger.Core.Models;
 
 namespace CvarcLogger.App.ViewModels;
@@ -329,14 +330,70 @@ public partial class ImportExportViewModel : ObservableObject
     [RelayCommand]
     private async Task ImportCsvAsync()
     {
-        _dialogService.ShowInfo("CSV import is not yet implemented. Please use ADIF or Cabrillo format for now.");
-        await Task.CompletedTask;
+        var path = _filePicker.PickCsvFileToOpen();
+        if (path is null) return;
+
+        IsBusy = true;
+        try
+        {
+            ReportProgress("Reading file...");
+            var records = CsvReader.ReadAllFromFile(path);
+            int imported = 0;
+            int total = records.Count;
+            ReportProgress($"Importing 0 of {total} record(s)...");
+            foreach (var record in records)
+            {
+                var qso = AdifFieldMapper.ToQso(record);
+                if (string.IsNullOrWhiteSpace(qso.Callsign)) continue;
+
+                var resolvedEntity = await _entityResolver.ResolveAsync(qso.Callsign);
+                qso.DxccEntityCode = resolvedEntity?.EntityCode;
+
+                await _qsoRepository.AddAsync(qso);
+                imported++;
+                if (imported % 25 == 0 || imported == total)
+                    ReportProgress($"Importing {imported} of {total} record(s)...");
+            }
+
+            LastResultMessage = $"Imported {imported} of {records.Count} record(s) from {Path.GetFileName(path)}.";
+            _dialogService.ShowInfo(LastResultMessage);
+            ImportCompleted?.Invoke(this, EventArgs.Empty);
+        }
+        catch (Exception ex)
+        {
+            _dialogService.ShowError($"CSV import failed: {ex.Message}");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
     [RelayCommand]
     private async Task ExportCsvAsync()
     {
-        _dialogService.ShowInfo("CSV export is not yet implemented. Please use ADIF or Cabrillo format for now.");
-        await Task.CompletedTask;
+        string dbName = Path.GetFileNameWithoutExtension(SettingsService.ResolveActiveDatabasePath());
+        var path = _filePicker.PickCsvFileToSave($"{dbName}_{DateTime.Now:yyyyMMdd_HHmmss}.csv");
+        if (path is null) return;
+
+        IsBusy = true;
+        try
+        {
+            ReportProgress("Loading QSOs...");
+            var qsos = await _qsoRepository.GetAllAsync();
+            ReportProgress($"Writing {qsos.Count} QSO(s)...");
+            using var writer = new StreamWriter(path, append: false);
+            CsvWriter.WriteAll(writer, qsos.Select(AdifFieldMapper.ToAdifRecord));
+            LastResultMessage = $"Exported {qsos.Count} QSO(s) to {Path.GetFileName(path)}.";
+            _dialogService.ShowInfo(LastResultMessage);
+        }
+        catch (Exception ex)
+        {
+            _dialogService.ShowError($"CSV export failed: {ex.Message}");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 }
