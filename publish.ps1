@@ -15,7 +15,7 @@ $changelogFile = Join-Path $root "src\CvarcLogger.App\CHANGELOG.txt"
 $manualFile = Join-Path $root "docs\CvarcLogger User Manual.docx"
 $overviewFile = Join-Path $root "docs\Program Overview and Data Flow.md"
 
-$versionMatch = Select-String -Path $appVersionFile -Pattern 'Current\s*=\s*"([\d.]+)"'
+$versionMatch = Select-String -Path $appVersionFile -Pattern 'Current\s*=\s*"([\d.a-z]+)"'
 if (-not $versionMatch) { throw "Could not read AppVersion.Current from $appVersionFile" }
 $version = $versionMatch.Matches[0].Groups[1].Value
 
