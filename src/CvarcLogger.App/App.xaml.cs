@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text.Json;
+using System.Threading;
 using System.Windows;
 using CvarcLogger.App.Platform;
 using CvarcLogger.App.Services;
@@ -23,6 +24,7 @@ public partial class App : Application
 {
     private IHost? _host;
     private IServiceScope? _scope;
+    private Mutex? _singleInstanceMutex;
 
     /// <summary>The app installation folder: contains hamlib/, reference database cache (sota-ref.db, etc.),
     /// and a minimal settings.json with just the CurrentDatabasePath pointer. Defaults to next to the exe;
@@ -95,6 +97,23 @@ public partial class App : Application
     protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+
+        // Check if another instance of the app is already running. The mutex name is based on the
+        // exe path so each different installation/database can run independently.
+        string mutexName = $"CvarcLogger_{System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(AppContext.BaseDirectory)).Take(8).Aggregate("", (a, b) => a + b.ToString("x2"))}";
+        bool isNewInstance = false;
+        _singleInstanceMutex = new Mutex(true, mutexName, out isNewInstance);
+
+        if (!isNewInstance)
+        {
+            MessageBox.Show(
+                "CVARC Logger is already running. Only one instance can run at a time.",
+                "Application Already Running",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            Shutdown();
+            return;
+        }
 
         // The app has no StartupUri, so it defaults to ShutdownMode.OnLastWindowClose. If the
         // first-run station profile window (below) is shown and closed before MainWindow exists,
@@ -249,6 +268,14 @@ public partial class App : Application
         }
 
         Log.CloseAndFlush();
+
+        // Release the single-instance mutex so another copy can run
+        if (_singleInstanceMutex is not null)
+        {
+            _singleInstanceMutex.ReleaseMutex();
+            _singleInstanceMutex.Dispose();
+        }
+
         base.OnExit(e);
     }
 
