@@ -1,0 +1,6 @@
+{
+  "CvarcLogger.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "C:\\Projects\\CvarcLogger\\src\\CvarcLogger.Core",
+  "CvarcLogger.Data, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "C:\\Projects\\CvarcLogger\\src\\CvarcLogger.Data",
+  "CvarcLogger, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "C:\\Projects\\CvarcLogger\\src\\CvarcLogger.App",
+  "CvarcLogger.WebApi, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "C:\\Projects\\CvarcLogger\\src\\CvarcLogger.WebApi"
+}

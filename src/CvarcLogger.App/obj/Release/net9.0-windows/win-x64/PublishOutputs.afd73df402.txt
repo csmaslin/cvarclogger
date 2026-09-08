@@ -1,0 +1,14 @@
+C:\Projects\CvarcLogger\publish\CvarcLogger\hamlib\COPYING.LIB.txt
+C:\Projects\CvarcLogger\publish\CvarcLogger\hamlib\COPYING.txt
+C:\Projects\CvarcLogger\publish\CvarcLogger\hamlib\libgcc_s_dw2-1.dll
+C:\Projects\CvarcLogger\publish\CvarcLogger\hamlib\libhamlib-4.dll
+C:\Projects\CvarcLogger\publish\CvarcLogger\hamlib\libusb-1.0.dll
+C:\Projects\CvarcLogger\publish\CvarcLogger\hamlib\libwinpthread-1.dll
+C:\Projects\CvarcLogger\publish\CvarcLogger\hamlib\LICENSE.txt
+C:\Projects\CvarcLogger\publish\CvarcLogger\hamlib\README-CVARCLOGGER-BUNDLE.txt
+C:\Projects\CvarcLogger\publish\CvarcLogger\hamlib\rigctld.exe
+C:\Projects\CvarcLogger\publish\CvarcLogger\CvarcLogger.pdb
+C:\Projects\CvarcLogger\publish\CvarcLogger\CvarcLogger User Manual.json
+C:\Projects\CvarcLogger\publish\CvarcLogger\CvarcLogger.Core.pdb
+C:\Projects\CvarcLogger\publish\CvarcLogger\CvarcLogger.Data.pdb
+C:\Projects\CvarcLogger\publish\CvarcLogger\CvarcLogger.exe

@@ -1,0 +1,39 @@
+C:\Users\user\Documents\Projects\CvarcLogger\src\CvarcLogger.Data\bin\Debug\net9.0\CvarcLogger.Data.deps.json
+C:\Users\user\Documents\Projects\CvarcLogger\src\CvarcLogger.Data\bin\Debug\net9.0\CvarcLogger.Data.runtimeconfig.json
+C:\Users\user\Documents\Projects\CvarcLogger\src\CvarcLogger.Data\bin\Debug\net9.0\CvarcLogger.Data.dll
+C:\Users\user\Documents\Projects\CvarcLogger\src\CvarcLogger.Data\bin\Debug\net9.0\CvarcLogger.Data.pdb
+C:\Users\user\Documents\Projects\CvarcLogger\src\CvarcLogger.Data\bin\Debug\net9.0\CvarcLogger.Core.dll
+C:\Users\user\Documents\Projects\CvarcLogger\src\CvarcLogger.Data\bin\Debug\net9.0\CvarcLogger.Core.pdb
+C:\Users\user\Documents\Projects\CvarcLogger\src\CvarcLogger.Data\obj\Debug\net9.0\CvarcLogger.Data.csproj.AssemblyReference.cache
+C:\Users\user\Documents\Projects\CvarcLogger\src\CvarcLogger.Data\obj\Debug\net9.0\CvarcLogger.Data.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\user\Documents\Projects\CvarcLogger\src\CvarcLogger.Data\obj\Debug\net9.0\CvarcLogger.Data.AssemblyInfoInputs.cache
+C:\Users\user\Documents\Projects\CvarcLogger\src\CvarcLogger.Data\obj\Debug\net9.0\CvarcLogger.Data.AssemblyInfo.cs
+C:\Users\user\Documents\Projects\CvarcLogger\src\CvarcLogger.Data\obj\Debug\net9.0\CvarcLogger.Data.csproj.CoreCompileInputs.cache
+C:\Users\user\Documents\Projects\CvarcLogger\src\CvarcLogger.Data\obj\Debug\net9.0\CvarcLog.995771FB.Up2Date
+C:\Users\user\Documents\Projects\CvarcLogger\src\CvarcLogger.Data\obj\Debug\net9.0\CvarcLogger.Data.dll
+C:\Users\user\Documents\Projects\CvarcLogger\src\CvarcLogger.Data\obj\Debug\net9.0\refint\CvarcLogger.Data.dll
+C:\Users\user\Documents\Projects\CvarcLogger\src\CvarcLogger.Data\obj\Debug\net9.0\CvarcLogger.Data.pdb
+C:\Users\user\Documents\Projects\CvarcLogger\src\CvarcLogger.Data\obj\Debug\net9.0\CvarcLogger.Data.genruntimeconfig.cache
+C:\Users\user\Documents\Projects\CvarcLogger\src\CvarcLogger.Data\obj\Debug\net9.0\ref\CvarcLogger.Data.dll
+C:\Projects\Test Area\CvarcLogger.Data.deps.json
+C:\Projects\Test Area\CvarcLogger.Data.runtimeconfig.json
+C:\Projects\Test Area\CvarcLogger.Data.dll
+C:\Projects\Test Area\CvarcLogger.Data.pdb
+C:\Projects\CvarcLogger\src\CvarcLogger.Data\bin\Debug\net9.0\CvarcLogger.Data.deps.json
+C:\Projects\CvarcLogger\src\CvarcLogger.Data\bin\Debug\net9.0\CvarcLogger.Data.runtimeconfig.json
+C:\Projects\CvarcLogger\src\CvarcLogger.Data\bin\Debug\net9.0\CvarcLogger.Data.dll
+C:\Projects\CvarcLogger\src\CvarcLogger.Data\bin\Debug\net9.0\CvarcLogger.Data.pdb
+C:\Projects\CvarcLogger\src\CvarcLogger.Data\bin\Debug\net9.0\CvarcLogger.Core.dll
+C:\Projects\CvarcLogger\src\CvarcLogger.Data\bin\Debug\net9.0\CvarcLogger.Core.pdb
+C:\Projects\CvarcLogger\src\CvarcLogger.Data\obj\Debug\net9.0\CvarcLogger.Data.csproj.AssemblyReference.cache
+C:\Projects\CvarcLogger\src\CvarcLogger.Data\obj\Debug\net9.0\CvarcLogger.Data.GeneratedMSBuildEditorConfig.editorconfig
+C:\Projects\CvarcLogger\src\CvarcLogger.Data\obj\Debug\net9.0\CvarcLogger.Data.AssemblyInfoInputs.cache
+C:\Projects\CvarcLogger\src\CvarcLogger.Data\obj\Debug\net9.0\CvarcLogger.Data.AssemblyInfo.cs
+C:\Projects\CvarcLogger\src\CvarcLogger.Data\obj\Debug\net9.0\CvarcLogger.Data.csproj.CoreCompileInputs.cache
+C:\Projects\CvarcLogger\src\CvarcLogger.Data\obj\Debug\net9.0\CvarcLogger.Data.sourcelink.json
+C:\Projects\CvarcLogger\src\CvarcLogger.Data\obj\Debug\net9.0\CvarcLog.995771FB.Up2Date
+C:\Projects\CvarcLogger\src\CvarcLogger.Data\obj\Debug\net9.0\CvarcLogger.Data.dll
+C:\Projects\CvarcLogger\src\CvarcLogger.Data\obj\Debug\net9.0\refint\CvarcLogger.Data.dll
+C:\Projects\CvarcLogger\src\CvarcLogger.Data\obj\Debug\net9.0\CvarcLogger.Data.pdb
+C:\Projects\CvarcLogger\src\CvarcLogger.Data\obj\Debug\net9.0\CvarcLogger.Data.genruntimeconfig.cache
+C:\Projects\CvarcLogger\src\CvarcLogger.Data\obj\Debug\net9.0\ref\CvarcLogger.Data.dll
