@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -189,15 +189,13 @@
             color: var(--dark);
             margin-bottom: 15px;
             letter-spacing: -0.5px;
-            text-align: center;
         }
 
         .section-subtitle {
-            color: #FFD700;
+            color: var(--gray-700);
             font-size: 1.1em;
             margin-bottom: 60px;
             font-weight: 400;
-            text-align: center;
         }
 
         .download-grid {
@@ -290,6 +288,131 @@
             box-shadow: 0 12px 30px rgba(102, 126, 234, 0.4);
         }
 
+        /* Platform Cards */
+        .platform-card {
+            background: white;
+            padding: 50px 35px;
+            border-radius: 16px;
+            border: 2px solid transparent;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            text-decoration: none;
+            color: var(--dark);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .platform-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s;
+        }
+
+        .platform-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-8px);
+            box-shadow: 0 20px 50px rgba(102, 126, 234, 0.25);
+        }
+
+        .platform-card:hover::before {
+            left: 100%;
+        }
+
+        .platform-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            display: block;
+            line-height: 1;
+        }
+
+        .platform-title {
+            font-size: 1.6em;
+            font-weight: 800;
+            margin-bottom: 12px;
+            color: var(--primary-dark);
+        }
+
+        .platform-description {
+            color: var(--gray-700);
+            font-size: 0.95em;
+            margin-bottom: 25px;
+            line-height: 1.6;
+            font-weight: 400;
+            flex-grow: 1;
+        }
+
+        .version-info {
+            color: var(--primary);
+            font-size: 0.9em;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .download-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .platform-button {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 14px 24px;
+            border-radius: 10px;
+            font-size: 0.95em;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+            text-decoration: none;
+            text-align: center;
+            border: none;
+            cursor: pointer;
+        }
+
+        .platform-button.primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        }
+
+        .platform-button.secondary {
+            background: linear-gradient(135deg, var(--gray-800) 0%, var(--gray-700) 100%);
+        }
+
+        .platform-card:hover .platform-button {
+            transform: translateY(-2px);
+        }
+
+        .platform-card:hover .platform-button.primary {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+            box-shadow: 0 12px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .platform-card:hover .platform-button.secondary {
+            background: linear-gradient(135deg, var(--gray-700) 0%, var(--gray-800) 100%);
+            box-shadow: 0 12px 30px rgba(74, 85, 104, 0.4);
+        }
+
+        .platform-size {
+            color: var(--gray-700);
+            font-size: 0.85em;
+            font-weight: 500;
+            text-align: center;
+        }
+
         /* Manual Section */
         .manual-section {
             background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(240, 147, 251, 0.05) 100%);
@@ -326,10 +449,6 @@
             color: var(--dark);
             margin-bottom: 15px;
             letter-spacing: -0.5px;
-        }
-
-        .manual-section .section-subtitle {
-            color: #FFD700 !important;
         }
 
         .manual-section > .section-subtitle {
@@ -402,7 +521,7 @@
         }
 
         .features li:before {
-            content: “✓ “;
+            content: "✓";
             display: inline-block;
             margin-right: 10px;
             color: var(--success);
@@ -544,30 +663,65 @@
             <h1>CvarcLogger</h1>
             <p class="tagline">Amateur Radio Contact Logger with Awards Tracking</p>
 
-            <div class="release-badge">Latest Release: v2.09c</div>
+            <div class="release-badge">Latest Release: v2.09b</div>
         </div>
 
         <!-- Downloads Section -->
         <div class="downloads">
-            <h2 class="section-title">Download CvarcLogger 2.09c</h2>
-            <p class="section-subtitle">Choose your preferred installation method</p>
+            <h2 class="section-title">Download CvarcLogger</h2>
+            <p class="section-subtitle">Choose your platform</p>
 
             <div class="download-grid">
-                <a href="https://github.com/csmaslin/cvarclogger/releases/download/v.2.09c/CvarcLogger.V2.09c-portable.zip" class="download-card">
-                    <span class="download-icon">📦</span>
-                    <h3>Portable ZIP</h3>
-                    <p>All files in one archive. Extract and run from any location.</p>
-                    <div class="download-size">~60 MB</div>
-                    <div class="download-button">Download .zip</div>
-                </a>
+                <!-- Windows Version -->
+                <div class="platform-card">
+                    <div class="platform-icon">🪟</div>
+                    <h3 class="platform-title">Windows</h3>
+                    <p class="platform-description">Full-featured desktop application for Windows 10/11 (64-bit)</p>
 
-                <a href="https://github.com/csmaslin/cvarclogger/releases/download/v.2.09c/CvarcLogger-Setup-2.09c.exe" class="download-card">
-                    <span class="download-icon">⚙️</span>
-                    <h3>Windows Installer</h3>
-                    <p>Standard installation with uninstaller. Best for most users.</p>
-                    <div class="download-size">~60 MB</div>
-                    <div class="download-button">Download Setup</div>
-                </a>
+                    <div class="version-info">Latest: v2.09c</div>
+
+                    <div class="download-options">
+                        <a href="https://github.com/csmaslin/cvarclogger/releases/download/v.2.09c/CvarcLogger-Setup-2.09c.exe" class="platform-button primary">
+                            📥 Download Installer
+                        </a>
+                        <a href="https://github.com/csmaslin/cvarclogger/releases/download/v.2.09c/CvarcLogger.V2.09c-portable.zip" class="platform-button secondary">
+                            📦 Portable ZIP
+                        </a>
+                    </div>
+                    <div class="platform-size">~60 MB</div>
+                </div>
+
+                <!-- Android Version -->
+                <div class="platform-card">
+                    <div class="platform-icon">📱</div>
+                    <h3 class="platform-title">Android</h3>
+                    <p class="platform-description">Mobile app for smartphones and tablets with one-handed operation</p>
+
+                    <div class="version-info">Latest: v1.21</div>
+
+                    <div class="download-options">
+                        <a href="https://csmaslin.github.io/CvarcCellLogger/" class="platform-button primary">
+                            📥 Download & Install
+                        </a>
+                    </div>
+                    <div class="platform-size">~50 MB</div>
+                </div>
+
+                <!-- Linux Version -->
+                <div class="platform-card">
+                    <div class="platform-icon">🐧</div>
+                    <h3 class="platform-title">Linux</h3>
+                    <p class="platform-description">Debian package for Linux desktop (Ubuntu 20.04+)</p>
+
+                    <div class="version-info">Latest: v1.00</div>
+
+                    <div class="download-options">
+                        <a href="https://github.com/csmaslin/CVARCLinuxLogger/releases" class="platform-button primary">
+                            📥 Download .deb
+                        </a>
+                    </div>
+                    <div class="platform-size">~45 MB</div>
+                </div>
             </div>
         </div>
 
@@ -575,10 +729,10 @@
         <div class="manual-section">
             <div class="manual-content">
                 <h2>Documentation</h2>
-                <p class="section-subtitle">Complete user manual for CvarcLogger v2.09c</p>
+                <p class="section-subtitle">Complete user manual for CvarcLogger v2.09b</p>
                 <div class="manual-links">
-                    <a href=”https://github.com/csmaslin/cvarclogger/releases/download/v.2.09c/CvarcLogger-Manual-2.09c.pdf” class=”manual-link” download>
-                        <span>📖</span>
+                    <a href="CvarcLogger-Manual-2.09b.pdf" class="manual-link" download>
+                        <span>📄</span>
                         <span>User Manual (PDF)</span>
                     </a>
                 </div>
@@ -604,20 +758,11 @@
             </ul>
         </div>
 
-        <!-- Android Version Section -->
-        <div class="android-section" style="background: linear-gradient(135deg, #34A853 0%, #1f7f3a 100%); padding: 60px 20px; text-align: center; color: white; margin: 60px 0;">
-            <h2 style="font-size: 2.5em; margin-bottom: 15px;">📱 CvarcCellLogger for Android</h2>
-            <p style="font-size: 1.2em; margin-bottom: 30px; opacity: 0.95;">Log QSOs on your smartphone — same powerful features, mobile optimized</p>
-            <a href="https://csmaslin.github.io/CvarcCellLogger/" style="display: inline-block; background: white; color: #1f7f3a; padding: 15px 40px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 1.1em; transition: transform 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">Download Android App</a>
-        </div>
-
         <!-- Footer -->
         <div class="footer">
-            <p style=”font-size: 1.15em; font-weight: 600;”>CvarcLogger – Free Software for Radio Enthusiasts</p>
+            <p style="font-size: 1.15em; font-weight: 600;">CvarcLogger — Free Software for Radio Enthusiasts</p>
             <div class="footer-links">
                 <a href="https://github.com/csmaslin/cvarclogger" target="_blank">GitHub Repository</a>
-                <a href="https://github.com/csmaslin/cvarclogger/issues" target="_blank">Report Issue</a>
-                <a href="https://github.com/csmaslin/cvarclogger/discussions" target="_blank">Discussions</a>
                 <a href="https://cvarc.org" target="_blank">CVARC.org</a>
             </div>
             <p class="footer-copyright">© Conejo Valley Amateur Radio Club</p>
@@ -625,5 +770,3 @@
     </div>
 </body>
 </html>
-
-
