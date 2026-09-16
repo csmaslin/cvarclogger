@@ -5,7 +5,7 @@ build meant to reach the user (see AppVersion.cs) -- before running publish.ps1.
 
 Versions before 1.17 predate this changelog and are not documented here.
 
-2.09b (Beta)
+2.09c (Beta)
 ------------
 - Added single-instance check with warning dialog: if CVARC Logger is already running, a second launch
   shows "CVARC Logger is already running. Only one instance can run at a time." and exits cleanly.

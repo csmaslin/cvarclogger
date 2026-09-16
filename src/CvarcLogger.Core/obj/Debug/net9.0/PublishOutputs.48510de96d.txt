@@ -1,0 +1,3 @@
+C:\Projects\CvarcLogger\src\CvarcLogger.Core\bin\Debug\net9.0\publish\CvarcLogger.Core.dll
+C:\Projects\CvarcLogger\src\CvarcLogger.Core\bin\Debug\net9.0\publish\CvarcLogger.Core.deps.json
+C:\Projects\CvarcLogger\src\CvarcLogger.Core\bin\Debug\net9.0\publish\CvarcLogger.Core.pdb

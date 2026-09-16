@@ -1,0 +1,7 @@
+C:\Projects\CvarcLogger\src\CvarcLogger.WebApi\obj\Debug\net9.0\CvarcLogger.WebApi.csproj.AssemblyReference.cache
+C:\Projects\CvarcLogger\src\CvarcLogger.WebApi\obj\Debug\net9.0\rpswa.dswa.cache.json
+C:\Projects\CvarcLogger\src\CvarcLogger.WebApi\obj\Debug\net9.0\CvarcLogger.WebApi.GeneratedMSBuildEditorConfig.editorconfig
+C:\Projects\CvarcLogger\src\CvarcLogger.WebApi\obj\Debug\net9.0\CvarcLogger.WebApi.AssemblyInfoInputs.cache
+C:\Projects\CvarcLogger\src\CvarcLogger.WebApi\obj\Debug\net9.0\CvarcLogger.WebApi.AssemblyInfo.cs
+C:\Projects\CvarcLogger\src\CvarcLogger.WebApi\obj\Debug\net9.0\CvarcLogger.WebApi.csproj.CoreCompileInputs.cache
+C:\Projects\CvarcLogger\src\CvarcLogger.WebApi\obj\Debug\net9.0\CvarcLogger.WebApi.MvcApplicationPartsAssemblyInfo.cache

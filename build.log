@@ -1,0 +1,16 @@
+﻿  Determining projects to restore...
+  All projects are up-to-date for restore.
+  CvarcLogger.Core -> C:\Projects\CvarcLogger\src\CvarcLogger.Core\bin\Release\net9.0\CvarcLogger.Core.dll
+  CvarcLogger.Data -> C:\Projects\CvarcLogger\src\CvarcLogger.Data\bin\Release\net9.0\CvarcLogger.Data.dll
+  CvarcLogger.Tests -> C:\Projects\CvarcLogger\tests\CvarcLogger.Tests\bin\Release\net9.0\CvarcLogger.Tests.dll
+C:\Projects\CvarcLogger\src\CvarcLogger.App\Views\QsoEditWindow.xaml(80,64): error MC3000: 'An error occurred while parsing EntityName. Line 80, position 64.' XML is not valid. [C:\Projects\CvarcLogger\src\CvarcLogger.App\CvarcLogger.App.csproj]
+
+Build FAILED.
+
+C:\Projects\CvarcLogger\src\CvarcLogger.App\Views\QsoEditWindow.xaml(80,64): error MC3000: 'An error occurred while parsing EntityName. Line 80, position 64.' XML is not valid. [C:\Projects\CvarcLogger\src\CvarcLogger.App\CvarcLogger.App.csproj]
+    0 Warning(s)
+    1 Error(s)
+
+Time Elapsed 00:00:00.78
+
+Workload updates are available. Run `dotnet workload list` for more information.
